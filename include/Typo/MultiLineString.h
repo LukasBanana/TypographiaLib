@@ -20,6 +20,23 @@ namespace Tg
 {
 
 
+//! Namespace for internal templates
+namespace Details
+{
+
+template <typename T>
+struct DefaultSeparators
+{
+    static const T* value;
+};
+
+const char* DefaultSeparators<char>::value = " \t,;.:-()[]{}/\\";
+
+const wchar_t* DefaultSeparators<wchar_t>::value = L" \t,;.:-()[]{}/\\";
+
+} // /namespace Details
+
+
 template <typename T>
 class MultiLineString
 {
@@ -41,6 +58,10 @@ class MultiLineString
             text_       ( text     )
         {
             ResetLines();
+        }
+        
+        virtual ~MultiLineString()
+        {
         }
         
         MultiLineString<T>& operator = (const StringType& str)
@@ -108,8 +129,11 @@ class MultiLineString
                     }
                     else
                     {
-                        /* Allocate new line */
-                        AppendLine(chr, width);
+                        /*
+                        Reset lines, because separators may change
+                        the current (last) line and the new line
+                        */
+                        ResetLines();
                     }
                 }
             }
@@ -194,13 +218,16 @@ class MultiLineString
             return lines_;
         }
         
-    private:
+    protected:
         
-        //! Returns true if the specified width fits into a line, i.e. does not exceed the maximal width.
-        bool FitIntoLine(int width) const
+        //! Returns a string with all separator characters.
+        virtual const StringType& GetSeparators() const
         {
-            return width <= GetMaxWidth();
+            static const StringType sep = StringType(Details::DefaultSeparators<T>::value);
+            return sep;
         }
+        
+    private:
         
         /**
         Returns true if the specified character is a new-line character,
@@ -209,6 +236,21 @@ class MultiLineString
         bool IsNewLine(const T& chr) const
         {
             return chr == T('\n') || chr == T('\r');
+        }
+        
+        /**
+        Returns true if the specified character is a separator.
+        \see GetSeparators
+        */
+        bool IsSeparator(const T& chr) const
+        {
+            return GetSeparators().find(chr) != StringType::npos;
+        }
+        
+        //! Returns true if the specified width fits into a line, i.e. does not exceed the maximal width.
+        bool FitIntoLine(int width) const
+        {
+            return width <= GetMaxWidth();
         }
         
         /**
@@ -264,10 +306,11 @@ class MultiLineString
             
             /* Get glyph set from font */
             const auto& glyphSet = font_.GetGlyphSet();
-            int nextWidth = 0, width = 0;
+            int nextWidth = 0, width = 0, sepWidth = 0;
+            T chr = 0;
             
             /* Setup all wrapped lines */
-            for (std::size_t pos = 0, len = 0, num = text_.size(); pos < num; pos += len)
+            for (std::size_t pos = 0, sepLen = 0, len = 0, num = text_.size(); pos < num; pos += len)
             {
                 /* Find maximal length for current line */
                 for (len = 0, nextWidth = 0, width = 0; pos + len < num && FitIntoLine(nextWidth); ++len)
@@ -275,8 +318,15 @@ class MultiLineString
                     /* Store new line width */
                     width = nextWidth;
                     
+                    /* Check for separator of previous character */
+                    if (IsSeparator(chr))
+                    {
+                        sepLen = len;
+                        sepWidth = width;
+                    }
+                    
                     /* Get current character from base string */
-                    auto chr = text_[pos + len];
+                    chr = text_[pos + len];
                     
                     /* Break line for new-line character */
                     if (IsNewLine(chr))
@@ -288,7 +338,15 @@ class MultiLineString
                 
                 /* Clamp line size to a minimum */
                 if (len == 0 && nextWidth > 0 && pos < num)
+                {
                     ++len;
+                    width = nextWidth;
+                }
+                else if (sepLen > 0)
+                {
+                    len = sepLen;
+                    width = sepWidth;
+                }
                 
                 /* Add new line to list */
                 if (len > 0)
@@ -297,12 +355,12 @@ class MultiLineString
                     AppendLine();
             }
         }
-
+        
         const Font&             font_;
-
+        
         int                     maxWidth_;
         int                     width_;
-
+        
         StringType              text_;
         std::vector<TextLine>   lines_;
         
