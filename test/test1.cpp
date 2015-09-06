@@ -28,11 +28,21 @@ int main()
         glyphSet.glyphs.push_back(glyph);
     }
 
-    Font font(fontDesc, glyphSet);
+    fontDesc.height = 32;
+    fontDesc.name   = "C:/Windows/Fonts/kaiu.ttf";
 
-    MultiLineString<char> mlStr(font, 100, "test");
+    try
+    {
+        Font font(fontDesc, glyphSet);
 
-	//todo...
+        MultiLineString<char> mlStr(font, 100, "test");
+
+	    //todo...
+    }
+    catch (const std::exception& err)
+    {
+        std::cerr << err.what() << std::endl;
+    }
 
     #ifdef _WIN32
     system("pause");

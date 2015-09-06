@@ -36,11 +36,39 @@ struct FontGlyphRange
 
 struct FontDescription
 {
-    std::wstring    name;
+    std::string     name;
     int             width       = 0;
     int             height      = 0;
     FontGlyphRange  glyphRange;
     int             flags       = 0;
+};
+
+//! Simple rectangle structure with members: 'left', 'right', 'top', and 'bottom'.
+struct Rect
+{
+    Rect() = default;
+    Rect(unsigned int left, unsigned int top, unsigned int right, unsigned int bottom) :
+        left    ( left   ),
+        top     ( top    ),
+        right   ( right  ),
+        bottom  ( bottom )
+    {
+    }
+
+    unsigned int Width() const
+    {
+        return right - left;
+    }
+
+    unsigned int Height() const
+    {
+        return bottom - top;
+    }
+
+    unsigned int left    = 0;
+    unsigned int top     = 0;
+    unsigned int right   = 0;
+    unsigned int bottom  = 0;
 };
 
 struct FontGlyph
@@ -50,14 +78,11 @@ struct FontGlyph
         return startOffset + drawnWidth + whiteSpace;
     }
     
-    int left        = 0;
-    int top         = 0;
-    int right       = 0;
-    int bottom      = 0;
+    Rect    rect;
     
-    int startOffset = 0;
-    int drawnWidth  = 0;
-    int whiteSpace  = 0;
+    int     startOffset = 0;
+    int     drawnWidth  = 0;
+    int     whiteSpace  = 0;
 };
 
 struct FontGlyphSet

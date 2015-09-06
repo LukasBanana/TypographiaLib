@@ -32,8 +32,26 @@ include_directories("${PROJECT_INCLUDE_DIR}")
 add_library(typolib STATIC ${FilesAll})
 set_target_properties(typolib PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 
+
+# === Dependencies ===
+
+# FreeType
+include(FindFreeType.cmake)
+if (FreeType_FOUND)
+	message("found freetype library")
+	include_directories(${FreeType_INCLUDE_DIR})
+	target_link_libraries(typolib ${FreeType_LIBRARIES})
+else(FreeType_FOUND)
+	message("missing freetype library")
+endif(FreeType_FOUND)
+
+
+# === Test Projects ===
+
 add_executable(test1 "${PROJECT_TEST_DIR}/test1.cpp")
 set_target_properties(test1 PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 
 target_link_libraries(test1 typolib)
+
+
 
