@@ -10,6 +10,7 @@
 
 
 #include <Typo/Font.h>
+#include <Typo/Size.h>
 #include <memory>
 
 
@@ -27,7 +28,7 @@ class GlyphTree
     public:
         
         GlyphTree() = default;
-        GlyphTree(unsigned int width, unsigned int height);
+        GlyphTree(const Size& size);
         GlyphTree(const Rect& rect);
 
         GlyphTree(const GlyphTree&) = delete;
@@ -40,7 +41,7 @@ class GlyphTree
         \param[in] width Specifies the glyph height.
         \return Raw pointer to the glyph tree node which contains the inserted glyph.
         */
-        GlyphTree* Insert(FontGlyph& glyph, unsigned int width, unsigned int height);
+        GlyphTree* Insert(FontGlyph& glyph, const Size& size);
 
         //! Deletes its child tree node.
         void Clear();

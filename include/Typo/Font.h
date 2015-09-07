@@ -9,6 +9,10 @@
 #define __TG_FONT_H__
 
 
+#include "Rect.h"
+#include "FontGlyphSet.h"
+#include "Image.h"
+
 #include <vector>
 #include <iostream>
 #include <string>
@@ -29,103 +33,12 @@ struct FontFlags
     };
 };
 
-struct FontGlyphRange
-{
-    wchar_t first = 0, last = 0;
-};
-
 struct FontDescription
 {
-    std::string     name;
-    int             width       = 0;
-    int             height      = 0;
-    FontGlyphRange  glyphRange;
-    int             flags       = 0;
-};
-
-//! Simple rectangle structure with members: 'left', 'right', 'top', and 'bottom'.
-struct Rect
-{
-    Rect() = default;
-    Rect(unsigned int left, unsigned int top, unsigned int right, unsigned int bottom) :
-        left    ( left   ),
-        top     ( top    ),
-        right   ( right  ),
-        bottom  ( bottom )
-    {
-    }
-
-    unsigned int Width() const
-    {
-        return right - left;
-    }
-
-    unsigned int Height() const
-    {
-        return bottom - top;
-    }
-
-    unsigned int left    = 0;
-    unsigned int top     = 0;
-    unsigned int right   = 0;
-    unsigned int bottom  = 0;
-};
-
-struct FontGlyph
-{
-    inline int TotalWidth() const
-    {
-        return startOffset + drawnWidth + whiteSpace;
-    }
-    
-    Rect    rect;
-    
-    int     startOffset = 0;
-    int     drawnWidth  = 0;
-    int     whiteSpace  = 0;
-};
-
-struct FontGlyphSet
-{
-    FontGlyphSet() = default;
-    FontGlyphSet(const FontGlyphSet&) = default;
-    
-    FontGlyphSet(FontGlyphSet&& rhs) :
-        glyphRange  ( rhs.glyphRange        ),
-        glyphs      ( std::move(rhs.glyphs) )
-    {
-    }
-    
-    const FontGlyph& operator [] (char chr) const
-    {
-        return (*this)[static_cast<wchar_t>(chr)];
-    }
-    
-    const FontGlyph& operator [] (wchar_t chr) const
-    {
-        static const FontGlyph dummy;
-        return (chr < glyphRange.first || chr > glyphRange.last) ? dummy : glyphs[chr - glyphRange.first];
-    }
-    
-    FontGlyphRange            glyphRange;
-    std::vector<FontGlyph>    glyphs;
-};
-
-struct Image
-{
-    Image() = default;
-    Image(const Image&) = default;
-    
-    Image(Image&& rhs) :
-        width       ( rhs.width                  ),
-        height      ( rhs.height                 ),
-        imageBuffer ( std::move(rhs.imageBuffer) )
-    {
-    }
-    
-    unsigned int                width;
-    unsigned int                height;
-    std::vector<unsigned char>  imageBuffer; //!< Gray scaled image buffer with (width*height) elements.
+    std::string name;
+    int         width   = 0;
+    int         height  = 0;
+    int         flags   = 0; //!< This can be a bitwise OR combination of the values of the 'FontFlags' enumeration.
 };
 
 struct FontModel
@@ -150,7 +63,7 @@ class Font
     
     public:
         
-        Font(const FontDescription& desc, const FontGlyphSet& glyphSet);
+        Font(const FontDescription& desc, const FontGlyphRange& glyphRange);
         virtual ~Font();
         
         int TextWidth(const std::string& text, std::size_t offset = 0, std::size_t len = std::string::npos) const;
@@ -165,11 +78,18 @@ class Font
         {
             return glyphSet_;
         }
+
+        //! Returns true if this has a vertical text layout. Otherwise it has a horizontal text layout.
+        bool IsVertical() const
+        {
+            return isVertical_;
+        }
         
     private:
         
         FontDescription desc_;
         FontGlyphSet    glyphSet_;
+        bool            isVertical_ = false;
         
 };
 

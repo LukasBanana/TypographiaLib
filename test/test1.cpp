@@ -16,24 +16,17 @@ int main()
     std::cout << "==================" << std::endl;
 
     FontDescription fontDesc;
-    FontGlyphSet glyphSet;
+    FontGlyphRange glyphRange;
 
-    glyphSet.glyphRange.first   = 'a';
-    glyphSet.glyphRange.last    = 'z';
+    glyphRange.first   = 0x53F2;//'A';
+    glyphRange.last    = 0x53FF;//'z';
     
-    for (auto chr = 'a'; chr <= 'z'; ++chr)
-    {
-        FontGlyph glyph;
-        glyph.drawnWidth = 45;
-        glyphSet.glyphs.push_back(glyph);
-    }
-
     fontDesc.height = 32;
     fontDesc.name   = "C:/Windows/Fonts/kaiu.ttf";
 
     try
     {
-        Font font(fontDesc, glyphSet);
+        Font font(fontDesc, glyphRange);
 
         MultiLineString<char> mlStr(font, 100, "test");
 

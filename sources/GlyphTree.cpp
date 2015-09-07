@@ -12,8 +12,8 @@ namespace Tg
 {
 
 
-GlyphTree::GlyphTree(unsigned int width, unsigned int height) :
-    rect_( 0, 0, width, height )
+GlyphTree::GlyphTree(const Size& size) :
+    rect_( 0, 0, size.width, size.height )
 {
 }
 
@@ -22,25 +22,25 @@ GlyphTree::GlyphTree(const Rect& rect) :
 {
 }
 
-GlyphTree* GlyphTree::Insert(FontGlyph& glyph, unsigned int width, unsigned int height)
+GlyphTree* GlyphTree::Insert(FontGlyph& glyph, const Size& size)
 {
     if (childA_)
     {
         /* Try to find a suitable tree node */
-        auto node = childA_->Insert(glyph, width, height);
+        auto node = childA_->Insert(glyph, size);
 
         if (node)
             return node;
 
-        return childB_->Insert(glyph, width, height);
+        return childB_->Insert(glyph, size);
     }
 
     /* Check if this node already contains a gylph and check if its size fits into this tree node */
-    if (glyph_ || width > rect_.Width() || height > rect_.Height())
+    if (glyph_ || size.width > rect_.Width() || size.height > rect_.Height())
         return nullptr;
 
     /* Check if glyph fits exactly into this node */
-    if (width == rect_.Width() && height == rect_.Height())
+    if (size.width == rect_.Width() && size.height == rect_.Height())
     {
         glyph_ = &glyph;
         glyph_->rect = rect_;
@@ -48,19 +48,19 @@ GlyphTree* GlyphTree::Insert(FontGlyph& glyph, unsigned int width, unsigned int 
     }
 
     /* Create children and split into two spaces */
-    if (rect_.Width() - width > rect_.Height() - height)
+    if (rect_.Width() - size.width > rect_.Height() - size.height)
     {
-        CreateChildA(Rect(rect_.left, rect_.top, rect_.left + width, rect_.bottom));
-        CreateChildB(Rect(rect_.left + width, rect_.top, rect_.right, rect_.bottom));
+        CreateChildA(Rect(rect_.left, rect_.top, rect_.left + size.width, rect_.bottom));
+        CreateChildB(Rect(rect_.left + size.width, rect_.top, rect_.right, rect_.bottom));
     }
     else
     {
-        CreateChildA(Rect(rect_.left, rect_.top, rect_.right, rect_.top + height));
-        CreateChildB(Rect(rect_.left, rect_.top + height, rect_.right, rect_.bottom));
+        CreateChildA(Rect(rect_.left, rect_.top, rect_.right, rect_.top + size.height));
+        CreateChildB(Rect(rect_.left, rect_.top + size.height, rect_.right, rect_.bottom));
     }
 
     /* Try to insert the glyph into the new first child */
-    return childA_->Insert(glyph, width, height);
+    return childA_->Insert(glyph, size);
 }
 
 void GlyphTree::Clear()
