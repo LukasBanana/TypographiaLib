@@ -41,10 +41,13 @@ class GlyphTree
         \param[in] width Specifies the glyph height.
         \return Raw pointer to the glyph tree node which contains the inserted glyph.
         */
-        GlyphTree* Insert(FontGlyph& glyph, const Size& size);
+        GlyphTree* Insert(FontGlyph& glyph);
 
         //! Deletes its child tree node.
         void Clear();
+
+        //! Restes the glyph tree. This also clears all child node.
+        void Reset(const Size& size);
 
         //! Returns the first child node.
         GlyphTree* GetChildA() const;

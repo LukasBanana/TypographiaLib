@@ -22,17 +22,19 @@ GlyphTree::GlyphTree(const Rect& rect) :
 {
 }
 
-GlyphTree* GlyphTree::Insert(FontGlyph& glyph, const Size& size)
+GlyphTree* GlyphTree::Insert(FontGlyph& glyph)
 {
+    auto size = glyph.rect.GetSize();
+
     if (childA_)
     {
         /* Try to find a suitable tree node */
-        auto node = childA_->Insert(glyph, size);
+        auto node = childA_->Insert(glyph);
 
         if (node)
             return node;
 
-        return childB_->Insert(glyph, size);
+        return childB_->Insert(glyph);
     }
 
     /* Check if this node already contains a gylph and check if its size fits into this tree node */
@@ -60,13 +62,19 @@ GlyphTree* GlyphTree::Insert(FontGlyph& glyph, const Size& size)
     }
 
     /* Try to insert the glyph into the new first child */
-    return childA_->Insert(glyph, size);
+    return childA_->Insert(glyph);
 }
 
 void GlyphTree::Clear()
 {
     childA_.reset();
     childB_.reset();
+}
+
+void GlyphTree::Reset(const Size& size)
+{
+    Clear();
+    rect_ = Rect( 0, 0, size.width, size.height );
 }
 
 GlyphTree* GlyphTree::GetChildA() const

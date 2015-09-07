@@ -7,6 +7,7 @@
 
 #include <Typo/Font.h>
 #include <exception>
+#include <cmath>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -24,81 +25,16 @@ static void Failed(FT_Error err, const std::string& msg)
         throw std::runtime_error(msg);
 }
 
-Font::Font(const FontDescription& desc, const FontGlyphRange& glyphRange) :
-    desc_( desc )
+Font::Font(const FontDescription& desc, const FontGlyphSet& glyphSet) :
+    desc_       ( desc     ),
+    glyphSet_   ( glyphSet )
 {
-    FT_Library ftLib;
-    FT_Face face;
+}
 
-    /* Initialize free type library */
-    auto err = FT_Init_FreeType(&ftLib);
-    Failed(err, "failed to initialize FreeType library");
-
-    /* Load font */
-    err = FT_New_Face(ftLib, desc.name.c_str(), 0, &face);
-    if (err == FT_Err_Unknown_File_Format)
-        Failed(err, "unknown font file format");
-    else
-        Failed(err, "failed to load font file");
-
-    /* Store flags */
-    isVertical_ = (FT_HAS_VERTICAL(face) != 0);
-
-    /* Setup pixel size */
-    err = FT_Set_Char_Size(face, 0, 15*64, 700, 700);
-    Failed(err, "failed to set character size");
-
-    err = FT_Set_Pixel_Sizes(face, desc.width, desc.height);
-    Failed(err, "failed to set pixel sizes");
-    
-    /* Reserve glyph container */
-    glyphSet_.SetGlyphRange(glyphRange);
-
-    for (auto chr = glyphSet_.GetGlyphRange().first; chr <= glyphSet_.GetGlyphRange().last; ++chr)
-    {
-        /* Load glyph image */
-        auto glyphIndex = FT_Get_Char_Index(face, chr);
-
-        err = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
-        Failed(err, "failed to load glyph");
-
-        /* Draw current glyph */
-        err = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-        Failed(err, "failed to render glyph");
-
-        /* Store glyph */
-        const auto& metrics = face->glyph->metrics;
-        auto& glyph = glyphSet_[chr];
-
-        if (isVertical_)
-        {
-            glyph.startOffsetX  = metrics.vertBearingX / 64;
-            glyph.drawnSize     = metrics.height / 64;
-            glyph.whiteSpace    = metrics.vertAdvance / 64 - glyph.drawnSize - glyph.startOffsetY;
-        }
-        else
-        {
-            glyph.startOffsetX  = metrics.horiBearingX / 64;
-            glyph.drawnSize     = metrics.width / 64;
-            glyph.whiteSpace    = metrics.horiAdvance / 64 - glyph.drawnSize - glyph.startOffsetX;
-        }
-
-        #if 0//!!!
-        std::cout << "character '" << static_cast<char>(chr) << "':" << std::endl;
-        std::cout << "  startOffset = " << glyph.startOffset << std::endl;
-        std::cout << "  drawnSize   = " << glyph.drawnSize   << std::endl;
-        std::cout << "  whiteSpace  = " << glyph.whiteSpace  << std::endl;
-        #endif
-    }
-
-    /* Generate glyph tree */
-    GlyphTree glyphTree;
-
-
-
-    /* Release free type objects */
-    FT_Done_Face(face);
-    FT_Done_FreeType(ftLib);
+Font::Font(const FontDescription& desc, FontGlyphSet&& glyphSet) :
+    desc_       ( desc                ),
+    glyphSet_   ( std::move(glyphSet) )
+{
 }
 
 Font::~Font()
@@ -157,11 +93,168 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel)
 
 /* --- Global Functions --- */
 
-FontModel BuildFont(const FontDescription& desc)
+static unsigned int RoundPow2(unsigned int size)
 {
+    unsigned int result = 1;
+    
+    while (result < size)
+        result <<= 1;
+    
+    if (result - size <= size - result/2)
+        return result;
+    
+    return result/2;
+}
+
+static Size ApproximateFontAtlasSize(unsigned int visualArea)
+{
+    visualArea = static_cast<unsigned int>(std::ceil(std::sqrt(visualArea)));
+
+    auto size = RoundPow2(visualArea);
+    auto result = Size(size, size);
+
+    if (result.width < visualArea)
+        result.width *= 2;
+
+    return result;
+}
+
+FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)
+{
+    static const FT_Pos metricSize = 64;
+
     FontModel font;
 
-    //...
+    FT_Library ftLib;
+    FT_Face face;
+
+    /* Initialize free type library */
+    auto err = FT_Init_FreeType(&ftLib);
+    Failed(err, "failed to initialize FreeType library");
+
+    /* Load font */
+    err = FT_New_Face(ftLib, desc.name.c_str(), 0, &face);
+    if (err == FT_Err_Unknown_File_Format)
+        Failed(err, "unknown font file format");
+    else
+        Failed(err, "failed to load font file");
+
+    /* Store flags */
+    auto isVertical = (FT_HAS_VERTICAL(face) != 0);
+
+    /* Setup pixel size */
+    //err = FT_Set_Char_Size(face, 0, 15*64, 50, 50);
+    //Failed(err, "failed to set character size");
+
+    err = FT_Set_Pixel_Sizes(face, desc.width, desc.height);
+    Failed(err, "failed to set pixel sizes");
+    
+    /* Reserve glyph container */
+    font.glyphSet.SetGlyphRange(glyphRange);
+    
+    std::vector<Image> glyphImages;
+    glyphImages.reserve(glyphRange.GetSize());
+
+    unsigned int visualArea = 0;
+
+    for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
+    {
+        /* Load glyph image */
+        auto glyphIndex = FT_Get_Char_Index(face, chr);
+
+        err = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
+        Failed(err, "failed to load glyph");
+
+        /* Draw current glyph */
+        err = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+        Failed(err, "failed to render glyph");
+
+        /* Store glyph */
+        const auto& metrics = face->glyph->metrics;
+        auto& glyph = font.glyphSet[chr];
+
+        auto width = metrics.width / metricSize;
+        auto height = metrics.height / metricSize;
+
+        if (isVertical)
+        {
+            glyph.startOffsetX  = metrics.vertBearingX / metricSize;
+            glyph.drawnSize     = height;
+            glyph.whiteSpace    = metrics.vertAdvance / metricSize - glyph.drawnSize - glyph.startOffsetY;
+        }
+        else
+        {
+            glyph.startOffsetX  = metrics.horiBearingX / metricSize;
+            glyph.drawnSize     = width;
+            glyph.whiteSpace    = metrics.horiAdvance / metricSize - glyph.drawnSize - glyph.startOffsetX;
+        }
+
+        /* Store glyph size */
+        glyph.rect.right = width + border*2;
+        glyph.rect.bottom = height + border*2;
+
+        /* Store glyph image */
+        const auto& bitmap = face->glyph->bitmap;
+        Image image(Size(bitmap.width, bitmap.rows));
+        {
+            std::copy(bitmap.buffer, bitmap.buffer + (bitmap.width*bitmap.rows), image.ImageBufferBegin());
+        }
+        glyphImages.emplace_back(std::move(image));
+
+        /* Accumulate visual area to approximate glyph image size */
+        visualArea += Size(glyph.rect.right, glyph.rect.bottom).Area();
+    }
+
+    /* Generate glyph tree */
+    auto fontAtlasSize = ApproximateFontAtlasSize(visualArea);
+    bool fillTreeFailed = false;
+
+    GlyphTree glyphTree;
+
+    do
+    {
+        /* Reset glyph tree */
+        glyphTree.Reset(fontAtlasSize);
+        fillTreeFailed = false;
+
+        /* Insert all font glyphs into the tree */
+        for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
+        {
+            /* Insert current glyph into tree */
+            if (!glyphTree.Insert(font.glyphSet[chr]))
+            {
+                /* Increase font atlas size */
+                if (fontAtlasSize.width < fontAtlasSize.height)
+                    fontAtlasSize.width *= 2;
+                else
+                    fontAtlasSize.height *= 2;
+
+                /* Break insertion and start with new tree */
+                fillTreeFailed = true;
+                break;
+            }
+        }
+    }
+    while (fillTreeFailed);
+
+    /* Plot final font atlas */
+    font.image.SetSize(fontAtlasSize);
+
+    for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
+    {
+        const auto& glyph = font.glyphSet[chr];
+        const auto& image = glyphImages[chr - glyphRange.first];
+
+        font.image.PlotImage(
+            glyph.rect.left + border,
+            glyph.rect.top + border,
+            image
+        );
+    }
+
+    /* Release free type objects */
+    FT_Done_Face(face);
+    FT_Done_FreeType(ftLib);
 
     return font;
 }

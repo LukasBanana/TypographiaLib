@@ -29,7 +29,7 @@ struct FontGlyphRange
     {
     }
 
-    std::size_t Size() const
+    std::size_t GetSize() const
     {
         return std::size_t(last >= first ? (last - first + 1) : 0u);
     }
@@ -71,10 +71,13 @@ class FontGlyphSet
         FontGlyph& operator [] (char chr);
         FontGlyph& operator [] (wchar_t chr);
 
+        //! Specifies whether this glyph set has a vertical or a horizontal text layout. By default false.
+        bool isVertical = false;
+
     private:
 
-        FontGlyphRange            glyphRange_;
-        std::vector<FontGlyph>    glyphs_;
+        FontGlyphRange          glyphRange_;
+        std::vector<FontGlyph>  glyphs_;
 
 };
 

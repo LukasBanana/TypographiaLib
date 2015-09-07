@@ -14,14 +14,15 @@ namespace Tg
 
 FontGlyphSet::FontGlyphSet(FontGlyphSet&& rhs) :
     glyphRange_ ( rhs.glyphRange_        ),
-    glyphs_     ( std::move(rhs.glyphs_) )
+    glyphs_     ( std::move(rhs.glyphs_) ),
+    isVertical  ( rhs.isVertical         )
 {
 }
 
 void FontGlyphSet::SetGlyphRange(const FontGlyphRange& glyphRange)
 {
     glyphRange_ = glyphRange;
-    glyphs_.resize(glyphRange_.Size());
+    glyphs_.resize(glyphRange_.GetSize());
 }
 
 const FontGlyphRange& FontGlyphSet::GetGlyphRange() const

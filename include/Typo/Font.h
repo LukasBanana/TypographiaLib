@@ -63,7 +63,8 @@ class Font
     
     public:
         
-        Font(const FontDescription& desc, const FontGlyphRange& glyphRange);
+        Font(const FontDescription& desc, const FontGlyphSet& glyphSet);
+        Font(const FontDescription& desc, FontGlyphSet&& glyphSet);
         virtual ~Font();
         
         int TextWidth(const std::string& text, std::size_t offset = 0, std::size_t len = std::string::npos) const;
@@ -79,17 +80,10 @@ class Font
             return glyphSet_;
         }
 
-        //! Returns true if this has a vertical text layout. Otherwise it has a horizontal text layout.
-        bool IsVertical() const
-        {
-            return isVertical_;
-        }
-        
     private:
         
         FontDescription desc_;
         FontGlyphSet    glyphSet_;
-        bool            isVertical_ = false;
         
 };
 
@@ -107,7 +101,7 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel);
 
 /* --- Global Functions --- */
 
-FontModel BuildFont(const FontDescription& desc);
+FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border = 1);
 
 
 } // /namespace Tg
