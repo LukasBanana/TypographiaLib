@@ -7,6 +7,7 @@
 
 #include <Typo/Typo.h>
 #include <iostream>
+#include <chrono>
 
 #pragma warning(disable : 4996)
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -34,6 +35,11 @@ void drawImage(const Image& image)
     }
 }
 
+void saveImagePNG(const Image& image, const std::string& filename)
+{
+    stbi_write_png(filename.c_str(), image.GetSize().width, image.GetSize().height, 1, image.GetImageBuffer().data(), image.GetSize().width);
+}
+
 int main()
 {
     std::cout << "Typographia Test 1" << std::endl;
@@ -51,21 +57,30 @@ int main()
     #endif
     
     fontDesc.height = 60;//32;
-    fontDesc.name   = "C:/Windows/Fonts/kaiu.ttf";
+    fontDesc.name   = "C:/Windows/Fonts/times.ttf";//"C:/Windows/Fonts/kaiu.ttf";
 
     try
     {
+        auto startTime = std::chrono::system_clock::now();
         auto fontModel = BuildFont(fontDesc, glyphRange);
+        auto endTime = std::chrono::system_clock::now();
+        std::cout << "font build time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
 
-        Font font(fontDesc, std::move(fontModel.glyphSet));
+        std::wstring text = (
+            L"Hello, World! This is a small programming test with the TypographiaLib ;-)"
+            //L"abcdefghijklmnopqrstuvwxyz"
+            //L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        );
+
+        auto textImg = PlotTextImage(fontModel, text);
+        saveImagePNG(textImg, "text_image.png");
+
+        auto textImgMl = PlotMultiLineTextImage(fontModel, text, 400, 60);
+        saveImagePNG(textImgMl, "text_image_ml.png");
 
         //drawImage(fontModel.image);
-        const auto& img = fontModel.image;
-        stbi_write_png("font_atlas.png", img.GetSize().width, img.GetSize().height, 1, img.GetImageBuffer().data(), img.GetSize().width);
+        saveImagePNG(fontModel.image, "font_atlas.png");
 
-        MultiLineString<char> mlStr(font, 100, "test");
-
-	    //todo...
     }
     catch (const std::exception& err)
     {

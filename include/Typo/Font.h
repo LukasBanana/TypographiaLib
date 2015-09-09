@@ -101,7 +101,32 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel);
 
 /* --- Global Functions --- */
 
+/**
+Builds a font model with the specified description and glyph range.
+\param[in] desc Specifies the font description.
+\param[in] glyphRange Specifies the range of glyphs which are to be contained in the resulting font.
+\param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
+*/
 FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border = 1);
+
+/**
+Plots a text with the specified font model into an image.
+\param[in] fontModel Specifies the font model which is used for text rendering.
+\param[in] text Specifies the text for the output.
+\see BuildFont
+*/
+Image PlotTextImage(const FontModel& fontModel, const std::wstring& text);
+
+/**
+Plots a multi-line text with the specified font model into an image.
+\param[in] fontModel Specifies the font model which is used for text rendering.
+\param[in] text Specifies the text for the output.
+\param[in] maxWidth Specifies the maximal width for the text.
+\see BuildFont
+\see PlotTextImage
+\see MultiLineString
+*/
+Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& text, unsigned int maxWidth, unsigned int rowOffset);
 
 
 } // /namespace Tg

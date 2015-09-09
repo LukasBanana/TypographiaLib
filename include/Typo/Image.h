@@ -40,6 +40,15 @@ class Image
         //! Plots the specified sub image 'image' into this image at the specified offset position.
         void PlotImage(unsigned int xOffset, unsigned int yOffset, const Image& image);
 
+        //! Plots parts of the specified sub image 'image' into this image at the specified offset position.
+        void PlotImage(
+            unsigned int xOffset, unsigned int yOffset,
+            const Image& image,
+            unsigned int x, unsigned int y,
+            unsigned int width, unsigned int height,
+            bool accumulate = false
+        );
+
         const Size& GetSize() const
         {
             return size_;
@@ -62,6 +71,9 @@ class Image
 
     private:
         
+        unsigned char* PointerOffset(unsigned int x, unsigned int y);
+        const unsigned char* PointerOffset(unsigned int x, unsigned int y) const;
+
         Size        size_;
         ImageBuffer imageBuffer_; //!< Gray scaled image buffer with (width*height) elements.
 

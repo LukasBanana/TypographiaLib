@@ -6,8 +6,10 @@
  */
 
 #include <Typo/Font.h>
+#include <Typo/MultiLineString.h>
 #include <exception>
 #include <cmath>
+#include <algorithm>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -142,6 +144,8 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     /* Store flags */
     auto isVertical = (FT_HAS_VERTICAL(face) != 0);
 
+    font.glyphSet.border = border;
+
     /* Setup pixel size */
     //err = FT_Set_Char_Size(face, 0, 15*64, 50, 50);
     //Failed(err, "failed to set character size");
@@ -173,25 +177,25 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
         const auto& metrics = face->glyph->metrics;
         auto& glyph = font.glyphSet[chr];
 
-        auto width = metrics.width / metricSize;
-        auto height = metrics.height / metricSize;
+        glyph.width = metrics.width / metricSize;
+        glyph.height = metrics.height / metricSize;
 
         if (isVertical)
         {
-            glyph.startOffsetX  = metrics.vertBearingX / metricSize;
-            glyph.drawnSize     = height;
-            glyph.whiteSpace    = metrics.vertAdvance / metricSize - glyph.drawnSize - glyph.startOffsetY;
+            glyph.xOffset = metrics.vertBearingX / metricSize;
+            glyph.yOffset = metrics.vertBearingY / metricSize;
+            glyph.advance = metrics.vertAdvance / metricSize;
         }
         else
         {
-            glyph.startOffsetX  = metrics.horiBearingX / metricSize;
-            glyph.drawnSize     = width;
-            glyph.whiteSpace    = metrics.horiAdvance / metricSize - glyph.drawnSize - glyph.startOffsetX;
+            glyph.xOffset = metrics.horiBearingX / metricSize;
+            glyph.yOffset = metrics.horiBearingY / metricSize;
+            glyph.advance = metrics.horiAdvance / metricSize;
         }
 
         /* Store glyph size */
-        glyph.rect.right = width + border*2;
-        glyph.rect.bottom = height + border*2;
+        glyph.rect.right = glyph.width + border*2;
+        glyph.rect.bottom = glyph.height + border*2;
 
         /* Store glyph image */
         const auto& bitmap = face->glyph->bitmap;
@@ -257,6 +261,124 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     FT_Done_FreeType(ftLib);
 
     return font;
+}
+
+Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
+{
+    if (text.empty())
+        return Image();
+
+    /* Determine image size */
+    const auto& glyphSet = fontModel.glyphSet;
+
+    auto xPos = std::max(0, -glyphSet[text[0]].xOffset);
+    auto width = static_cast<unsigned int>(xPos);
+
+    int top = 0, bottom = 0, yOffsetMax = 0;
+    
+    for (auto chr : text)
+    {
+        const auto& glyph = fontModel.glyphSet[chr];
+        
+        width += glyph.advance;
+        top = std::max(top, glyph.yOffset);
+        bottom = std::max(bottom, glyph.height - glyph.yOffset);
+
+        yOffsetMax = std::max(yOffsetMax, glyph.yOffset);
+    }
+
+    /* Plot each glyph into the image */
+    Image image(Size(width, top + bottom + glyphSet.border*2));
+
+    for (auto chr : text)
+    {
+        const auto& glyph = glyphSet[chr];
+
+        image.PlotImage(
+            xPos + glyph.xOffset,
+            yOffsetMax - glyph.yOffset,
+            fontModel.image,
+            glyph.rect.left,
+            glyph.rect.top,
+            glyph.rect.Width(),
+            glyph.rect.Height(),
+            true
+        );
+
+        xPos += glyph.advance;
+    }
+
+    return image;
+}
+
+Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& text, unsigned int maxWidth, unsigned int rowOffset)
+{
+    /* Setup multi-line text */
+    MultiLineString<wchar_t> mtText(fontModel.glyphSet, static_cast<int>(maxWidth), text);
+
+    /* Determine image size */
+    const auto& glyphSet = fontModel.glyphSet;
+
+    Size size;
+
+    int top = 0, bottom = 0, yOffsetMax = 0, xPos = 0;
+    unsigned int width = 0, yPos = 0;
+    
+    for (const auto& line : mtText.GetLines())
+    {
+        if (line.text.empty())
+            continue;
+
+        xPos = std::max(0, -glyphSet[line.text[0]].xOffset);
+        width = static_cast<unsigned int>(xPos);
+
+        for (auto chr : line.text)
+        {
+            const auto& glyph = fontModel.glyphSet[chr];
+        
+            width += glyph.advance;
+            top = std::max(top, glyph.yOffset);
+            bottom = std::max(bottom, glyph.height - glyph.yOffset);
+
+            yOffsetMax = std::max(yOffsetMax, glyph.yOffset);
+        }
+
+        size.width = std::max(size.width, width);
+        size.height = std::max(size.height, top + bottom + glyphSet.border*2);
+    }
+
+    /* Plot each glyph into the image */
+    size.height += rowOffset*mtText.GetLines().size();
+    Image image(size);
+
+    auto xPosStart = xPos;
+
+    for (const auto& line : mtText.GetLines())
+    {
+        xPos = xPosStart;
+
+        for (auto chr : line.text)
+        {
+            const auto& glyph = glyphSet[chr];
+
+            image.PlotImage(
+                xPos + glyph.xOffset,
+                yPos + yOffsetMax - glyph.yOffset,
+                fontModel.image,
+                glyph.rect.left,
+                glyph.rect.top,
+                glyph.rect.Width(),
+                glyph.rect.Height(),
+                true
+            );
+
+            xPos += glyph.advance;
+        }
+
+        yPos += rowOffset;
+    }
+
+    return image;
 }
 
 

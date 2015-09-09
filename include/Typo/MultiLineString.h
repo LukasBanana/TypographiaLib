@@ -51,8 +51,8 @@ class MultiLineString
             int         width;
         };
         
-        MultiLineString(const Font& font, int maxWidth, const StringType& text) :
-            font_       ( font     ),
+        MultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const StringType& text) :
+            glyphSet_   ( glyphSet ),
             maxWidth_   ( maxWidth ),
             width_      ( 0        ),
             text_       ( text     )
@@ -97,8 +97,6 @@ class MultiLineString
         void PushBack(const T& chr)
         {
             /* Get glyph set from font */
-            const auto& glyphSet = font_.GetGlyphSet();
-            
             if (IsNewLine(chr))
             {
                 /* Append empty line */
@@ -107,7 +105,7 @@ class MultiLineString
             else
             {
                 /* Get width of new character */
-                int width = glyphSet[chr].TotalWidth();
+                int width = glyphSet_[chr].TotalWidth();
                 
                 if (lines_.empty())
                 {
@@ -162,8 +160,7 @@ class MultiLineString
             else
             {
                 /* Update width in current line */
-                const auto& glyphSet = font_.GetGlyphSet();
-                int width = glyphSet[chr].TotalWidth();
+                int width = glyphSet_[chr].TotalWidth();
                 line.width -= width;
             }
             
@@ -172,19 +169,19 @@ class MultiLineString
         }
         
         /**
-        \brief Sets the new font and updates all lines.
+        \brief Sets the new font glyph set and updates all lines.
         \see GetLines
         */
-        void SetFont(const Font& font)
+        void SetGlyphSet(const FontGlyphSet& glyphSet)
         {
-            font_ = font;
+            glyphSet_ = glyphSet;
             ResetLines();
         }
         
-        //! Returns the currnet font for this multi-line string.
-        const Font& GetFont() const
+        //! Returns the current font glyph set for this multi-line string.
+        const FontGlyphSet& GetGlyphSet() const
         {
-            return font_;
+            return glyphSet_;
         }
         
         /**
@@ -305,7 +302,6 @@ class MultiLineString
                 return;
             
             /* Get glyph set from font */
-            const auto& glyphSet = font_.GetGlyphSet();
             int nextWidth = 0, width = 0, sepWidth = 0;
             T chr = 0;
             
@@ -333,7 +329,7 @@ class MultiLineString
                         break;
                     
                     /* Add width of current character */
-                    nextWidth += glyphSet[chr].TotalWidth();
+                    nextWidth += glyphSet_[chr].advance;
                 }
                 
                 /* Clamp line size to a minimum */
@@ -356,7 +352,7 @@ class MultiLineString
             }
         }
         
-        const Font&             font_;
+        const FontGlyphSet&     glyphSet_;
         
         int                     maxWidth_;
         int                     width_;

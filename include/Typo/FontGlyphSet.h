@@ -40,16 +40,12 @@ struct FontGlyphRange
 //! Font glyph data structure.
 struct FontGlyph
 {
-    int TotalWidth() const
-    {
-        return startOffsetX + drawnSize + whiteSpace;
-    }
-    
     Rect    rect;
-    int     startOffsetX    = 0;
-    int     startOffsetY    = 0;
-    int     drawnSize       = 0;
-    int     whiteSpace      = 0;
+    int     xOffset = 0;
+    int     yOffset = 0;
+    int     width   = 0;
+    int     height  = 0;
+    int     advance = 0;
 };
 
 class FontGlyphSet
@@ -72,7 +68,10 @@ class FontGlyphSet
         FontGlyph& operator [] (wchar_t chr);
 
         //! Specifies whether this glyph set has a vertical or a horizontal text layout. By default false.
-        bool isVertical = false;
+        bool            isVertical  = false;
+
+        //! Specifies the border for each glyph in the font atlas image.
+        unsigned int    border      = 0;
 
     private:
 
