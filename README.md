@@ -19,18 +19,8 @@ Example
 
 int main()
 {
-    /* Setup font description and glyph range */
-    Tg::FontDescription fontDesc;
-    Tg::FontGlyphRange glyphRange;
-    
-    glyphRange.first = 32;
-    glyphRange.last  = 255;
-    
-    fontDesc.height = 60;//32;
-    fontDesc.name   = "MyFontFile.ttf";
-    
-    /* Build font */
-    fontModel = BuildFont(fontDesc, glyphRange);
+    /* Build font with size 60 pixels */
+    fontModel = BuildFont({ "MyFontFile.ttf", 60 });
     
     //store font atlas image 'fonmtModel.image' ...
     
