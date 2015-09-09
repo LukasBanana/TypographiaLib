@@ -52,8 +52,8 @@ int main()
     glyphRange.first   = 0x53F2;
     glyphRange.last    = 0x53F4;
     #else
-    glyphRange.first   = 32;//'A';
-    glyphRange.last    = 255;//'z';
+    glyphRange.first   = 32;
+    glyphRange.last    = 255;
     #endif
     
     fontDesc.height = 60;//32;
