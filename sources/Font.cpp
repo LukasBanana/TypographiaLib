@@ -263,6 +263,8 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     return font;
 }
 
+static const auto staticGlpyhBorder = 2u;
+
 Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
 {
     if (text.empty())
@@ -288,7 +290,7 @@ Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
     }
 
     /* Plot each glyph into the image */
-    Image image(Size(width, top + bottom + glyphSet.border*2));
+    Image image(Size(width, top + bottom + staticGlpyhBorder));
 
     for (auto chr : text)
     {
@@ -298,10 +300,10 @@ Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
             xPos + glyph.xOffset,
             yOffsetMax - glyph.yOffset,
             fontModel.image,
-            glyph.rect.left,
-            glyph.rect.top,
-            glyph.rect.Width(),
-            glyph.rect.Height(),
+            glyph.rect.left + glyphSet.border,
+            glyph.rect.top + glyphSet.border,
+            glyph.width + staticGlpyhBorder,
+            glyph.height + staticGlpyhBorder,
             true
         );
 
@@ -315,6 +317,8 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& tex
 {
     /* Setup multi-line text */
     MultiLineString<wchar_t> mtText(fontModel.glyphSet, static_cast<int>(maxWidth), text);
+
+    mtText += L"FooBar-LukasHermanns";
 
     /* Determine image size */
     const auto& glyphSet = fontModel.glyphSet;
@@ -344,7 +348,7 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& tex
         }
 
         size.width = std::max(size.width, width);
-        size.height = std::max(size.height, top + bottom + glyphSet.border*2);
+        size.height = std::max(size.height, top + bottom + staticGlpyhBorder);
     }
 
     /* Plot each glyph into the image */
@@ -365,10 +369,10 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& tex
                 xPos + glyph.xOffset,
                 yPos + yOffsetMax - glyph.yOffset,
                 fontModel.image,
-                glyph.rect.left,
-                glyph.rect.top,
-                glyph.rect.Width(),
-                glyph.rect.Height(),
+                glyph.rect.left + glyphSet.border,
+                glyph.rect.top + glyphSet.border,
+                glyph.width + staticGlpyhBorder,
+                glyph.height + staticGlpyhBorder,
                 true
             );
 

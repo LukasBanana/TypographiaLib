@@ -96,6 +96,9 @@ class MultiLineString
         */
         void PushBack(const T& chr)
         {
+            /* Update main string */
+            text_ += chr;
+
             /* Get glyph set from font */
             if (IsNewLine(chr))
             {
@@ -105,7 +108,7 @@ class MultiLineString
             else
             {
                 /* Get width of new character */
-                int width = glyphSet_[chr].TotalWidth();
+                auto width = CharWidth(chr);
                 
                 if (lines_.empty())
                 {
@@ -143,16 +146,19 @@ class MultiLineString
         */
         void PopBack()
         {
-            if (lines_.empty())
+            if (lines_.empty() || text_.empty())
                 return;
             
+            /* Update main string */
+            text_.pop_back();
+
             /* Remove last character from last line */
             auto& line = lines_.back();
-            auto chr = line.back();
+            auto chr = line.text.back();
             
-            line.pop_back();
+            line.text.pop_back();
             
-            if (line.empty())
+            if (line.text.empty())
             {
                 /* Remove last line if it's empty */
                 lines_.pop_back();
@@ -160,7 +166,7 @@ class MultiLineString
             else
             {
                 /* Update width in current line */
-                int width = glyphSet_[chr].TotalWidth();
+                int width = CharWidth(chr);
                 line.width -= width;
             }
             
@@ -290,6 +296,12 @@ class MultiLineString
         {
             AppendLine(StringType(), 0);
         }
+
+        //! Returns the width of the specified character
+        int CharWidth(const T& chr) const
+        {
+            return glyphSet_[chr].advance;
+        }
         
         //! Resets all text lines.
         void ResetLines()
@@ -309,7 +321,7 @@ class MultiLineString
             for (std::size_t pos = 0, sepLen = 0, len = 0, num = text_.size(); pos < num; pos += len)
             {
                 /* Find maximal length for current line */
-                for (len = 0, nextWidth = 0, width = 0; pos + len < num && FitIntoLine(nextWidth); ++len)
+                for (len = 0, sepLen = 0, nextWidth = 0, width = 0; FitIntoLine(nextWidth); ++len)
                 {
                     /* Store new line width */
                     width = nextWidth;
@@ -320,6 +332,9 @@ class MultiLineString
                         sepLen = len;
                         sepWidth = width;
                     }
+
+                    if (pos + len >= num)
+                        break;
                     
                     /* Get current character from base string */
                     chr = text_[pos + len];
@@ -329,15 +344,16 @@ class MultiLineString
                         break;
                     
                     /* Add width of current character */
-                    nextWidth += glyphSet_[chr].advance;
+                    nextWidth += CharWidth(chr);
                 }
                 
-                /* Clamp line size to a minimum */
+                /* Clamp line size to a minimum of one character */
                 if (len == 0 && nextWidth > 0 && pos < num)
                 {
                     ++len;
                     width = nextWidth;
                 }
+                /* Jump back to the previous separated text */
                 else if (sepLen > 0)
                 {
                     len = sepLen;
@@ -349,6 +365,10 @@ class MultiLineString
                     AppendLine(text_.substr(pos, len), width);
                 else
                     AppendLine();
+
+                /* Ignore new-line characters in output text */
+                if (IsNewLine(chr))
+                    ++len;
             }
         }
         
