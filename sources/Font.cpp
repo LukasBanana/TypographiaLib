@@ -43,14 +43,32 @@ Font::~Font()
 {
 }
 
+template <typename T>
+int TextWidthTmpl(const FontGlyphSet& glyphSet, const std::basic_string<T>& text, std::size_t offset, std::size_t len)
+{
+    /* Clamp text range */
+    if (offset > text.size())
+        offset = text.size();
+    if (len > text.size() - offset)
+        len = text.size() - offset;
+
+    /* Sum glyph widths */
+    int width = 0;
+
+    for (std::size_t i = 0; i < len; ++i)
+        width += glyphSet[text[i]].advance;
+
+    return width;
+}
+
 int Font::TextWidth(const std::string& text, std::size_t offset, std::size_t len) const
 {
-    return 0;//!!!
+    return TextWidthTmpl(glyphSet_, text, offset, len);
 }
 
 int Font::TextWidth(const std::wstring& text, std::size_t offset, std::size_t len) const
 {
-    return 0;//!!!
+    return TextWidthTmpl(glyphSet_, text, offset, len);
 }
 
 
@@ -119,6 +137,11 @@ static Size ApproximateFontAtlasSize(unsigned int visualArea)
         result.width *= 2;
 
     return result;
+}
+
+FontModel BuildFont(const FontDescription& desc, unsigned int border)
+{
+    return std::move(BuildFont(desc, FontGlyphRange(32, 255), border));
 }
 
 FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)

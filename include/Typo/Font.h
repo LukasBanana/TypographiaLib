@@ -35,6 +35,14 @@ struct FontFlags
 
 struct FontDescription
 {
+    FontDescription() = default;
+    FontDescription(const std::string& name, int size, int flags = 0) :
+        name    ( name  ),
+        height  ( size  ),
+        flags   ( flags )
+    {
+    }
+
     std::string name;
     int         width   = 0;
     int         height  = 0;
@@ -100,6 +108,13 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel);
 
 
 /* --- Global Functions --- */
+
+/**
+Builds a font model with the specified description and the glyph range [32, 255].
+\param[in] desc Specifies the font description.
+\param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
+*/
+FontModel BuildFont(const FontDescription& desc, unsigned int border = 1);
 
 /**
 Builds a font model with the specified description and glyph range.
