@@ -288,9 +288,9 @@ Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
 
         yOffsetMax = std::max(yOffsetMax, glyph.yOffset);
     }
-
+    
     /* Plot each glyph into the image */
-    Image image(Size(width, top + bottom + staticGlpyhBorder));
+    Image image(Size(width + staticGlpyhBorder, top + bottom + staticGlpyhBorder));
 
     for (auto chr : text)
     {
@@ -317,8 +317,6 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& tex
 {
     /* Setup multi-line text */
     MultiLineString<wchar_t> mtText(fontModel.glyphSet, static_cast<int>(maxWidth), text);
-
-    mtText += L"FooBar-LukasHermanns";
 
     /* Determine image size */
     const auto& glyphSet = fontModel.glyphSet;
@@ -347,7 +345,7 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& tex
             yOffsetMax = std::max(yOffsetMax, glyph.yOffset);
         }
 
-        size.width = std::max(size.width, width);
+        size.width = std::max(size.width, width + staticGlpyhBorder);
         size.height = std::max(size.height, top + bottom + staticGlpyhBorder);
     }
 

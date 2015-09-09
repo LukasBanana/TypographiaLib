@@ -67,7 +67,10 @@ int main()
         std::cout << "font build time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
 
         std::wstring text = (
-            L"Hello,\n\nWorld! This is a small programming test with the TypographiaLib ;-)"
+            //L"Hello,\n\nWorld! This is a small programming test with the TypographiaLib ;-)"
+            L"TypographiaLib\n" \
+            L"--------------\n" \
+            L"This is a simple C++ font library"
             //L"abcdefghijklmnopqrstuvwxyz"
             //L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         );
