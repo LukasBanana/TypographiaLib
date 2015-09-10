@@ -22,7 +22,7 @@ int main()
     /* Build font with size 60 pixels */
     fontModel = BuildFont({ "MyFontFile.ttf", 60 });
     
-    //store font atlas image 'fonmtModel.image' ...
+    //store font atlas image 'fontModel.image' ...
     
     return 0;
 }
