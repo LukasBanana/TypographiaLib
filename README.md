@@ -23,7 +23,10 @@ Example
 
 int main()
 {
-    /* Build font with size 60 pixels */
+    /*
+    Build font with size 60 pixels.
+    This will generate a font atlas image with tightly packed font glyphs.
+    */
     auto fontModel = BuildFont({ "MyFontFile.ttf", 60 });
     
     //store font atlas image 'fontModel.image' ...
