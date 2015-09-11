@@ -11,6 +11,10 @@ Status
 
 **Alpha**
 
+Dependencies
+------------
+This library makes use of the freetype project (see http://freetype.org/)
+
 Example
 -------
 
@@ -20,9 +24,12 @@ Example
 int main()
 {
     /* Build font with size 60 pixels */
-    fontModel = BuildFont({ "MyFontFile.ttf", 60 });
+    auto fontModel = BuildFont({ "MyFontFile.ttf", 60 });
     
     //store font atlas image 'fontModel.image' ...
+    //  use 'fontModel.image.GetSize()',
+    //  or 'fontModel.image.GetImageBuffer()',
+    //  or 'fontModel.glyphSet'
     
     return 0;
 }
