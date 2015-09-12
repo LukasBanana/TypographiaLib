@@ -41,9 +41,10 @@ int main()
 Font Atlas Image Examples
 -------------------------
 
-<p align="center">
+<p align="center">Times New Roman, 34px:</p>
 
-Times New Roman, 34px:
+<p align="center"><img src="media/fontatlas_times.png"/></p>
+
 ![Times New Roman, 34px](media/fontatlas_times.png)
 
 Kaiu, 34px:
