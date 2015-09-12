@@ -18,17 +18,6 @@
 #include <gl/glut.h>
 
 
-// ----- VARIABLES -----
-
-using Matrix4x4 = std::array<float, 16>;
-
-int resX = 800, resY = 600;
-
-Tg::TextFieldString<char> mainTextField("This is an input text field");
-
-std::unique_ptr< Tg::MultiLineString<char> > mainMlText;
-
-
 // ----- CLASSES -----
 
 class TexturedFont : public Tg::Font
@@ -51,9 +40,39 @@ class TexturedFont : public Tg::Font
 
 };
 
+class Blinker
+{
+    
+    public:
+        
+        Blinker();
+
+        bool visible() const;
+        void refresh();
+
+        long long timeInterval = 500;
+
+    private:
+        
+        mutable std::chrono::system_clock::time_point lastTime_;
+
+};
+
+
+// ----- VARIABLES -----
+
+using Matrix4x4 = std::array<float, 16>;
+
+int resX = 800, resY = 600;
+
+Tg::TextFieldString<char> mainTextField("This is an input text field");
+Blinker mainTextFieldBlinker;
+
+std::unique_ptr< Tg::MultiLineString<char> > mainMlText;
 std::unique_ptr<TexturedFont> fontSmall, fontLarge;
 
-// ----- FUNCTIONS -----
+
+// ----- CLASS "TexturedFont" FUNCTIONS -----
 
 TexturedFont::TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel& fontModel) :
     Tg::Font( desc, fontModel.glyphSet )
@@ -93,6 +112,35 @@ const Tg::Size& TexturedFont::getSize() const
 {
     return texSize_;
 }
+
+
+// ----- CLASS "Blinker" FUNCTIONS -----
+
+Blinker::Blinker()
+{
+    refresh();
+}
+
+bool Blinker::visible() const
+{
+    const auto timePoint = std::chrono::system_clock::now();
+    const auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(timePoint - lastTime_).count();
+
+    if (duration < timeInterval || timeInterval <= 0)
+        return true;
+    else if (duration > timeInterval*2)
+        lastTime_ = timePoint;
+
+    return false;
+}
+
+void Blinker::refresh()
+{
+    lastTime_ = std::chrono::system_clock::now();
+}
+
+
+// ----- GLOBAL FUNCTIONS -----
 
 void initGL()
 {
@@ -209,26 +257,29 @@ void drawTextField(const TexturedFont& font, int posX, int posY, const Tg::TextF
     // draw selection
     //...
 
-    // draw cursor
-    posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
+    if (mainTextFieldBlinker.visible())
+    {
+        // draw cursor
+        posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
 
-    if (textField.insertionEnabled)
-    {
-        drawBox(
-            posX,
-            posY + 5,
-            posX + font.TextWidth(textField.GetText(), textField.GetCursorPosition(), 1),
-            posY + font.GetDesc().height + 5
-        );
-    }
-    else
-    {
-        drawBox(
-            posX,
-            posY + 5,
-            posX + 1,
-            posY + font.GetDesc().height + 5
-        );
+        if (textField.insertionEnabled)
+        {
+            drawBox(
+                posX,
+                posY + 5,
+                posX + font.TextWidth(textField.GetText(), textField.GetCursorPosition(), 1),
+                posY + font.GetDesc().height + 5
+            );
+        }
+        else
+        {
+            drawBox(
+                posX,
+                posY + 5,
+                posX + 1,
+                posY + font.GetDesc().height + 5
+            );
+        }
     }
 }
 
@@ -342,10 +393,12 @@ void specialCallback(int key, int x, int y)
     {
         case GLUT_KEY_HOME:
             mainTextField.MoveCursorBegin();
+            mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_END:
             mainTextField.MoveCursorEnd();
+            mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_LEFT:
@@ -353,6 +406,7 @@ void specialCallback(int key, int x, int y)
                 mainTextField.JumpLeft();
             else
                 mainTextField.MoveCursor(-1);
+            mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_RIGHT:
@@ -360,10 +414,12 @@ void specialCallback(int key, int x, int y)
                 mainTextField.JumpRight();
             else
                 mainTextField.MoveCursor(1);
+            mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_INSERT:
             mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
+            mainTextFieldBlinker.refresh();
             break;
     }
 }
