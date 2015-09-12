@@ -41,11 +41,11 @@ int main()
 Font Atlas Image Examples
 -------------------------
 
-<p align="center">Times New Roman, 34px:</p>
+<p align="center">Times New Roman, 34px, Glyphs [32, 255]:</p>
 <p align="center"><img src="media/fontatlas_times.png" alt="media/fontatlas_times.png"/></p>
 
-<p align="center">Kaiu, 34px:</p>
+<p align="center">Kaiu, 34px, Glyphs [0x8C22, 0x8C35]:</p>
 <p align="center"><img src="media/fontatlas_kaiu.png" alt="media/fontatlas_kaiu.png"/></p>
 
-<p align="center">Edwardian Script ITC, 60px:</p>
+<p align="center">Edwardian Script ITC, 60px, Glyphs [32, 128]:</p>
 <p align="center"><img src="media/fontatlas_edwardian_script.png" alt="media/fontatlas_edwardian_script.png"/></p>
