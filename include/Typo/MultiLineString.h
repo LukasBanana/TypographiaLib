@@ -10,6 +10,7 @@
 
 
 #include "Font.h"
+#include "SeparableString.h"
 
 #include <vector>
 #include <string>
@@ -20,30 +21,15 @@ namespace Tg
 {
 
 
-//! Namespace for internal templates
-namespace Details
-{
-
+/**
+\brief Multi-line string template class.
+\remarks This can be used to easily manage multi-line text inside a restricted area.
+*/
 template <typename T>
-struct DefaultSeparators
-{
-    static const T* value;
-};
-
-const char* DefaultSeparators<char>::value = " \t,;.:-()[]{}/\\";
-
-const wchar_t* DefaultSeparators<wchar_t>::value = L" \t,;.:-()[]{}/\\";
-
-} // /namespace Details
-
-
-template <typename T>
-class MultiLineString
+class MultiLineString : public SeparableString<T>
 {
     
     public:
-        
-        using StringType = std::basic_string<T>;
         
         struct TextLine
         {
@@ -58,10 +44,6 @@ class MultiLineString
             text_       ( text     )
         {
             ResetLines();
-        }
-        
-        virtual ~MultiLineString()
-        {
         }
         
         MultiLineString<T>& operator = (const StringType& str)
@@ -221,15 +203,6 @@ class MultiLineString
             return lines_;
         }
         
-    protected:
-        
-        //! Returns a string with all separator characters.
-        virtual const StringType& GetSeparators() const
-        {
-            static const StringType sep = StringType(Details::DefaultSeparators<T>::value);
-            return sep;
-        }
-        
     private:
         
         /**
@@ -239,15 +212,6 @@ class MultiLineString
         bool IsNewLine(const T& chr) const
         {
             return chr == T('\n') || chr == T('\r');
-        }
-        
-        /**
-        Returns true if the specified character is a separator.
-        \see GetSeparators
-        */
-        bool IsSeparator(const T& chr) const
-        {
-            return GetSeparators().find(chr) != StringType::npos;
         }
         
         //! Returns true if the specified width fits into a line, i.e. does not exceed the maximal width.
