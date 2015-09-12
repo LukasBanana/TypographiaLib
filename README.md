@@ -42,15 +42,10 @@ Font Atlas Image Examples
 -------------------------
 
 <p align="center">Times New Roman, 34px:</p>
+<p align="center"><img src="media/fontatlas_times.png" alt="media/fontatlas_times.png"/></p>
 
-<p align="center"><img src="media/fontatlas_times.png"/></p>
+<p align="center">Kaiu, 34px:</p>
+<p align="center"><img src="media/fontatlas_kaiu.png" alt="media/fontatlas_kaiu.png"/></p>
 
-![Times New Roman, 34px](media/fontatlas_times.png)
-
-Kaiu, 34px:
-![Kaiu, 34px](media/fontatlas_kaiu.png)
-
-Edwardian Script ITC, 60px:
-![Edwardian Script ITC, 60px](media/fontatlas_edwardian_script.png)
-
-</p>
+<p align="center">Edwardian Script ITC, 60px:</p>
+<p align="center"><img src="media/fontatlas_edwardian_script.png" alt="media/fontatlas_edwardian_script.png"/></p>
