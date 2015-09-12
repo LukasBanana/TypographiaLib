@@ -57,7 +57,11 @@ int main()
     #endif
     
     fontDesc.height = 60;//32;
-    fontDesc.name   = "C:/Windows/Fonts/times.ttf";//"C:/Windows/Fonts/kaiu.ttf";
+    fontDesc.name = (
+        //"C:/Windows/Fonts/times.ttf"
+        //"C:/Windows/Fonts/kaiu.ttf"
+        "C:/Windows/Fonts/ITCEDSCR.ttf"
+    );
 
     try
     {
@@ -80,6 +84,13 @@ int main()
 
         auto textImgMl = PlotMultiLineTextImage(fontModel, text, 400, 60);
         saveImagePNG(textImgMl, "text_image_ml.png");
+
+        #if 0
+        // Example outputs
+        //saveImagePNG(BuildFont({ "C:/Windows/Fonts/times.ttf", 34 }, { 32, 255 }).image, "fontatlas_times.png");
+        //saveImagePNG(BuildFont({ "C:/Windows/Fonts/kaiu.ttf", 34 }, { 0x8c22, 0x8c35 }).image, "fontatlas_kaiu.png");
+        saveImagePNG(BuildFont({ "C:/Windows/Fonts/ITCEDSCR.TTF", 60 }, { 32, 128 }).image, "fontatlas_edwardian_script.png");
+        #endif
 
         //drawImage(fontModel.image);
         saveImagePNG(fontModel.image, "font_atlas.png");
