@@ -171,6 +171,16 @@ class MultiLineString : public SeparableString<T>
         {
             return glyphSet_;
         }
+
+        //! Sets the new maximal width.
+        void SetMaxWidth(int maxWidth)
+        {
+            if (maxWidth_ != maxWidth)
+            {
+                maxWidth_ = maxWidth;
+                ResetLines();
+            }
+        }
         
         /**
         \brief Returns the maximal width.

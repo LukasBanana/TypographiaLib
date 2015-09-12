@@ -53,5 +53,15 @@ set_target_properties(test1 PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 
 target_link_libraries(test1 typolib)
 
+find_package(OpenGL)
+find_package(GLUT)
+if(OpenGL_FOUND AND GLUT_FOUND)
+	include_directories(${GLUT_INCLUDE_DIR})
+	add_executable(test2 "${PROJECT_TEST_DIR}/test2.cpp")
+	set_target_properties(test2 PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
+	target_link_libraries(test2 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} typolib)
+else()
+	message("excluded optional project 'test2' (OpenGL and GLUT required)")
+endif()
 
 
