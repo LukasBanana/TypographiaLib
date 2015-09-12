@@ -13,7 +13,7 @@ Status
 
 Dependencies
 ------------
-This library makes use of the FreeType project (see http://freetype.org/)
+This library makes use of the *FreeType* project (see http://freetype.org/)
 
 Example
 -------
