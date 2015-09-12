@@ -35,8 +35,8 @@ int main()
     //  or 'fontModel.glyphSet'
     
     /*
-    Text field example. In a model-view-controller pattern, the "TextFieldString" is a model
-    to easily manage a user input text field (like in a command line).
+    Text field example. In a model-view-controller pattern, the "TextFieldString"
+    is a model to easily manage a user input text field (like in a command line).
     */
     TextFieldString<char> textField;
 
