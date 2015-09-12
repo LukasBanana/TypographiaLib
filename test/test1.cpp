@@ -63,6 +63,16 @@ int main()
         "C:/Windows/Fonts/ITCEDSCR.ttf"
     );
 
+    // Text field test
+    TextFieldString<char> textField;
+
+    textField += "Hello, World";
+    textField.MoveCursorBegin();        std::cout << std::string(textField) << std::endl;
+    textField.MoveCursor(3);            std::cout << std::string(textField) << std::endl;
+    textField.RemoveSequenceRight();    std::cout << std::string(textField) << std::endl;
+    textField.InsertEx(char(127));      std::cout << std::string(textField) << std::endl;
+    textField.InsertEx("ABC");          std::cout << std::string(textField) << std::endl;
+
     try
     {
         auto startTime = std::chrono::system_clock::now();

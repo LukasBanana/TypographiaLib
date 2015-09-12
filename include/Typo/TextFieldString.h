@@ -47,13 +47,14 @@ class TextFieldString : public SeparableString<T>
         
         TextFieldString<T>& operator += (const StringType& str)
         {
-            text_ += str;
+            for (const auto& chr : str)
+                Insert(chr);
             return *this;
         }
         
         TextFieldString<T>& operator += (const T& chr)
         {
-            text_ += chr;
+            Insert(str);
             return *this;
         }
         
@@ -202,22 +203,25 @@ class TextFieldString : public SeparableString<T>
         */
         void Insert(const T& chr)
         {
-            if (IsCursorEnd())
+            if (IsValidChar(chr))
             {
-                /* Push back the new character */
-                text_ += chr;
-            }
-            else
-            {
-                /* Insert the new character */
-                if (insertionEnabled)
-                    text_[cursorPos_] = chr;
+                if (IsCursorEnd())
+                {
+                    /* Push back the new character */
+                    text_ += chr;
+                }
                 else
-                    text_.insert(Iter(), chr);
-            }
+                {
+                    /* Insert the new character */
+                    if (insertionEnabled)
+                        text_[cursorPos_] = chr;
+                    else
+                        text_.insert(Iter(), chr);
+                }
 
-            /* Move cursor position */
-            ++cursorPos_;
+                /* Move cursor position */
+                ++cursorPos_;
+            }
         }
 
         /**
@@ -230,7 +234,7 @@ class TextFieldString : public SeparableString<T>
         virtual void InsertEx(const T& chr)
         {
             if (chr == T('\b'))
-                RemoveCharLeft();
+                RemoveLeft();
             else if (chr == T(127))
                 RemoveSequenceLeft();
             else if (unsigned(chr) >= 32)
@@ -241,7 +245,7 @@ class TextFieldString : public SeparableString<T>
         virtual void InsertEx(const StringType& text)
         {
             for (const auto& chr : text)
-                InsertEx(text);
+                InsertEx(chr);
         }
 
         //! Sets the content of the text field and clamps the cursor position.
@@ -265,6 +269,14 @@ class TextFieldString : public SeparableString<T>
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
         bool insertionEnabled = false;
+
+    protected:
+        
+        //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
+        virtual bool IsValidChar(const T& chr) const
+        {
+            return unsigned(chr) >= 32;
+        }
 
     private:
         
