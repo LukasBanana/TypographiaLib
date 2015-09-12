@@ -32,7 +32,7 @@ const FontGlyphRange& FontGlyphSet::GetGlyphRange() const
 
 const FontGlyph& FontGlyphSet::operator [] (char chr) const
 {
-    return (*this)[static_cast<wchar_t>(chr)];
+    return (*this)[static_cast<wchar_t>(unsigned char(chr))];
 }
 
 const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
@@ -43,7 +43,7 @@ const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
 
 FontGlyph& FontGlyphSet::operator [] (char chr)
 {
-    return (*this)[static_cast<wchar_t>(chr)];
+    return (*this)[static_cast<wchar_t>(unsigned char(chr))];
 }
 
 FontGlyph& FontGlyphSet::operator [] (wchar_t chr)

@@ -24,7 +24,7 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-Tg::TextFieldString<char> mainTextField("Hello, World");
+Tg::TextFieldString<char> mainTextField("This is an input text field");
 
 std::unique_ptr< Tg::MultiLineString<char> > mainMlText;
 
@@ -51,7 +51,7 @@ class TexturedFont : public Tg::Font
 
 };
 
-std::unique_ptr<TexturedFont> font;
+std::unique_ptr<TexturedFont> fontSmall, fontLarge;
 
 // ----- FUNCTIONS -----
 
@@ -97,19 +97,26 @@ const Tg::Size& TexturedFont::getSize() const
 void initGL()
 {
     // setup GL configuration
-    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
     glFrontFace(GL_CW);
+}
+
+std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size)
+{
+    auto fontDesc = Tg::FontDescription{ "C:/Windows/Fonts/" + fontName + ".ttf", size };
+    return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 
 void initScene()
 {
     // load font
-    auto fontDesc = Tg::FontDescription{ "C:/Windows/Fonts/times.ttf", 32 };
-    font = std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
+    fontSmall = loadFont("times", 32);
+    fontLarge = loadFont("ITCEDSCR", 80);
 
     // setup multi-line string
     std::string str = (
@@ -118,7 +125,7 @@ void initScene()
         "This is an example of a multi-line string with a restricted screen width"
     );
 
-    mainMlText = std::unique_ptr< Tg::MultiLineString<char> >(new Tg::MultiLineString<char>(font->GetGlyphSet(), resX, str));
+    mainMlText = std::unique_ptr< Tg::MultiLineString<char> >(new Tg::MultiLineString<char>(fontLarge->GetGlyphSet(), resX, str));
 }
 
 void emitVertex(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
@@ -142,10 +149,10 @@ void drawFontGlyph(const Tg::FontGlyph& glyph, float invTexWidth, float invTexHe
     // draw glyph triangles
     glBegin(GL_TRIANGLE_STRIP);
     {
-        emitVertex(0          , glyph.height, glyph.rect.left, glyph.rect.bottom, invTexWidth, invTexHeight);
-        emitVertex(0          , 0           , glyph.rect.left, glyph.rect.top, invTexWidth, invTexHeight);
+        emitVertex(0          , glyph.height, glyph.rect.left , glyph.rect.bottom, invTexWidth, invTexHeight);
+        emitVertex(0          , 0           , glyph.rect.left , glyph.rect.top   , invTexWidth, invTexHeight);
         emitVertex(glyph.width, glyph.height, glyph.rect.right, glyph.rect.bottom, invTexWidth, invTexHeight);
-        emitVertex(glyph.width, 0           , glyph.rect.right, glyph.rect.top, invTexWidth, invTexHeight);
+        emitVertex(glyph.width, 0           , glyph.rect.right, glyph.rect.top   , invTexWidth, invTexHeight);
     }
     glEnd();
 
@@ -153,11 +160,27 @@ void drawFontGlyph(const Tg::FontGlyph& glyph, float invTexWidth, float invTexHe
     movePen(-glyph.xOffset, glyph.yOffset);
 }
 
+void drawBox(int left, int top, int right, int bottom)
+{
+    glBegin(GL_LINE_LOOP);
+    {
+        glVertex2i(left , top   );
+        glVertex2i(right, top   );
+        glVertex2i(right, bottom);
+        glVertex2i(left , bottom);
+    }
+    glEnd();
+}
+
 void drawText(const TexturedFont& font, int posX, int posY, const std::string& text)
 {
+    // setup additive blending, to avoid overdrawing of font glyphs
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
     font.bind();
     glPushMatrix();
     {
+        // move pen to begin with text drawing
         movePen(posX, posY + font.GetDesc().height);
 
         auto invTexWidth = 1.0f / font.getSize().width;
@@ -187,11 +210,32 @@ void drawTextField(const TexturedFont& font, int posX, int posY, const Tg::TextF
     //...
 
     // draw cursor
-    //...
+    posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
+
+    if (textField.insertionEnabled)
+    {
+        drawBox(
+            posX,
+            posY + 5,
+            posX + font.TextWidth(textField.GetText(), textField.GetCursorPosition(), 1),
+            posY + font.GetDesc().height + 5
+        );
+    }
+    else
+    {
+        drawBox(
+            posX,
+            posY + 5,
+            posX + 1,
+            posY + font.GetDesc().height + 5
+        );
+    }
 }
 
 void drawMultiLineText(const TexturedFont& font, int posX, int posY, const Tg::MultiLineString<char>& mlText)
 {
+    drawBox(posX, posY, posX + mlText.GetMaxWidth(), posY + mlText.GetLines().size()*font.GetDesc().height);
+
     for (const auto& line : mlText.GetLines())
     {
         drawText(font, posX, posY, line.text);
@@ -236,13 +280,13 @@ void drawScene()
     glLoadIdentity();
 
     // draw text
-    //drawTextField(*font, 15, 15, mainTextField.GetText());
+    drawTextField(*fontSmall, 15, 15, mainTextField);
     
     if (mainMlText)
     {
         static const int border = 15;
         mainMlText->SetMaxWidth(resX - border*2);
-        drawMultiLineText(*font, border, border, *mainMlText);
+        drawMultiLineText(*fontLarge, border, border + 100, *mainMlText);
     }
 }
 
@@ -273,6 +317,8 @@ void reshapeCallback(GLsizei w, GLsizei h)
 
 void keyboardCallback(unsigned char key, int x, int y)
 {
+    auto modMask = glutGetModifiers();
+
     switch (key)
     {
         case 27: // ESC
@@ -283,22 +329,41 @@ void keyboardCallback(unsigned char key, int x, int y)
             break;
             
         default:
-            if (key >= 32)
-            {
-                //...
-            }
+            mainTextField.Put(char(key));
             break;
     }
 }
 
 void specialCallback(int key, int x, int y)
 {
+    auto modMask = glutGetModifiers();
+
     switch (key)
     {
+        case GLUT_KEY_HOME:
+            mainTextField.MoveCursorBegin();
+            break;
+
+        case GLUT_KEY_END:
+            mainTextField.MoveCursorEnd();
+            break;
+
         case GLUT_KEY_LEFT:
+            if ((modMask & GLUT_ACTIVE_CTRL) != 0)
+                mainTextField.JumpLeft();
+            else
+                mainTextField.MoveCursor(-1);
             break;
 
         case GLUT_KEY_RIGHT:
+            if ((modMask & GLUT_ACTIVE_CTRL) != 0)
+                mainTextField.JumpRight();
+            else
+                mainTextField.MoveCursor(1);
+            break;
+
+        case GLUT_KEY_INSERT:
+            mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
             break;
     }
 }

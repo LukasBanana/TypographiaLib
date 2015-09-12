@@ -231,21 +231,21 @@ class TextFieldString : public SeparableString<T>
         - char(127) which will remove all characters before the cursor until the next separator appears.
         \see Insert
         */
-        virtual void InsertEx(const T& chr)
+        virtual void Put(const T& chr)
         {
             if (chr == T('\b'))
                 RemoveLeft();
             else if (chr == T(127))
-                RemoveSequenceLeft();
+                RemoveRight();
             else if (unsigned(chr) >= 32)
                 Insert(chr);
         }
         
         //! Inserts the specified text.
-        virtual void InsertEx(const StringType& text)
+        virtual void Put(const StringType& text)
         {
             for (const auto& chr : text)
-                InsertEx(chr);
+                Put(chr);
         }
 
         //! Sets the content of the text field and clamps the cursor position.

@@ -70,8 +70,8 @@ int main()
     textField.MoveCursorBegin();        std::cout << std::string(textField) << std::endl;
     textField.MoveCursor(3);            std::cout << std::string(textField) << std::endl;
     textField.RemoveSequenceRight();    std::cout << std::string(textField) << std::endl;
-    textField.InsertEx(char(127));      std::cout << std::string(textField) << std::endl;
-    textField.InsertEx("ABC");          std::cout << std::string(textField) << std::endl;
+    textField.Put(char(127));           std::cout << std::string(textField) << std::endl;
+    textField.Put("ABC");               std::cout << std::string(textField) << std::endl;
 
     try
     {

@@ -56,7 +56,7 @@ int TextWidthTmpl(const FontGlyphSet& glyphSet, const std::basic_string<T>& text
     int width = 0;
 
     for (std::size_t i = 0; i < len; ++i)
-        width += glyphSet[text[i]].advance;
+        width += glyphSet[text[offset + i]].advance;
 
     return width;
 }

@@ -213,6 +213,14 @@ class MultiLineString : public SeparableString<T>
             return lines_;
         }
         
+    protected:
+        
+        //! Returns the width of the specified character
+        virtual int CharWidth(const T& chr) const
+        {
+            return glyphSet_[chr].advance;
+        }
+        
     private:
         
         /**
@@ -271,12 +279,6 @@ class MultiLineString : public SeparableString<T>
             AppendLine(StringType(), 0);
         }
 
-        //! Returns the width of the specified character
-        int CharWidth(const T& chr) const
-        {
-            return glyphSet_[chr].advance;
-        }
-        
         //! Resets all text lines.
         void ResetLines()
         {
@@ -292,10 +294,10 @@ class MultiLineString : public SeparableString<T>
             T chr = 0;
             
             /* Setup all wrapped lines */
-            for (std::size_t pos = 0, sepLen = 0, len = 0, num = text_.size(); pos < num; pos += len)
+            for (std::size_t pos = 0, sepLen = 0, len = 0, num = text_.size(); ( pos < num ); pos += len)
             {
                 /* Find maximal length for current line */
-                for (len = 0, sepLen = 0, nextWidth = 0, width = 0; FitIntoLine(nextWidth); ++len)
+                for (chr = 0, len = 0, sepLen = 0, nextWidth = 0, width = 0; ( FitIntoLine(nextWidth) ); ++len)
                 {
                     /* Store new line width */
                     width = nextWidth;
@@ -327,8 +329,8 @@ class MultiLineString : public SeparableString<T>
                     ++len;
                     width = nextWidth;
                 }
-                /* Jump back to the previous separated text */
-                else if (sepLen > 0)
+                /* Jump back to the previous separated text (if break was not caused by a new-line or end-of-line) */
+                else if (sepLen > 0 && !IsNewLine(chr) && pos + len < num)
                 {
                     len = sepLen;
                     width = sepWidth;
