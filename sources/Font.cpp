@@ -144,6 +144,17 @@ FontModel BuildFont(const FontDescription& desc, unsigned int border)
     return std::move(BuildFont(desc, FontGlyphRange(32, 255), border));
 }
 
+/*
+This is the main function to build a font atlas image.
+This function makes use of the FreeType library to render the font glyphs.
+The function works is several phases:
+ (1) Load font 'face' with FreeType 'ftLib'.
+ (2) Render each font glyph and store its image in 'glyphImages'.
+ (3) Approximate the font atlas size by 'sqrt(visualArea)'.
+ (4) Build glyph tree to tightly pack the glyphs into a single image.
+ (5) If a glyph does not fit into the glyph tree, double the smallest size (width or height) and go to phase 4.
+ (6) Plot all glyph sub images into the final font atlas image.
+*/
 FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)
 {
     static const FT_Pos metricSize = 64;
@@ -288,6 +299,7 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
 
 static const auto staticGlpyhBorder = 2u;
 
+//TODO: this is incomplete!!!
 Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
 {
     if (text.empty())
@@ -336,6 +348,7 @@ Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
     return image;
 }
 
+//TODO: this is incomplete!!!
 Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& text, unsigned int maxWidth, unsigned int rowOffset)
 {
     /* Setup multi-line text */
