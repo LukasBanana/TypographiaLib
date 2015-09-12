@@ -34,6 +34,19 @@ int main()
     //  or 'fontModel.image.GetImageBuffer()',
     //  or 'fontModel.glyphSet'
     
+    /*
+    Text field example. In a model-view-controller pattern, the "TextFieldString" is a model
+    to easily manage a user input text field (like in a command line).
+    */
+    TextFieldString<char> textField;
+
+    textField += "Hello, World";
+    textField.MoveCursorBegin();        std::cout << std::string(textField) << std::endl;
+    textField.MoveCursor(3);            std::cout << std::string(textField) << std::endl;
+    textField.RemoveSequenceRight();    std::cout << std::string(textField) << std::endl;
+    textField.InsertEx(char(127));      std::cout << std::string(textField) << std::endl;
+    textField.InsertEx("ABC");          std::cout << std::string(textField) << std::endl;
+    
     return 0;
 }
 ```
