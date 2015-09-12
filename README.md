@@ -41,9 +41,12 @@ int main()
 Font Atlas Image Examples
 -------------------------
 
-![Times New Roman, 34px](media/fontatlas_times.png)
+->Times New Roman, 34px:<-
+->![Times New Roman, 34px](media/fontatlas_times.png)<-
 
-![Kaiu, 34px](media/fontatlas_kaiu.png)
+->Kaiu, 34px:<-
+->![Kaiu, 34px](media/fontatlas_kaiu.png)<-
 
-![Edwardian Script ITC, 60px](media/fontatlas_edwardian_script.png)
+->Edwardian Script ITC, 60px:<-
+->![Edwardian Script ITC, 60px](media/fontatlas_edwardian_script.png)<-
 
