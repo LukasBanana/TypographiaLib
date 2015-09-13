@@ -18,6 +18,16 @@
 #include <gl/glut.h>
 
 
+// ----- MACROS -----
+
+#define COLOR_WHITE         0xffffffff
+#define COLOR_RED           0xff0000ff
+#define COLOR_GREEN         0x00ff00ff
+#define COLOR_BLUE          0x0000ffff
+#define COLOR_YELLOW        0xffff00ff
+#define COLOR_LIGHT_BLUE    0x8080ffff
+
+
 // ----- CLASSES -----
 
 class TexturedFont : public Tg::Font
@@ -180,13 +190,18 @@ void emitVertex(int x, int y, int tx, int ty, float invTexWidth, float invTexHei
 {
     // emit data for the next vertex
     glTexCoord2f(invTexWidth * tx, invTexHeight * ty);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     glVertex2i(x, y);
 }
 
 void movePen(int x, int y)
 {
     glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
+}
+
+void setColor(unsigned int color)
+{
+    // set color by bit mask
+    glColor4ub(color >> 24, (color >> 16) & 0xff, (color >> 8) & 0xff, color & 0xff);
 }
 
 void drawFontGlyph(const Tg::FontGlyph& glyph, float invTexWidth, float invTexHeight)
@@ -220,10 +235,15 @@ void drawBox(int left, int top, int right, int bottom)
     glEnd();
 }
 
-void drawText(const TexturedFont& font, int posX, int posY, const std::string& text)
+void drawText(
+    const TexturedFont& font, int posX, int posY,
+    const std::string& text, unsigned int color = COLOR_WHITE)
 {
     // setup additive blending, to avoid overdrawing of font glyphs
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+    // set text color
+    setColor(color);
 
     font.bind();
     glPushMatrix();
@@ -249,24 +269,32 @@ void drawText(const TexturedFont& font, int posX, int posY, const std::string& t
     font.unbind();
 }
 
-void drawTextField(const TexturedFont& font, int posX, int posY, const Tg::TextFieldString<char>& textField)
+void drawTextField(
+    const TexturedFont& font, int posX, int posY,
+    const Tg::TextFieldString<char>& textField, unsigned int color = COLOR_WHITE)
 {
     // draw text
-    drawText(font, posX, posY, textField.GetText());
+    drawText(font, posX, posY, textField.GetText(), color);
 
     // draw selection
-    //...
+    /*if (textField.HasSelection())
+    {
+        setColor(COLOR_WHITE);
+        //...
+    }*/
 
     if (mainTextFieldBlinker.visible())
     {
         // draw cursor
+        setColor(COLOR_WHITE);
+
         posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
 
         if (textField.insertionEnabled)
         {
             drawBox(
                 posX,
-                posY + 5,
+                posY + font.GetDesc().height + 4,
                 posX + font.TextWidth(textField.GetText(), textField.GetCursorPosition(), 1),
                 posY + font.GetDesc().height + 5
             );
@@ -283,13 +311,18 @@ void drawTextField(const TexturedFont& font, int posX, int posY, const Tg::TextF
     }
 }
 
-void drawMultiLineText(const TexturedFont& font, int posX, int posY, const Tg::MultiLineString<char>& mlText)
+void drawMultiLineText(
+    const TexturedFont& font, int posX, int posY,
+    const Tg::MultiLineString<char>& mlText, unsigned int color = COLOR_WHITE)
 {
+    // draw bounding box around the text
+    setColor(COLOR_WHITE);
     drawBox(posX, posY, posX + mlText.GetMaxWidth(), posY + mlText.GetLines().size()*font.GetDesc().height);
 
+    // draw each text line
     for (const auto& line : mlText.GetLines())
     {
-        drawText(font, posX, posY, line.text);
+        drawText(font, posX, posY, line.text, color);
         posY += font.GetDesc().height;
     }
 }
@@ -297,6 +330,7 @@ void drawMultiLineText(const TexturedFont& font, int posX, int posY, const Tg::M
 // sets the matrix 'm' to a planar projection
 void setupProjection(Matrix4x4& m)
 {
+    // build planar projection with a left-top origin in a right-handed coordinate system (for OpenGL)
     m[ 0] = 2.0f/resX;
     m[ 1] = 0.0f;
     m[ 2] = 0.0f;
@@ -331,7 +365,7 @@ void drawScene()
     glLoadIdentity();
 
     // draw text
-    drawTextField(*fontSmall, 15, 15, mainTextField);
+    drawTextField(*fontSmall, 15, 15, mainTextField, COLOR_LIGHT_BLUE);
     
     if (mainMlText)
     {
