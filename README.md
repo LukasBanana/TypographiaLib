@@ -15,6 +15,11 @@ Dependencies
 ------------
 This library makes use of the *FreeType* project (see http://freetype.org/)
 
+Screenshot
+----------
+<p align="center">Example with <b>TextFieldString</b>, and <b>MultiLineString</b>:</p>
+<p align="center"><img src="media/typolib_example01.png" alt="media/typolib_example01.png"/></p>
+
 Example
 -------
 
@@ -27,25 +32,25 @@ int main()
     Build font with size 60 pixels.
     This will generate a font atlas image with tightly packed font glyphs.
     */
-    auto fontModel = BuildFont({ "MyFontFile.ttf", 60 });
+    auto fontModel = Tg::BuildFont({ "MyFontFile.ttf", 60 });
     
     //store font atlas image 'fontModel.image' ...
     //  use 'fontModel.image.GetSize()',
-    //  or 'fontModel.image.GetImageBuffer()',
-    //  or 'fontModel.glyphSet'
+    //  and 'fontModel.image.GetImageBuffer()',
+    //  and 'fontModel.glyphSet'.
     
     /*
     Text field example. In a model-view-controller pattern, the "TextFieldString"
     is a model to easily manage a user input text field (like in a command line).
     */
-    TextFieldString<char> textField;
+    Tg::TextFieldString textField;
 
     textField += "Hello, World";
     textField.MoveCursorBegin();     std::cout << std::string(textField) << std::endl;
     textField.MoveCursor(3);         std::cout << std::string(textField) << std::endl;
     textField.RemoveSequenceRight(); std::cout << std::string(textField) << std::endl;
-    textField.InsertEx(char(127));   std::cout << std::string(textField) << std::endl;
-    textField.InsertEx("ABC");       std::cout << std::string(textField) << std::endl;
+    textField.Put(char(127));        std::cout << std::string(textField) << std::endl;
+    textField.Put("ABC");            std::cout << std::string(textField) << std::endl;
     
     return 0;
 }
