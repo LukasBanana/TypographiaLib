@@ -199,6 +199,13 @@ bool TextFieldString::IsSelected() const
     return GetCursorPosition() != selStart_;
 }
 
+String TextFieldString::GetSelectionText() const
+{
+    SizeType start, end;
+    GetSelection(start, end);
+    return (start < end) ? text_.substr(start, end - start) : String();
+}
+
 /* --- String content --- */
 
 Char TextFieldString::CharLeft() const

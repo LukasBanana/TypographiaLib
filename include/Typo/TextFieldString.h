@@ -106,6 +106,9 @@ class TextFieldString : public SeparableString
         */
         bool IsSelected() const;
 
+        //! Returns the selected text.
+        String GetSelectionText() const;
+
         /* --- String content --- */
 
         /**
