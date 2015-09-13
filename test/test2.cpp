@@ -76,7 +76,7 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-Tg::TextFieldString mainTextField(">$ This is an input text field");
+Tg::TextFieldString mainTextField(">$ This is an input text field! Use arrows, shift, and ctrl keys");
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr<Tg::MultiLineString> mainMlText;
@@ -301,11 +301,20 @@ void drawTextField(
     );
 
     // draw selection
-    /*if (textField.HasSelection())
+    if (textField.IsSelected())
     {
-        setColor(COLOR_WHITE);
-        //...
-    }*/
+        setColor(COLOR_YELLOW);
+        
+        Tg::TextFieldString::SizeType start, end;
+        textField.GetSelection(start, end);
+
+        drawBox(
+            posX + font.TextWidth(textField.GetText(), 0, start),
+            posY + 2,
+            posX + font.TextWidth(textField.GetText(), 0, end),
+            posY + font.GetDesc().height + 7
+        );
+    }
 
     if (mainTextFieldBlinker.visible())
     {
@@ -314,7 +323,7 @@ void drawTextField(
 
         posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
 
-        if (textField.insertionEnabled && !textField.IsCursorEnd())
+        if (textField.IsInsertionActive())
         {
             drawBox(
                 posX,
@@ -438,7 +447,15 @@ void keyboardCallback(unsigned char key, int x, int y)
             break;
             
         default:
-            mainTextField.Put(char(key));
+            if (key == 1) // CTRL+A
+            {
+                if (mainTextField.IsSelected())
+                    mainTextField.Deselect();
+                else
+                    mainTextField.SelectAll();
+            }
+            else
+                mainTextField.Put(char(key));
             break;
     }
 }
@@ -446,6 +463,8 @@ void keyboardCallback(unsigned char key, int x, int y)
 void specialCallback(int key, int x, int y)
 {
     auto modMask = glutGetModifiers();
+
+    mainTextField.selectionEnabled = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
 
     switch (key)
     {

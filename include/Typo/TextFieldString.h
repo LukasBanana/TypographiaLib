@@ -39,6 +39,8 @@ class TextFieldString : public SeparableString
         {
             return text_;
         }
+
+        /* --- Cursor operations --- */
         
         //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
         void SetCursorPosition(SizeType position);
@@ -70,6 +72,42 @@ class TextFieldString : public SeparableString
         //! Jumps to the next right sided space.
         void JumpRight();
 
+        /* --- Selection operations --- */
+
+        /**
+        \brief Sets the new selection area.
+        \param[in] start Specifies the selection start. This may also be larger than 'end'.
+        \param[in] end Specifies the selection end (or rather the new cursor psoition).
+        \remarks This also modifies the cursor position.
+        \see SetCursorPosition
+        \see selectionEnabled
+        */
+        void SetSelection(SizeType start, SizeType end);
+
+        /**
+        \brief Retrieves the selection range, so that 'start' is always less than or equal to 'end'.
+        \see selectionEnabled
+        */
+        void GetSelection(SizeType& start, SizeType& end) const;
+
+        //! Selects the entire string content.
+        void SelectAll();
+
+        /**
+        \brief Deselects the current selection.
+        \remarks This also disables selection state (see selectionEnabled).
+        \see selectionEnabled
+        */
+        void Deselect();
+
+        /**
+        \brief Returns true if any string part is currently being selected.
+        \see GetSelection
+        */
+        bool IsSelected() const;
+
+        /* --- String content --- */
+
         /**
         Returns the current character which stands immediately before the cursor position.
         If the cursor is at the very beginning of the text field, the return value is '\0'.
@@ -95,8 +133,24 @@ class TextFieldString : public SeparableString
         void RemoveSequenceRight();
 
         /**
-        \brief Inserts the specified character.
+        \brief Removes the characters which are currently being selected.
+        \see SetSelection
+        */
+        void RemoveSelection();
+
+        /**
+        \brief Returns true if insertion mode is active.
+        \return True if 'insertionEnabled' is true, the cursor is not at the end, and nothing is selected.
         \see insertionEnabled
+        \see IsCursorEnd
+        \see IsSelected
+        */
+        bool IsInsertionActive() const;
+
+        /**
+        \brief Inserts the specified character at the current cursor position or replaces the current selection.
+        \see insertionEnabled
+        \see RemoveSelection
         */
         void Insert(const Char& chr);
 
@@ -120,6 +174,8 @@ class TextFieldString : public SeparableString
         {
             return text_;
         }
+
+        /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
         bool insertionEnabled = false;

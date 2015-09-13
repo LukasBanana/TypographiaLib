@@ -37,6 +37,8 @@ TextFieldString& TextFieldString::operator += (const Char& chr)
     return *this;
 }
 
+/* --- Cursor operations --- */
+
 void TextFieldString::SetCursorPosition(SizeType position)
 {
     /* Clamp position to the range [0, size] */
@@ -46,7 +48,7 @@ void TextFieldString::SetCursorPosition(SizeType position)
     cursorPos_ = position;
 
     /* If selection is enabled, also set selection start */
-    if (selectionEnabled)
+    if (!selectionEnabled)
         selStart_ = position;
 }
 
@@ -155,6 +157,50 @@ void TextFieldString::JumpRight()
         MoveCursor(1);
 }
 
+/* --- Selection operations --- */
+
+void TextFieldString::SetSelection(SizeType start, SizeType end)
+{
+    /* Store (and later reset) current selection state */
+    auto selEnabled = selectionEnabled;
+    {
+        /* Set selection start */
+        selectionEnabled = false;
+        SetCursorPosition(start);
+
+        /* Set selection end */
+        selectionEnabled = true;
+        SetCursorPosition(end);
+    }
+    selectionEnabled = selEnabled;
+}
+
+void TextFieldString::GetSelection(SizeType& start, SizeType& end) const
+{
+    start = GetCursorPosition();
+    end = selStart_;
+    if (start > end)
+        std::swap(start, end);
+}
+
+void TextFieldString::SelectAll()
+{
+    SetSelection(0, GetText().size());
+}
+
+void TextFieldString::Deselect()
+{
+    selectionEnabled = false;
+    SetCursorPosition(GetCursorPosition());
+}
+
+bool TextFieldString::IsSelected() const
+{
+    return GetCursorPosition() != selStart_;
+}
+
+/* --- String content --- */
+
 Char TextFieldString::CharLeft() const
 {
     return !IsCursorBegin() ? GetText()[GetCursorPosition() - 1] : Char(0);
@@ -167,7 +213,12 @@ Char TextFieldString::CharRight() const
 
 void TextFieldString::RemoveLeft()
 {
-    if (!IsCursorBegin())
+    if (IsSelected())
+    {
+        /* First remove selection */
+        RemoveSelection();
+    }
+    else if (!IsCursorBegin())
     {
         /* Remove character and then move cursor left */
         MoveCursor(-1);
@@ -180,7 +231,12 @@ void TextFieldString::RemoveLeft()
 
 void TextFieldString::RemoveRight()
 {
-    if (!IsCursorEnd())
+    if (IsSelected())
+    {
+        /* First remove selection */
+        RemoveSelection();
+    }
+    else if (!IsCursorEnd())
     {
         /* Only remove character without moving the cursor */
         if ((GetCursorPosition() + 1) == text_.size())
@@ -208,10 +264,35 @@ void TextFieldString::RemoveSequenceRight()
         RemoveRight();
 }
 
+void TextFieldString::RemoveSelection()
+{
+    /* Get selection range */
+    SizeType start, end;
+    GetSelection(start, end);
+
+    /* Remove sub string */
+    if (start < end)
+        text_.erase(start, end - start);
+
+    /* Locate cursor to the selection start */
+    selectionEnabled = false;
+    SetCursorPosition(start);
+}
+
+bool TextFieldString::IsInsertionActive() const
+{
+    return insertionEnabled && !IsCursorEnd() && !IsSelected();
+}
+
 void TextFieldString::Insert(const Char& chr)
 {
     if (IsValidChar(chr))
     {
+        /* Replace selection by character */
+        auto isSel = IsSelected();
+        if (isSel)
+            RemoveSelection();
+
         if (IsCursorEnd())
         {
             /* Push back the new character */
@@ -219,8 +300,8 @@ void TextFieldString::Insert(const Char& chr)
         }
         else
         {
-            /* Insert the new character */
-            if (insertionEnabled)
+            /* Insert the new character (only use insertion if selection was not replaced) */
+            if (insertionEnabled && !isSel)
                 text_[GetCursorPosition()] = chr;
             else
                 text_.insert(Iter(), chr);
