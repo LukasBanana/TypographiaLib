@@ -10,6 +10,7 @@
 #include <chrono>
 #include <memory>
 #include <array>
+#include <functional>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -75,7 +76,7 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-Tg::TextFieldString<char> mainTextField("This is an input text field");
+Tg::TextFieldString<char> mainTextField(">$ This is an input text field");
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr< Tg::MultiLineString<char> > mainMlText;
@@ -94,6 +95,7 @@ TexturedFont::TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel&
 
     bind();
     {
+        // setup GL parameters for hardware texture and upload pixel data
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -186,16 +188,17 @@ void initScene()
     mainMlText = std::unique_ptr< Tg::MultiLineString<char> >(new Tg::MultiLineString<char>(fontLarge->GetGlyphSet(), resX, str));
 }
 
+void movePen(int x, int y)
+{
+    // move GL transformation
+    glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
+}
+
 void emitVertex(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
 {
     // emit data for the next vertex
     glTexCoord2f(invTexWidth * tx, invTexHeight * ty);
     glVertex2i(x, y);
-}
-
-void movePen(int x, int y)
-{
-    glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
 }
 
 void setColor(unsigned int color)
@@ -235,9 +238,12 @@ void drawBox(int left, int top, int right, int bottom)
     glEnd();
 }
 
+using CharCallback = std::function<void(char)>;
+
 void drawText(
     const TexturedFont& font, int posX, int posY,
-    const std::string& text, unsigned int color = COLOR_WHITE)
+    const std::string& text, unsigned int color = COLOR_WHITE,
+    const CharCallback& charCallback = nullptr)
 {
     // setup additive blending, to avoid overdrawing of font glyphs
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
@@ -258,6 +264,10 @@ void drawText(
         {
             const auto& glyph = font.GetGlyphSet()[chr];
 
+            // character callback
+            if (charCallback)
+                charCallback(chr);
+
             // draw current font glyph
             drawFontGlyph(glyph, invTexWidth, invTexHeight);
 
@@ -269,12 +279,24 @@ void drawText(
     font.unbind();
 }
 
+bool isChar(char chr, const std::vector<char>& list)
+{
+    return std::find(list.begin(), list.end(), chr) != list.end();
+}
+
 void drawTextField(
     const TexturedFont& font, int posX, int posY,
     const Tg::TextFieldString<char>& textField, unsigned int color = COLOR_WHITE)
 {
     // draw text
-    drawText(font, posX, posY, textField.GetText(), color);
+    drawText(
+        font, posX, posY, textField.GetText(), color,
+        [color](char chr)
+        {
+            // change color for special characters
+            setColor(isChar(chr, { '#', '$', '|', '+', '*', '<', '>', '_' }) ? COLOR_RED : color);
+        }
+    );
 
     // draw selection
     /*if (textField.HasSelection())
