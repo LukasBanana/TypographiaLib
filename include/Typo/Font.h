@@ -12,6 +12,7 @@
 #include "Rect.h"
 #include "FontGlyphSet.h"
 #include "Image.h"
+#include "Char.h"
 
 #include <vector>
 #include <iostream>
@@ -130,7 +131,7 @@ Plots a text with the specified font model into an image.
 \param[in] text Specifies the text for the output.
 \see BuildFont
 */
-Image PlotTextImage(const FontModel& fontModel, const std::wstring& text);
+Image PlotTextImage(const FontModel& fontModel, const String& text);
 
 /**
 Plots a multi-line text with the specified font model into an image.
@@ -141,7 +142,7 @@ Plots a multi-line text with the specified font model into an image.
 \see PlotTextImage
 \see MultiLineString
 */
-Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& text, unsigned int maxWidth, unsigned int rowOffset);
+Image PlotMultiLineTextImage(const FontModel& fontModel, const String& text, unsigned int maxWidth, unsigned int rowOffset);
 
 
 } // /namespace Tg

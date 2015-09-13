@@ -10,8 +10,7 @@
 
 
 #include "Details.h"
-
-#include <string>
+#include "Char.h"
 
 
 namespace Tg
@@ -19,38 +18,28 @@ namespace Tg
 
 
 /**
-\brief Base template class for all separable strings.
+\brief Base class for all separable strings.
 \see MultiLineString
 \see TextFieldString
 */
-template <typename T>
 class SeparableString
 {
     
     public:
         
-        //! Basic string type alias.
-        using StringType = std::basic_string<T>;
-        
-        virtual ~SeparableString()
-        {
-        }
+        //! String size type alias.
+        using SizeType = String::size_type;
+
+        virtual ~SeparableString();
         
         //! Returns a string with all separator characters.
-        virtual const StringType& GetSeparators() const
-        {
-            static const StringType sep = StringType(Details::DefaultSeparators<T>::value);
-            return sep;
-        }
+        virtual const String& GetSeparators() const;
         
         /**
         Returns true if the specified character is a separator.
         \see GetSeparators
         */
-        bool IsSeparator(const T& chr) const
-        {
-            return GetSeparators().find(chr) != StringType::npos;
-        }
+        bool IsSeparator(const Char& chr) const;
 
 };
 

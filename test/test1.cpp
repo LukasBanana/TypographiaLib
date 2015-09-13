@@ -64,9 +64,9 @@ int main()
     );
 
     // Text field test
-    TextFieldString<char> textField;
+    TextFieldString textField;
 
-    textField += "Hello, World";
+    textField += STRING_LITERAL("Hello, World");
     textField.MoveCursorBegin();        std::cout << std::string(textField) << std::endl;
     textField.MoveCursor(3);            std::cout << std::string(textField) << std::endl;
     textField.RemoveSequenceRight();    std::cout << std::string(textField) << std::endl;
@@ -80,13 +80,13 @@ int main()
         auto endTime = std::chrono::system_clock::now();
         std::cout << "font build time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
 
-        std::wstring text = (
-            //L"Hello,\n\nWorld! This is a small programming test with the TypographiaLib ;-)"
-            L"TypographiaLib\n" \
-            L"--------------\n" \
-            L"This is a simple C++ font library"
-            //L"abcdefghijklmnopqrstuvwxyz"
-            //L"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        std::string text = (
+            //"Hello,\n\nWorld! This is a small programming test with the TypographiaLib ;-)"
+            "TypographiaLib\n" \
+            "--------------\n" \
+            "This is a simple C++ font library"
+            //"abcdefghijklmnopqrstuvwxyz"
+            //"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         );
 
         auto textImg = PlotTextImage(fontModel, text);

@@ -76,10 +76,10 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-Tg::TextFieldString<char> mainTextField(">$ This is an input text field");
+Tg::TextFieldString mainTextField(">$ This is an input text field");
 Blinker mainTextFieldBlinker;
 
-std::unique_ptr< Tg::MultiLineString<char> > mainMlText;
+std::unique_ptr<Tg::MultiLineString> mainMlText;
 std::unique_ptr<TexturedFont> fontSmall, fontLarge;
 
 
@@ -185,7 +185,7 @@ void initScene()
         "This is an example of a multi-line string with a restricted screen width"
     );
 
-    mainMlText = std::unique_ptr< Tg::MultiLineString<char> >(new Tg::MultiLineString<char>(fontLarge->GetGlyphSet(), resX, str));
+    mainMlText = std::unique_ptr<Tg::MultiLineString>(new Tg::MultiLineString(fontLarge->GetGlyphSet(), resX, str));
 }
 
 void movePen(int x, int y)
@@ -286,7 +286,7 @@ bool isChar(char chr, const std::vector<char>& list)
 
 void drawTextField(
     const TexturedFont& font, int posX, int posY,
-    const Tg::TextFieldString<char>& textField, unsigned int color = COLOR_WHITE)
+    const Tg::TextFieldString& textField, unsigned int color = COLOR_WHITE)
 {
     // draw text
     drawText(
@@ -335,7 +335,7 @@ void drawTextField(
 
 void drawMultiLineText(
     const TexturedFont& font, int posX, int posY,
-    const Tg::MultiLineString<char>& mlText, unsigned int color = COLOR_WHITE)
+    const Tg::MultiLineString& mlText, unsigned int color = COLOR_WHITE)
 {
     // draw bounding box around the text
     setColor(COLOR_WHITE);

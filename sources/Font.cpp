@@ -300,7 +300,7 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
 static const auto staticGlpyhBorder = 2u;
 
 //TODO: this is incomplete!!!
-Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
+Image PlotTextImage(const FontModel& fontModel, const String& text)
 {
     if (text.empty())
         return Image();
@@ -349,10 +349,10 @@ Image PlotTextImage(const FontModel& fontModel, const std::wstring& text)
 }
 
 //TODO: this is incomplete!!!
-Image PlotMultiLineTextImage(const FontModel& fontModel, const std::wstring& text, unsigned int maxWidth, unsigned int rowOffset)
+Image PlotMultiLineTextImage(const FontModel& fontModel, const String& text, unsigned int maxWidth, unsigned int rowOffset)
 {
     /* Setup multi-line text */
-    MultiLineString<wchar_t> mtText(fontModel.glyphSet, static_cast<int>(maxWidth), text);
+    MultiLineString mtText(fontModel.glyphSet, static_cast<int>(maxWidth), text);
 
     /* Determine image size */
     const auto& glyphSet = fontModel.glyphSet;

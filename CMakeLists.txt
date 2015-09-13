@@ -37,7 +37,7 @@ set_target_properties(typolib PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 
 # FreeType
 include(FindFreeType.cmake)
-if (FreeType_FOUND)
+if(FreeType_FOUND)
 	message("found freetype library")
 	include_directories(${FreeType_INCLUDE_DIR})
 	target_link_libraries(typolib ${FreeType_LIBRARIES})
