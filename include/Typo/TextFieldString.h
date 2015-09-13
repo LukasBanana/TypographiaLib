@@ -40,6 +40,15 @@ class TextFieldString : public SeparableString
             return text_;
         }
         
+        //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
+        void SetCursorPosition(SizeType position);
+
+        //! Returns the current (horizontal) cursor position. This is always in the range [0, GetText().size()].
+        SizeType GetCursorPosition() const
+        {
+            return cursorPos_;
+        }
+
         //! Returns true if the cursor is at the beginning.
         bool IsCursorBegin() const;
         
@@ -112,14 +121,14 @@ class TextFieldString : public SeparableString
             return text_;
         }
 
-        //! Returns the current (horizontal) cursor position. This is always in the range [0, GetText().size()].
-        SizeType GetCursorPosition() const
-        {
-            return cursorPos_;
-        }
-
         //! Specifies whether the insertion modd is enabled or not. By default false.
         bool insertionEnabled = false;
+
+        //! Specifies whether selection is enabled or disabled. By default false.
+        bool selectionEnabled = false;
+
+        //! Specifies whether the cursor can be moved in a loop or not. By default false.
+        bool cursorLoopEnabled = false;
 
     protected:
         
@@ -134,13 +143,17 @@ class TextFieldString : public SeparableString
         //! Returns the constant iterator to the string at the specified cursor position.
         String::const_iterator Iter() const;
 
-        //! Clamps the cursor position into the range [0, GetText().size()].
-        void ClampCursorPos();
+        //! Returns the specified position, clamped to the range [0, GetText().size()].
+        SizeType ClampedPos(SizeType pos) const;
+
+        //! Updates the cursor- and selection start position to the range [0, GetText().size()].
+        void UpdateCursorRange();
 
         /* === Member === */
 
         String      text_;
-        SizeType    cursorPos_ = 0;
+        SizeType    cursorPos_  = 0;
+        SizeType    selStart_   = 0;
         
 };
 

@@ -186,6 +186,8 @@ void initScene()
     );
 
     mainMlText = std::unique_ptr<Tg::MultiLineString>(new Tg::MultiLineString(fontLarge->GetGlyphSet(), resX, str));
+
+    mainTextField.cursorLoopEnabled = true;
 }
 
 void movePen(int x, int y)
@@ -312,7 +314,7 @@ void drawTextField(
 
         posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
 
-        if (textField.insertionEnabled)
+        if (textField.insertionEnabled && !textField.IsCursorEnd())
         {
             drawBox(
                 posX,

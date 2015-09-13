@@ -24,8 +24,7 @@ MultiLineString::MultiLineString(const FontGlyphSet& glyphSet, int maxWidth, con
 
 MultiLineString& MultiLineString::operator = (const String& str)
 {
-    text_ = str;
-    ResetLines();
+    SetText(str);
     return *this;
 }
 
@@ -131,6 +130,12 @@ void MultiLineString::SetMaxWidth(int maxWidth)
         maxWidth_ = maxWidth;
         ResetLines();
     }
+}
+
+void MultiLineString::SetText(const String& text)
+{
+    text_ = text;
+    ResetLines();
 }
 
 

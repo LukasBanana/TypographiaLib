@@ -37,44 +37,100 @@ TextFieldString& TextFieldString::operator += (const Char& chr)
     return *this;
 }
 
+void TextFieldString::SetCursorPosition(SizeType position)
+{
+    /* Clamp position to the range [0, size] */
+    position = ClampedPos(position);
+
+    /* Always set cursor position */
+    cursorPos_ = position;
+
+    /* If selection is enabled, also set selection start */
+    if (selectionEnabled)
+        selStart_ = position;
+}
+
 bool TextFieldString::IsCursorBegin() const
 {
-    return cursorPos_ == 0;
+    return GetCursorPosition() == 0;
 }
 
 bool TextFieldString::IsCursorEnd() const
 {
-    return cursorPos_ == text_.size();
+    return GetCursorPosition() == text_.size();
 }
 
 void TextFieldString::MoveCursor(int direction)
 {
-    if (direction < 0)
-    {
-        auto dir = static_cast<SizeType>(-direction);
-        if (cursorPos_ > dir)
-            cursorPos_ -= dir;
-        else
-            cursorPos_ = 0;
-    }
-    else if (direction > 0)
-    {
-        auto dir = static_cast<SizeType>(direction);
-        cursorPos_ += dir;
+    auto size = GetText().size();
 
-        if (cursorPos_ > text_.size())
-            cursorPos_ = text_.size();
+    auto AdjustDir = [size](SizeType& p)
+    {
+        --p;
+        p -= (p / size)*size;
+    };
+
+    if (size > 0)
+    {
+        if (direction < 0)
+        {
+            auto dir = static_cast<SizeType>(-direction);
+
+            if (GetCursorPosition() >= dir)
+            {
+                /* Move cursor left */
+                SetCursorPosition(GetCursorPosition() - dir);
+            }
+            else
+            {
+                if (cursorLoopEnabled)
+                {
+                    /* Locate cursor to the end and move on (subtract all repeated loops) */
+                    AdjustDir(dir);
+                    SetCursorPosition(size - dir);
+                }
+                else
+                {
+                    /* Locate cursor to the beginning */
+                    MoveCursorBegin();
+                }
+            }
+        }
+        else if (direction > 0)
+        {
+            auto dir = static_cast<SizeType>(direction);
+
+            if (GetCursorPosition() + dir <= size)
+            {
+                /* Move cursor right */
+                SetCursorPosition(GetCursorPosition() + dir);
+            }
+            else
+            {
+                if (cursorLoopEnabled)
+                {
+                    /* Locate cursor to the beginning and move on (subtract all repeated loops) */
+                    AdjustDir(dir);
+                    SetCursorPosition(dir);
+                }
+                else
+                {
+                    /* Locate cursor to the end */
+                    MoveCursorEnd();
+                }
+            }
+        }
     }
 }
 
 void TextFieldString::MoveCursorBegin()
 {
-    cursorPos_ = 0;
+    SetCursorPosition(0);
 }
 
 void TextFieldString::MoveCursorEnd()
 {
-    cursorPos_ = text_.size();
+    SetCursorPosition(GetText().size());
 }
 
 void TextFieldString::JumpLeft()
@@ -82,10 +138,10 @@ void TextFieldString::JumpLeft()
     if (IsSeparator(CharLeft()))
     {
         while (!IsCursorBegin() && IsSeparator(CharLeft()))
-            --cursorPos_;
+            MoveCursor(-1);
     }
     while (!IsCursorBegin() && !IsSeparator(CharLeft()))
-        --cursorPos_;
+        MoveCursor(-1);
 }
 
 void TextFieldString::JumpRight()
@@ -93,20 +149,20 @@ void TextFieldString::JumpRight()
     if (IsSeparator(CharRight()))
     {
         while (!IsCursorEnd() && IsSeparator(CharRight()))
-            ++cursorPos_;
+            MoveCursor(1);
     }
     while (!IsCursorEnd() && !IsSeparator(CharRight()))
-        ++cursorPos_;
+        MoveCursor(1);
 }
 
 Char TextFieldString::CharLeft() const
 {
-    return !IsCursorBegin() ? text_[cursorPos_ - 1] : Char(0);
+    return !IsCursorBegin() ? GetText()[GetCursorPosition() - 1] : Char(0);
 }
 
 Char TextFieldString::CharRight() const
 {
-    return !IsCursorEnd() ? text_[cursorPos_] : Char(0);
+    return !IsCursorEnd() ? GetText()[GetCursorPosition()] : Char(0);
 }
 
 void TextFieldString::RemoveLeft()
@@ -114,7 +170,7 @@ void TextFieldString::RemoveLeft()
     if (!IsCursorBegin())
     {
         /* Remove character and then move cursor left */
-        --cursorPos_;
+        MoveCursor(-1);
         if (IsCursorEnd())
             text_.pop_back();
         else
@@ -127,7 +183,7 @@ void TextFieldString::RemoveRight()
     if (!IsCursorEnd())
     {
         /* Only remove character without moving the cursor */
-        if ((cursorPos_ + 1) == text_.size())
+        if ((GetCursorPosition() + 1) == text_.size())
             text_.pop_back();
         else
             text_.erase(Iter());
@@ -165,13 +221,13 @@ void TextFieldString::Insert(const Char& chr)
         {
             /* Insert the new character */
             if (insertionEnabled)
-                text_[cursorPos_] = chr;
+                text_[GetCursorPosition()] = chr;
             else
                 text_.insert(Iter(), chr);
         }
 
         /* Move cursor position */
-        ++cursorPos_;
+        MoveCursor(1);
     }
 }
 
@@ -194,7 +250,7 @@ void TextFieldString::Put(const String& text)
 void TextFieldString::SetText(const String& text)
 {
     text_ = text;
-    ClampCursorPos();
+    UpdateCursorRange();
 }
 
 
@@ -214,17 +270,23 @@ bool TextFieldString::IsValidChar(const Char& chr) const
 
 String::iterator TextFieldString::Iter()
 {
-    return text_.begin() + cursorPos_;
+    return text_.begin() + GetCursorPosition();
 }
 
 String::const_iterator TextFieldString::Iter() const
 {
-    return text_.begin() + cursorPos_;
+    return text_.begin() + GetCursorPosition();
 }
 
-void TextFieldString::ClampCursorPos()
+TextFieldString::SizeType TextFieldString::ClampedPos(SizeType pos) const
 {
-    cursorPos_ = std::max(0u, text_.size());
+    return std::min(pos, GetText().size());
+}
+
+void TextFieldString::UpdateCursorRange()
+{
+    cursorPos_ = ClampedPos(GetCursorPosition());
+    selStart_ = ClampedPos(selStart_);
 }
 
 

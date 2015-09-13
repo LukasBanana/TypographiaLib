@@ -91,6 +91,9 @@ class MultiLineString : public SeparableString
             return width_;
         }
         
+        //! Sets the content of the multi-line string and resets all lines.
+        void SetText(const String& text);
+
         //! Returns the base text.
         const String& GetText() const
         {
