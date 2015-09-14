@@ -103,6 +103,10 @@ TexturedFont::TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel&
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texSize_.width, texSize_.height, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, image.GetImageBuffer().data());
     }
     unbind();
+
+    #if 1//!!!
+    auto geometries = Tg::BuildFontGeometrySet(fontModel);
+    #endif
 }
 
 TexturedFont::~TexturedFont()
@@ -166,9 +170,9 @@ void initGL()
     glFrontFace(GL_CW);
 }
 
-std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size)
+std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, int flags = 0)
 {
-    auto fontDesc = Tg::FontDescription{ "C:/Windows/Fonts/" + fontName + ".ttf", size };
+    auto fontDesc = Tg::FontDescription{ "C:/Windows/Fonts/" + fontName + ".ttf", size, flags };
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 

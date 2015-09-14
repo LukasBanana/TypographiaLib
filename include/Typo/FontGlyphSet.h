@@ -48,6 +48,25 @@ struct FontGlyph
     int     advance = 0;
 };
 
+//! Font glyph basic vertex structure.
+struct FontGlyphVertex
+{
+    float x     = 0.0f; //!< X coordinate.
+    float y     = 0.0f; //!< Y coordinate.
+    float tx    = 0.0f; //!< X texture coordinate.
+    float ty    = 0.0f; //!< Y texture coordinate.
+};
+
+//! Font glyph geometry structure. Contains four vertices for a single font glyph (within a left-top origin system).
+struct FontGlyphGeometry
+{
+    FontGlyphVertex lt; //!< Left-top vertex.
+    FontGlyphVertex rt; //!< Right-top vertex.
+    FontGlyphVertex rb; //!< Right-bottom vertex.
+    FontGlyphVertex lb; //!< Left-bottom vertex.
+};
+
+
 class FontGlyphSet
 {
     
@@ -59,7 +78,16 @@ class FontGlyphSet
         FontGlyphSet(FontGlyphSet&& rhs);
 
         void SetGlyphRange(const FontGlyphRange& glyphRange);
-        const FontGlyphRange& GetGlyphRange() const;
+
+        const FontGlyphRange& GetGlyphRange() const
+        {
+            return glyphRange_;
+        }
+
+        const std::vector<FontGlyph>& GetGlyphs() const
+        {
+            return glyphs_;
+        }
 
         const FontGlyph& operator [] (char chr) const;
         const FontGlyph& operator [] (wchar_t chr) const;

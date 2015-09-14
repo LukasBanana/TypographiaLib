@@ -297,6 +297,51 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     return font;
 }
 
+std::vector<FontGlyphGeometry> BuildFontGeometrySet(const FontModel& fontModel)
+{
+    std::vector<FontGlyphGeometry> geometries;
+
+    const auto& glyphs = fontModel.glyphSet.GetGlyphs();
+    geometries.reserve(glyphs.size());
+
+    const auto& texSize = fontModel.image.GetSize();
+    auto invTexWidth = 1.0f / texSize.width;
+    auto invTexHeight = 1.0f / texSize.height;
+
+    for (const auto& glyph : glyphs)
+    {
+        FontGlyphGeometry geom;
+
+        /* Setup left-top vertex */
+        geom.lt.x   = 0.0f;
+        geom.lt.y   = 0.0f;
+        geom.lt.tx  = invTexWidth * glyph.rect.left;
+        geom.lt.ty  = invTexHeight * glyph.rect.top;
+
+        /* Setup right-top vertex */
+        geom.rt.x   = static_cast<float>(glyph.width);
+        geom.rt.y   = 0.0f;
+        geom.rt.tx  = invTexWidth * glyph.rect.right;
+        geom.rt.ty  = invTexHeight * glyph.rect.top;
+
+        /* Setup right-bottom vertex */
+        geom.rb.x   = static_cast<float>(glyph.width);
+        geom.rb.y   = static_cast<float>(glyph.height);
+        geom.rb.tx  = invTexWidth * glyph.rect.right;
+        geom.rb.ty  = invTexHeight * glyph.rect.bottom;
+
+        /* Setup left-bottom vertex */
+        geom.lb.x   = 0.0f;
+        geom.lb.y   = static_cast<float>(glyph.height);
+        geom.lb.tx  = invTexWidth * glyph.rect.left;
+        geom.lb.ty  = invTexHeight * glyph.rect.bottom;
+
+        geometries.push_back(geom);
+    }
+
+    return geometries;
+}
+
 static const auto staticGlpyhBorder = 2u;
 
 //TODO: this is incomplete!!!

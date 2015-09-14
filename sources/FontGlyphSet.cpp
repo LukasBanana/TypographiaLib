@@ -25,11 +25,6 @@ void FontGlyphSet::SetGlyphRange(const FontGlyphRange& glyphRange)
     glyphs_.resize(glyphRange_.GetSize());
 }
 
-const FontGlyphRange& FontGlyphSet::GetGlyphRange() const
-{
-    return glyphRange_;
-}
-
 const FontGlyph& FontGlyphSet::operator [] (char chr) const
 {
     return (*this)[static_cast<wchar_t>(unsigned char(chr))];

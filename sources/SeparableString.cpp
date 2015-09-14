@@ -6,7 +6,6 @@
  */
 
 #include <Typo/SeparableString.h>
-#include <Typo/Details.h>
 
 
 namespace Tg
@@ -19,7 +18,7 @@ SeparableString::~SeparableString()
 
 const String& SeparableString::GetSeparators() const
 {
-    static const auto sep = String(Details::DefaultSeparators<Char>::value);
+    static const String sep = STRING_LITERAL(" \t\"',;.:-()[]{}/\\");
     return sep;
 }
 

@@ -23,6 +23,7 @@ namespace Tg
 {
 
 
+//! Font flags enumeration.
 struct FontFlags
 {
     enum
@@ -34,6 +35,7 @@ struct FontFlags
     };
 };
 
+//! Font descriptions structure.
 struct FontDescription
 {
     FontDescription() = default;
@@ -50,6 +52,7 @@ struct FontDescription
     int         flags   = 0; //!< This can be a bitwise OR combination of the values of the 'FontFlags' enumeration.
 };
 
+//! Font model data structure.
 struct FontModel
 {
     FontModel() = default;
@@ -61,8 +64,8 @@ struct FontModel
     {
     }
     
-    Image           image;
-    FontGlyphSet    glyphSet;
+    Image           image;      //!< Font atlas image.
+    FontGlyphSet    glyphSet;   //!< Font glyph set.
 };
 
 
@@ -111,14 +114,14 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel);
 /* --- Global Functions --- */
 
 /**
-Builds a font model with the specified description and the glyph range [32, 255].
+\brief Builds a font model with the specified description and the glyph range [32, 255].
 \param[in] desc Specifies the font description.
 \param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
 */
 FontModel BuildFont(const FontDescription& desc, unsigned int border = 1);
 
 /**
-Builds a font model with the specified description and glyph range.
+\brief Builds a font model with the specified description and glyph range.
 \param[in] desc Specifies the font description.
 \param[in] glyphRange Specifies the range of glyphs which are to be contained in the resulting font.
 \param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
@@ -126,7 +129,13 @@ Builds a font model with the specified description and glyph range.
 FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border = 1);
 
 /**
-Plots a text with the specified font model into an image.
+\brief Builds the geometry list for all font glyphs.
+\remarks This can be used to generate a vertex buffer for the font.
+*/
+std::vector<FontGlyphGeometry> BuildFontGeometrySet(const FontModel& fontModel);
+
+/**
+\brief Plots a text with the specified font model into an image.
 \param[in] fontModel Specifies the font model which is used for text rendering.
 \param[in] text Specifies the text for the output.
 \see BuildFont
@@ -134,7 +143,7 @@ Plots a text with the specified font model into an image.
 Image PlotTextImage(const FontModel& fontModel, const String& text);
 
 /**
-Plots a multi-line text with the specified font model into an image.
+\brief Plots a multi-line text with the specified font model into an image.
 \param[in] fontModel Specifies the font model which is used for text rendering.
 \param[in] text Specifies the text for the output.
 \param[in] maxWidth Specifies the maximal width for the text.

@@ -9,7 +9,6 @@
 #define __TG_SEPARABLE_STRING_H__
 
 
-#include "Details.h"
 #include "Char.h"
 
 
