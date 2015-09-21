@@ -4,7 +4,7 @@
 
 # Macros
 
-macro(_FREETYPE_APPEND_LIBRARIES _list _release)
+macro(_TYPOLIB_APPEND_LIBRARIES _list _release)
 	set(_debug ${_release}_DEBUG)
 	if(${_debug})
 		set(${_list} ${${_list}} optimized ${${_release}} debug ${${_debug}})
