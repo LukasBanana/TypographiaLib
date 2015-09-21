@@ -15,7 +15,7 @@ endmacro()
 
 # Find library
 
-find_path(TypoLib_INCLUDE_DIR NAMES ft2build.h)
+find_path(TypoLib_INCLUDE_DIR NAMES Typo/Typo.h)
 
 find_library(TypoLib_LIBRARY NAMES typolib)
 find_library(TypoLib_LIBRARY_DEBUG NAMES typolibD)
