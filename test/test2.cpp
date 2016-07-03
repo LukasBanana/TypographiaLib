@@ -76,7 +76,10 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-Tg::TextFieldString mainTextField(">$ This is an input text field! Use arrows, shift, and ctrl keys");
+Tg::TextFieldString mainTextField(
+    //">$ This is an input text field! Use arrows, shift, and ctrl keys"
+    "user@PC$ ls -la --color=never | grep -ri \"Foo bar\""
+);
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr<Tg::MultiLineString> mainMlText;
@@ -176,11 +179,23 @@ std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, in
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 
-void initScene()
+bool initScene()
 {
-    // load font
-    fontSmall = loadFont("times", 32);
-    fontLarge = loadFont("ITCEDSCR", 80);
+    try
+    {
+        // load font
+        //fontSmall = loadFont("times", 32);
+        fontSmall = loadFont("consola", 20);
+        fontLarge = loadFont("ITCEDSCR", 80);
+    }
+    catch (const std::exception& err)
+    {
+        std::cerr << err.what() << std::endl;
+        #ifdef _WIN32
+        system("pause");
+        #endif
+        return false;
+    }
 
     // setup multi-line string
     std::string str = (
@@ -192,6 +207,8 @@ void initScene()
     mainMlText = std::unique_ptr<Tg::MultiLineString>(new Tg::MultiLineString(fontLarge->GetGlyphSet(), resX, str));
 
     mainTextField.cursorLoopEnabled = true;
+
+    return true;
 }
 
 void movePen(int x, int y)
@@ -300,7 +317,7 @@ void drawTextField(
         [color](char chr)
         {
             // change color for special characters
-            setColor(isChar(chr, { '#', '$', '|', '+', '*', '<', '>', '_' }) ? COLOR_RED : color);
+            setColor(isChar(chr, { '#', '$', '|', '+', '*', '<', '>', '_', '@', '=' }) ? COLOR_RED : color);
         }
     );
 
@@ -523,9 +540,8 @@ int main(int argc, char* argv[])
     glutKeyboardFunc(keyboardCallback);
 
     initGL();
-    initScene();
-
-    glutMainLoop();
+    if (initScene())
+        glutMainLoop();
 
     return 0;
 }
