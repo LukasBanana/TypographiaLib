@@ -9,6 +9,8 @@
 #include <iostream>
 #include <chrono>
 
+#ifndef TG_UNICODE
+
 #pragma warning(disable : 4996)
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -117,4 +119,13 @@ int main()
 
     return 0;
 }
+
+#else
+
+int main()
+{
+    return 0;
+}
+
+#endif
 
