@@ -25,6 +25,9 @@
 // ----- MACROS -----
 
 #define ENABLE_FULLSCREEN
+//#define ENABLE_AUTO_BOXES
+
+#define VERSION_STR         "v1.00"
 
 #define MAX_CODE_LENGTH     27
 
@@ -33,6 +36,11 @@
 #define FONT_SIZE           30
 
 #define CODE_CHANGE_PROB    15
+
+#define CODE_BOX_PROB       100
+
+#define CODE_BOX_MOVE       0.035
+#define CODE_BOX_SIZE       3
 
 #define CODE_COLOR_R        97
 #define CODE_COLOR_G        244
@@ -71,6 +79,9 @@ class CodeBuffer
         void resize(int w, int h);
 
         void draw();
+        void update();
+
+        void flash();
 
     private:
         
@@ -79,8 +90,9 @@ class CodeBuffer
             int t = 0;
             char c = 0;
             double brightness = 1.0;
+            bool flash = false;
 
-            void color(unsigned char& r, unsigned char& g, unsigned char& b) const;
+            void color(unsigned char& r, unsigned char& g, unsigned char& b);
             void reset(char chr, double bright);
             void clear();
         };
@@ -92,16 +104,28 @@ class CodeBuffer
             double brightness = 1.0;
         };
 
+        struct CodeBox
+        {
+            double size = 0.0;
+        };
+
+        int boxLeft(const CodeBox& b) const;
+        int boxTop(const CodeBox& b) const;
+        int boxRight(const CodeBox& b) const;
+        int boxBottom(const CodeBox& b) const;
+
         char randomChar() const;
         Code& getCode(int x, int y);
 
         void appendCodePatterns(char begin, char end);
-
         void appendCodeString();
+        void appendCodeBox();
+
+        std::unique_ptr<TexturedFont> font_;
 
         std::vector<Code> codes_;
         std::vector<CodeString> codeStrings_;
-        std::unique_ptr<TexturedFont> font_;
+        std::vector<CodeBox> codeBoxes_;
 
         std::array<char, 128> codePattern_;
 
@@ -119,6 +143,8 @@ using Matrix4x4 = std::array<float, 16>;
 int resX = 800, resY = 600;
 
 CodeBuffer codeBuffer;
+
+clock_t prevTimestamp = 0, elapsedTime = 0;
 
 
 // ----- CLASS "TexturedFont" FUNCTIONS -----
@@ -314,8 +340,25 @@ void drawScene()
     codeBuffer.draw();
 }
 
+void updateElapsedTime()
+{
+    auto t = clock();
+    
+    elapsedTime = t - prevTimestamp;
+
+    if (elapsedTime >= FRAME_DELAY)
+    {
+        elapsedTime -= FRAME_DELAY;
+        prevTimestamp += FRAME_DELAY;
+
+        codeBuffer.update();
+    }
+}
+
 void displayCallback()
 {
+    updateElapsedTime();
+
     // draw frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     {
@@ -348,29 +391,11 @@ void keyboardCallback(unsigned char key, int x, int y)
         case 27: // ESC
             exit(0);
             break;
-    }
-}
 
-void specialCallback(int key, int x, int y)
-{
-    auto modMask = glutGetModifiers();
-
-    switch (key)
-    {
-        case GLUT_KEY_HOME:
+        case '\r': // RETURN
+            codeBuffer.flash();
             break;
 
-        case GLUT_KEY_END:
-            break;
-
-        case GLUT_KEY_LEFT:
-            break;
-
-        case GLUT_KEY_RIGHT:
-            break;
-
-        case GLUT_KEY_INSERT:
-            break;
     }
 }
 
@@ -381,7 +406,7 @@ int main(int argc, char* argv[])
 
     srand(time(nullptr));
 
-    std::cout << "Matrix Digital Rain" << std::endl;
+    std::cout << "Matrix Digital Rain (" << VERSION_STR << ")" << std::endl;
     std::cout << "Copyright (c) 2016 by Lukas Hermanns" << std::endl;
     std::cout << " -> https://www.twitter.com/LukasBanana" << std::endl;
     std::cout << " -> https://www.github.com/LukasBanana" << std::endl;
@@ -405,7 +430,6 @@ int main(int argc, char* argv[])
     glutDisplayFunc(displayCallback);
     glutReshapeFunc(reshapeCallback);
     glutIdleFunc(idleCallback);
-    glutSpecialFunc(specialCallback);
     glutKeyboardFunc(keyboardCallback);
 
     #ifdef ENABLE_FULLSCREEN
@@ -472,6 +496,44 @@ void CodeBuffer::resize(int w, int h)
 
 void CodeBuffer::draw()
 {
+    // Update code boxes
+    for (auto it = codeBoxes_.begin(); it != codeBoxes_.end();)
+    {
+        auto left = boxLeft(*it) - CODE_BOX_SIZE;
+        auto top = boxTop(*it) - CODE_BOX_SIZE;
+        auto right = boxRight(*it) + CODE_BOX_SIZE;
+        auto bottom = boxBottom(*it) + CODE_BOX_SIZE;
+
+        if (left >= 0 && top >= 0 && right < w_ && bottom < h_)
+        {
+            // Flash all codes which are affected by this box
+            for (int i = left; i <= right; ++i)
+            {
+                for (int j = 0; j < CODE_BOX_SIZE; ++j)
+                {
+                    getCode(i, top + j).flash = true;
+                    getCode(i, bottom - j).flash = true;
+                }
+            }
+
+            for (int i = top + CODE_BOX_SIZE; i <= bottom - CODE_BOX_SIZE; ++i)
+            {
+                for (int j = 0; j < CODE_BOX_SIZE; ++j)
+                {
+                    getCode(left + j, i).flash = true;
+                    getCode(right - j, i).flash = true;
+                }
+            }
+
+            // Increase box size
+            it->size += CODE_BOX_MOVE;
+
+            ++it;
+        }
+        else
+            it = codeBoxes_.erase(it);
+    }
+
     // Draw codes
     for (int i = 0; i < h_; ++i)
     {
@@ -488,6 +550,22 @@ void CodeBuffer::draw()
                 unsigned char r, g, b;
                 c.color(r, g, b);
                 drawText(*font_, x, y, std::string(1, c.c), r, g, b);
+            }
+        }
+    }
+}
+
+void CodeBuffer::update()
+{
+    // Update codes
+    for (int i = 0; i < h_; ++i)
+    {
+        for (int j = 0; j < w_; ++j)
+        {
+            auto& c = getCode(j, i);
+
+            if (c.t > 0)
+            {
                 ++c.t;
 
                 if (rand() % CODE_CHANGE_PROB == 0)
@@ -517,8 +595,15 @@ void CodeBuffer::draw()
     for (int i = 0; i < n; ++i)
         appendCodeString();
 
-    // Wait a moment
-    std::this_thread::sleep_for(std::chrono::milliseconds(FRAME_DELAY));
+    #ifdef ENABLE_AUTO_BOXES
+    if (rand() % CODE_BOX_PROB == 0)
+        flash();
+    #endif
+}
+
+void CodeBuffer::flash()
+{
+    appendCodeBox();
 }
 
 CodeBuffer::Code& CodeBuffer::getCode(int x, int y)
@@ -556,6 +641,11 @@ void CodeBuffer::appendCodeString()
     codeStrings_.push_back(codeString);
 }
 
+void CodeBuffer::appendCodeBox()
+{
+    codeBoxes_.push_back(CodeBox());
+}
+
 char CodeBuffer::randomChar() const
 {
     return codePattern_[rand() % codePatternSize_];
@@ -587,35 +677,67 @@ static unsigned char fadeColor(unsigned char c1, unsigned char c2, double fade)
     return static_cast<unsigned char>(a + (b - a)*fade);
 }
 
-void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& b) const
+void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& b)
 {
     const auto boundaryStart = MAX_CODE_LENGTH/3;
     const auto boundarySize = MAX_CODE_LENGTH - boundaryStart;
 
-    if (t > boundaryStart)
+    if (flash)
     {
-        auto f = (1.0 - static_cast<double>(t - boundaryStart) / static_cast<double>(boundarySize)) ;
-        r = fadeColor(CODE_COLOR_R, f);
-        g = fadeColor(CODE_COLOR_G, f);
-        b = fadeColor(CODE_COLOR_B, f);
-    }
-    else if (t <= 4)
-    {
-        auto f = static_cast<double>(t - 1);
-        r = fadeColor(255, CODE_COLOR_R, f);
-        g = fadeColor(255, CODE_COLOR_G, f);
-        b = fadeColor(255, CODE_COLOR_B, f);
+        r = 255;
+        g = 255;
+        b = 255;
+        flash = false;
     }
     else
     {
-        r = CODE_COLOR_R;
-        g = CODE_COLOR_G;
-        b = CODE_COLOR_B;
+        if (t > boundaryStart)
+        {
+            auto f = (1.0 - static_cast<double>(t - boundaryStart) / static_cast<double>(boundarySize)) ;
+            r = fadeColor(CODE_COLOR_R, f);
+            g = fadeColor(CODE_COLOR_G, f);
+            b = fadeColor(CODE_COLOR_B, f);
+        }
+        else if (t <= 4)
+        {
+            auto f = static_cast<double>(t - 1);
+            r = fadeColor(255, CODE_COLOR_R, f);
+            g = fadeColor(255, CODE_COLOR_G, f);
+            b = fadeColor(255, CODE_COLOR_B, f);
+        }
+        else
+        {
+            r = CODE_COLOR_R;
+            g = CODE_COLOR_G;
+            b = CODE_COLOR_B;
+        }
     }
 
     r = fadeColor(r, brightness);
     g = fadeColor(g, brightness);
     b = fadeColor(b, brightness);
 }
+
+int CodeBuffer::boxLeft(const CodeBox& b) const
+{
+    return w_/2 - static_cast<int>(b.size*(w_/2));
+}
+
+int CodeBuffer::boxTop(const CodeBox& b) const
+{
+    return h_/2 - static_cast<int>(b.size*(h_/2));
+}
+
+int CodeBuffer::boxRight(const CodeBox& b) const
+{
+    return w_/2 + static_cast<int>(b.size*(w_/2));
+}
+
+int CodeBuffer::boxBottom(const CodeBox& b) const
+{
+    return h_/2 + static_cast<int>(b.size*(h_/2));
+}
+
+
 
 
