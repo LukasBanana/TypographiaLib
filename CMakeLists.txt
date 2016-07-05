@@ -61,11 +61,11 @@ if(OpenGL_FOUND AND GLUT_FOUND)
 	set_target_properties(test2 PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 	target_link_libraries(test2 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} typolib)
 	
-	add_executable(test3 "${PROJECT_TEST_DIR}/test3.cpp")
-	set_target_properties(test3 PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
-	target_link_libraries(test3 ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} typolib)
+	add_executable(matrix_digital_rain "${PROJECT_TEST_DIR}/matrix_digital_rain.cpp")
+	set_target_properties(matrix_digital_rain PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
+	target_link_libraries(matrix_digital_rain ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} typolib)
 else()
-	message("excluded optional projects 'test2' and 'test3' (OpenGL and GLUT required but not available)")
+	message("excluded optional projects 'test2' and 'matrix_digital_rain' (OpenGL and GLUT required but not available)")
 endif()
 
 
