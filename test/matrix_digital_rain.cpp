@@ -24,10 +24,10 @@
 
 // ----- MACROS -----
 
-#define ENABLE_FULLSCREEN
-//#define ENABLE_AUTO_BOXES
+#define WINDOW_WIDTH       1024
+#define WINDOW_HEIGHT      768
 
-#define VERSION_STR         "v1.00"
+#define BLENDING_SCALE      1.5f
 
 #define MAX_CODE_LENGTH     27
 
@@ -45,6 +45,18 @@
 #define CODE_COLOR_R        97
 #define CODE_COLOR_G        244
 #define CODE_COLOR_B        99
+
+#define VERSION_STR         "v1.01"
+
+struct Options
+{
+    bool    fullscreen  = true;
+    bool    autoBoxes   = false;
+    bool    blending    = true;
+    int     fontSize    = 30;
+};
+
+static Options options;
 
 
 // ----- CLASSES -----
@@ -140,7 +152,7 @@ class CodeBuffer
 
 using Matrix4x4 = std::array<float, 16>;
 
-int resX = 800, resY = 600;
+int resX = WINDOW_WIDTH, resY = WINDOW_HEIGHT;
 
 CodeBuffer codeBuffer;
 
@@ -200,8 +212,11 @@ void initGL()
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_BLEND);
     glFrontFace(GL_CW);
+
+    // setup additive blending, to avoid overdrawing of font glyphs
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 }
 
 std::unique_ptr<TexturedFont> loadFont(const std::string& fontFilename, int size, int flags = 0)
@@ -216,61 +231,73 @@ void movePen(int x, int y)
     glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
 }
 
-void emitVertex(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
+void emitVertex2i(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
 {
     // emit data for the next vertex
     glTexCoord2f(invTexWidth * tx, invTexHeight * ty);
     glVertex2i(x, y);
 }
 
-void setColor(unsigned char r, unsigned char g, unsigned b)
+void emitVertex2f(float x, float y, int tx, int ty, float invTexWidth, float invTexHeight)
+{
+    // emit data for the next vertex
+    glTexCoord2f(invTexWidth * tx, invTexHeight * ty);
+    glVertex2f(x, y);
+}
+
+void setColor(unsigned char r, unsigned char g, unsigned char b)
 {
     // set color by bit mask
     glColor4ub(r, g, b, 255);
 }
 
-void drawFontGlyph(const Tg::FontGlyph& glyph, float invTexWidth, float invTexHeight)
+void drawFontGlyph(
+    const Tg::FontGlyph& glyph, float invTexWidth, float invTexHeight,
+    unsigned char r, unsigned char g, unsigned char b)
 {
     // move pen to draw the glyph with its offset
     movePen(glyph.xOffset, -glyph.yOffset);
 
     // draw glyph triangles
+    glColor4ub(r, g, b, 255);
+
     glBegin(GL_TRIANGLE_STRIP);
     {
-        emitVertex(0          , glyph.height, glyph.rect.left , glyph.rect.bottom, invTexWidth, invTexHeight);
-        emitVertex(0          , 0           , glyph.rect.left , glyph.rect.top   , invTexWidth, invTexHeight);
-        emitVertex(glyph.width, glyph.height, glyph.rect.right, glyph.rect.bottom, invTexWidth, invTexHeight);
-        emitVertex(glyph.width, 0           , glyph.rect.right, glyph.rect.top   , invTexWidth, invTexHeight);
+        emitVertex2i(0          , glyph.height, glyph.rect.left , glyph.rect.bottom, invTexWidth, invTexHeight);
+        emitVertex2i(0          , 0           , glyph.rect.left , glyph.rect.top   , invTexWidth, invTexHeight);
+        emitVertex2i(glyph.width, glyph.height, glyph.rect.right, glyph.rect.bottom, invTexWidth, invTexHeight);
+        emitVertex2i(glyph.width, 0           , glyph.rect.right, glyph.rect.top   , invTexWidth, invTexHeight);
     }
     glEnd();
+
+    if (options.blending)
+    {
+        static const unsigned char alpha[] = { 130, 80, 50 };
+        float s = 1.0f;
+
+        for (int i = 0; i < 3; ++i, s += BLENDING_SCALE)
+        {
+            glColor4ub(r, g, b, alpha[i]);
+
+            glBegin(GL_TRIANGLE_STRIP);
+            {
+                emitVertex2f(-s              ,  s + glyph.height, glyph.rect.left , glyph.rect.bottom, invTexWidth, invTexHeight);
+                emitVertex2f(-s              , -s               , glyph.rect.left , glyph.rect.top   , invTexWidth, invTexHeight);
+                emitVertex2f( s + glyph.width,  s + glyph.height, glyph.rect.right, glyph.rect.bottom, invTexWidth, invTexHeight);
+                emitVertex2f( s + glyph.width, -s               , glyph.rect.right, glyph.rect.top   , invTexWidth, invTexHeight);
+            }
+            glEnd();
+        }
+    }
 
     // move pen back to its previous position
     movePen(-glyph.xOffset, glyph.yOffset);
-}
-
-void drawBox(int left, int top, int right, int bottom)
-{
-    glBegin(GL_LINE_LOOP);
-    {
-        glVertex2i(left , top   );
-        glVertex2i(right, top   );
-        glVertex2i(right, bottom);
-        glVertex2i(left , bottom);
-    }
-    glEnd();
 }
 
 void drawText(
     const TexturedFont& font, int posX, int posY, const std::string& text,
     unsigned char r, unsigned char g, unsigned b)
 {
-    // setup additive blending, to avoid overdrawing of font glyphs
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-    // set text color
-    setColor(r, g, b);
-
-    font.bind();
     glPushMatrix();
     {
         // move pen to begin with text drawing
@@ -284,14 +311,13 @@ void drawText(
             const auto& glyph = font.GetGlyphSet()[chr];
 
             // draw current font glyph
-            drawFontGlyph(glyph, invTexWidth, invTexHeight);
+            drawFontGlyph(glyph, invTexWidth, invTexHeight, r, g, b);
 
             // move pen to draw the next glyph
             movePen(glyph.advance, 0);
         }
     }
     glPopMatrix();
-    font.unbind();
 }
 
 bool isChar(char chr, const std::vector<char>& list)
@@ -367,6 +393,33 @@ void displayCallback()
     glutSwapBuffers();
 }
 
+void switchFullscreen(bool enable)
+{
+    if (options.fullscreen != enable)
+    {
+        const auto desktopResX = glutGet(GLUT_SCREEN_WIDTH);
+        const auto desktopResY = glutGet(GLUT_SCREEN_HEIGHT);
+
+        if (enable)
+        {
+            resX = desktopResX;
+            resY = desktopResY;
+            glutPositionWindow(0, 0);
+            glutReshapeWindow(resX, resY);
+            glutFullScreen();
+        }
+        else
+        {
+            resX = WINDOW_WIDTH;
+            resY = WINDOW_HEIGHT;
+            glutPositionWindow(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
+            glutReshapeWindow(resX, resY);
+        }
+
+        options.fullscreen = enable;
+    }
+}
+
 void idleCallback()
 {
     glutPostRedisplay();
@@ -380,6 +433,8 @@ void reshapeCallback(GLsizei w, GLsizei h)
     glViewport(0, 0, w, h);
 
     displayCallback();
+
+    codeBuffer.resize(resX, resY);
 }
 
 void keyboardCallback(unsigned char key, int x, int y)
@@ -393,9 +448,12 @@ void keyboardCallback(unsigned char key, int x, int y)
             break;
 
         case '\r': // RETURN
-            codeBuffer.flash();
+            switchFullscreen(!options.fullscreen);
             break;
 
+        case ' ': // SPACE
+            codeBuffer.flash();
+            break;
     }
 }
 
@@ -417,13 +475,21 @@ int main(int argc, char* argv[])
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
-    #ifdef ENABLE_FULLSCREEN
-    resX = desktopResX;
-    resY = desktopResY;
-    #endif
+    if (options.fullscreen)
+    {
+        resX = desktopResX;
+        resY = desktopResY;
+        glutInitWindowPosition(0, 0);
+        glutInitWindowSize(resX, resY);
+    }
+    else
+    {
+        resX = WINDOW_WIDTH;
+        resY = WINDOW_HEIGHT;
+        glutInitWindowPosition(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
+        glutInitWindowSize(resX, resY);
+    }
 
-    glutInitWindowSize(resX, resY);
-    glutInitWindowPosition(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
     glutCreateWindow("Matrix Digital Rain");
     glutSetCursor(GLUT_CURSOR_NONE);
     
@@ -432,9 +498,8 @@ int main(int argc, char* argv[])
     glutIdleFunc(idleCallback);
     glutKeyboardFunc(keyboardCallback);
 
-    #ifdef ENABLE_FULLSCREEN
-    glutFullScreen();
-    #endif
+    if (options.fullscreen)
+        glutFullScreen();
 
     initGL();
 
@@ -478,20 +543,21 @@ bool CodeBuffer::init()
 
 void CodeBuffer::resize(int w, int h)
 {
-    if (font_)
-    {
-        auto size = font_->GetDesc().height;
-        if (size == 0)
-            size = 1;
+    auto size = (font_ != nullptr ? font_->GetDesc().height : 0);
+    if (size == 0)
+        size = 1;
 
-        cw_ = size*3/5;
-        ch_ = size;
+    cw_ = size*3/5;
+    ch_ = size;
 
-        w_ = w / cw_ + 1;
-        h_ = h / ch_ + 1;
+    w_ = w / cw_ + 1;
+    h_ = h / ch_ + 1;
 
-        codes_.resize(w_*h_);
-    }
+    codes_.clear();
+    codes_.resize(w_*h_);
+
+    codeBoxes_.clear();
+    codeStrings_.clear();
 }
 
 void CodeBuffer::draw()
@@ -535,6 +601,8 @@ void CodeBuffer::draw()
     }
 
     // Draw codes
+    font_->bind();
+
     for (int i = 0; i < h_; ++i)
     {
         for (int j = 0; j < w_; ++j)
@@ -553,6 +621,8 @@ void CodeBuffer::draw()
             }
         }
     }
+
+    font_->unbind();
 }
 
 void CodeBuffer::update()
@@ -595,10 +665,8 @@ void CodeBuffer::update()
     for (int i = 0; i < n; ++i)
         appendCodeString();
 
-    #ifdef ENABLE_AUTO_BOXES
-    if (rand() % CODE_BOX_PROB == 0)
+    if (options.autoBoxes && (rand() % CODE_BOX_PROB == 0))
         flash();
-    #endif
 }
 
 void CodeBuffer::flash()
@@ -698,9 +766,9 @@ void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& 
             g = fadeColor(CODE_COLOR_G, f);
             b = fadeColor(CODE_COLOR_B, f);
         }
-        else if (t <= 4)
+        else if (t <= 3)
         {
-            auto f = static_cast<double>(t - 1);
+            auto f = static_cast<double>(t - 1)/2.0;
             r = fadeColor(255, CODE_COLOR_R, f);
             g = fadeColor(255, CODE_COLOR_G, f);
             b = fadeColor(255, CODE_COLOR_B, f);
