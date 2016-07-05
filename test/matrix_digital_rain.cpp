@@ -5,6 +5,9 @@
  * See "LICENSE.txt" for license information.
  */
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <Typo/Typo.h>
 #include <iostream>
 #include <chrono>
@@ -13,6 +16,8 @@
 #include <functional>
 #include <ctime>
 #include <thread>
+#include <fstream>
+#include <sstream>
 
 #if defined(_WIN32)
 #   include <Windows.h>
@@ -27,13 +32,7 @@
 #define WINDOW_WIDTH       1024
 #define WINDOW_HEIGHT      768
 
-#define BLENDING_SCALE      1.5f
-
-#define MAX_CODE_LENGTH     27
-
 #define FRAME_DELAY         70 // delay between frames in milliseconds
-
-#define FONT_SIZE           30
 
 #define CODE_CHANGE_PROB    15
 
@@ -46,14 +45,23 @@
 #define CODE_COLOR_G        244
 #define CODE_COLOR_B        99
 
+#define MIN_CODE_BRIGHTNESS 0.5
+
 #define VERSION_STR         "v1.01"
 
 struct Options
 {
-    bool    fullscreen  = true;
-    bool    autoBoxes   = false;
-    bool    blending    = true;
-    int     fontSize    = 30;
+    bool load(const std::string& filename);
+
+    bool        fullscreen      = false;
+    bool        autoBoxes       = false;
+    bool        blending        = true;
+    int         fontSize        = 25;//30
+    int         maxCodeLength   = 30;
+    float       maxBlendScale   = 1.5f;
+    std::string showText1       = "THE MATRIX HAS YOU";
+    std::string showText2       = "WAKE UP NEO";
+    std::string showText3       = "IT IS PURPOSE THAT CREATED US";
 };
 
 static Options options;
@@ -93,10 +101,15 @@ class CodeBuffer
         void draw();
         void update();
 
-        void flash();
+        void boxFlash();
+        void blendFlash();
+
+        void showText(const std::string& s);
 
     private:
         
+        // --- STRUCTURES --- //
+
         struct Code
         {
             int t = 0;
@@ -106,6 +119,7 @@ class CodeBuffer
 
             void color(unsigned char& r, unsigned char& g, unsigned char& b);
             void reset(char chr, double bright);
+            void reset(char chr, double bright, int tm);
             void clear();
         };
 
@@ -121,17 +135,26 @@ class CodeBuffer
             double size = 0.0;
         };
 
+        // --- FUNCTIONS --- //
+
         int boxLeft(const CodeBox& b) const;
         int boxTop(const CodeBox& b) const;
         int boxRight(const CodeBox& b) const;
         int boxBottom(const CodeBox& b) const;
+
+        int showTextLeft() const;
+        int showTextRight() const;
+        int showTextY() const;
 
         char randomChar() const;
         Code& getCode(int x, int y);
 
         void appendCodePatterns(char begin, char end);
         void appendCodeString();
+        void appendCodeString(int x, int y);
         void appendCodeBox();
+
+        // --- MEMBERS --- //
 
         std::unique_ptr<TexturedFont> font_;
 
@@ -144,6 +167,12 @@ class CodeBuffer
         size_t codePatternSize_ = 0;
         int w_ = 0, h_ = 0;
         int cw_ = 0, ch_ = 0;
+
+        bool blendFlash_ = false;
+        float blendScale_ = 0.0f;
+        float blendAlpha_ = 0.0f;
+
+        std::string showText_;
 
 };
 
@@ -253,7 +282,7 @@ void setColor(unsigned char r, unsigned char g, unsigned char b)
 
 void drawFontGlyph(
     const Tg::FontGlyph& glyph, float invTexWidth, float invTexHeight,
-    unsigned char r, unsigned char g, unsigned char b)
+    unsigned char r, unsigned char g, unsigned char b, float blendScale)
 {
     // move pen to draw the glyph with its offset
     movePen(glyph.xOffset, -glyph.yOffset);
@@ -275,7 +304,7 @@ void drawFontGlyph(
         static const unsigned char alpha[] = { 130, 80, 50 };
         float s = 1.0f;
 
-        for (int i = 0; i < 3; ++i, s += BLENDING_SCALE)
+        for (int i = 0; i < 3; ++i, s += blendScale)
         {
             glColor4ub(r, g, b, alpha[i]);
 
@@ -296,7 +325,7 @@ void drawFontGlyph(
 
 void drawText(
     const TexturedFont& font, int posX, int posY, const std::string& text,
-    unsigned char r, unsigned char g, unsigned b)
+    unsigned char r, unsigned char g, unsigned b, float blendScale)
 {
     glPushMatrix();
     {
@@ -311,7 +340,7 @@ void drawText(
             const auto& glyph = font.GetGlyphSet()[chr];
 
             // draw current font glyph
-            drawFontGlyph(glyph, invTexWidth, invTexHeight, r, g, b);
+            drawFontGlyph(glyph, invTexWidth, invTexHeight, r, g, b, blendScale);
 
             // move pen to draw the next glyph
             movePen(glyph.advance, 0);
@@ -451,8 +480,28 @@ void keyboardCallback(unsigned char key, int x, int y)
             switchFullscreen(!options.fullscreen);
             break;
 
-        case ' ': // SPACE
-            codeBuffer.flash();
+        case '1':
+            codeBuffer.boxFlash();
+            break;
+
+        case '2':
+            codeBuffer.blendFlash();
+            break;
+
+        case '3':
+            codeBuffer.showText(options.showText1);
+            break;
+
+        case '4':
+            codeBuffer.showText(options.showText2);
+            break;
+
+        case '5':
+            codeBuffer.showText(options.showText3);
+            break;
+
+        case '6':
+            codeBuffer.showText("");
             break;
     }
 }
@@ -471,6 +520,18 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
     std::cout << "Font by 'Norfok Incredible Font Design'" << std::endl;
     std::cout << " -> http://www.fontspace.com/norfok-incredible-font-design/matrix-code-nfi" << std::endl;
+    std::cout << std::endl;
+    std::cout << "Usage:" << std::endl;
+    std::cout << " ESC   -> Quit" << std::endl;
+    std::cout << " ENTER -> Switch Fullscreen" << std::endl;
+    std::cout << " 1     -> Show 'box flash'" << std::endl;
+    std::cout << " 2     -> Show 'blend flash'" << std::endl;
+    std::cout << " 3     -> Show text (1)" << std::endl;
+    std::cout << " 4     -> Show text (2)" << std::endl;
+    std::cout << " 5     -> Show text (3)" << std::endl;
+    std::cout << " 6     -> Clear text" << std::endl;
+
+    options.load("matrix_digital_rain.ini");
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
@@ -526,7 +587,7 @@ bool CodeBuffer::init()
     try
     {
         // load font
-        font_ = loadFont("matrix_font.ttf", FONT_SIZE);
+        font_ = loadFont("matrix_font.ttf", options.fontSize);
 
         appendCodePatterns('a', 'z');
         appendCodePatterns('!', '/');
@@ -562,6 +623,20 @@ void CodeBuffer::resize(int w, int h)
 
 void CodeBuffer::draw()
 {
+    // Update blending flash
+    if (blendFlash_)
+    {
+        blendAlpha_ += 10.0;
+        if (blendAlpha_ >= 180.0f)
+        {
+            blendScale_ = options.maxBlendScale;
+            blendAlpha_ = 0.0f;
+            blendFlash_ = false;
+        }
+        else
+            blendScale_ = options.maxBlendScale + std::sin(blendAlpha_*M_PI/180.0f)*options.maxBlendScale;
+    }
+
     // Update code boxes
     for (auto it = codeBoxes_.begin(); it != codeBoxes_.end();)
     {
@@ -609,7 +684,7 @@ void CodeBuffer::draw()
         {
             auto& c = getCode(j, i);
 
-            if (c.t > 0)
+            if (c.t != 0)
             {
                 int x = j*cw_;
                 int y = i*ch_;
@@ -617,7 +692,7 @@ void CodeBuffer::draw()
                 // Draw current code character
                 unsigned char r, g, b;
                 c.color(r, g, b);
-                drawText(*font_, x, y, std::string(1, c.c), r, g, b);
+                drawText(*font_, x, y, std::string(1, c.c), r, g, b, blendScale_);
             }
         }
     }
@@ -641,18 +716,32 @@ void CodeBuffer::update()
                 if (rand() % CODE_CHANGE_PROB == 0)
                     c.c = randomChar();
 
-                if (c.t > MAX_CODE_LENGTH)
+                if (c.t > options.maxCodeLength)
                     c.clear();
             }
         }
     }
+
+    // Get show text boundary
+    auto textLeft = showTextLeft();
+    auto textRight = showTextRight();
 
     // Process code strings
     for (auto it = codeStrings_.begin(); it != codeStrings_.end();)
     {
         if (it->y < h_)
         {
-            getCode(it->x, it->y).reset(randomChar(), it->brightness);
+            if (it->y >= 0)
+            {
+                auto& c = getCode(it->x, it->y);
+
+                // Reset next code
+                if (!showText_.empty() && it->y == showTextY() && it->x >= textLeft && it->x < textRight)
+                    c.reset(showText_[it->x - textLeft], it->brightness, -1);
+                else
+                    c.reset(randomChar(), it->brightness);
+            }
+
             ++(it->y);
             ++it;
         }
@@ -665,13 +754,46 @@ void CodeBuffer::update()
     for (int i = 0; i < n; ++i)
         appendCodeString();
 
+    // Add random effects
     if (options.autoBoxes && (rand() % CODE_BOX_PROB == 0))
-        flash();
+        boxFlash();
 }
 
-void CodeBuffer::flash()
+void CodeBuffer::boxFlash()
 {
     appendCodeBox();
+}
+
+void CodeBuffer::blendFlash()
+{
+    if (!blendFlash_)
+    {
+        blendFlash_ = true;
+        blendAlpha_ = 0.0f;
+    }
+}
+
+void CodeBuffer::showText(const std::string& s)
+{
+    // Clear previous text
+    if (!showText_.empty())
+    {
+        auto textLeft = showTextLeft();
+        auto textRight = showTextRight();
+
+        for (int i = 0; size_t(i) < showText_.size(); ++i)
+            getCode(textLeft + i, showTextY()).t = 1;
+    }
+
+    // Set new text
+    showText_ = s.substr(0, w_);
+
+    // Append code strings for the new text
+    auto textLeft = showTextLeft();
+    auto len = static_cast<int>(showText_.size());
+    
+    for (int i = 0; i < len; ++i)
+        appendCodeString(textLeft + i, -(rand() % len));
 }
 
 CodeBuffer::Code& CodeBuffer::getCode(int x, int y)
@@ -704,7 +826,18 @@ void CodeBuffer::appendCodeString()
     {
         codeString.x = (rand() % w_);
         codeString.y = 0;
-        codeString.brightness = random(0.5, 1.0);
+        codeString.brightness = random(MIN_CODE_BRIGHTNESS, 1.0);
+    }
+    codeStrings_.push_back(codeString);
+}
+
+void CodeBuffer::appendCodeString(int x, int y)
+{
+    CodeString codeString;
+    {
+        codeString.x = x;
+        codeString.y = y;
+        codeString.brightness = random(MIN_CODE_BRIGHTNESS, 1.0);
     }
     codeStrings_.push_back(codeString);
 }
@@ -721,7 +854,17 @@ char CodeBuffer::randomChar() const
 
 void CodeBuffer::Code::reset(char chr, double bright)
 {
-    t = 1;
+    if (t >= 0)
+    {
+        t = 1;
+        c = chr;
+        brightness = bright;
+    }
+}
+
+void CodeBuffer::Code::reset(char chr, double bright, int tm)
+{
+    t = tm;
     c = chr;
     brightness = bright;
 }
@@ -747,10 +890,10 @@ static unsigned char fadeColor(unsigned char c1, unsigned char c2, double fade)
 
 void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& b)
 {
-    const auto boundaryStart = MAX_CODE_LENGTH/3;
-    const auto boundarySize = MAX_CODE_LENGTH - boundaryStart;
-
-    if (flash)
+    const auto boundaryStart = options.maxCodeLength/3;
+    const auto boundarySize = options.maxCodeLength - boundaryStart;
+    
+    if (flash || t < 0)
     {
         r = 255;
         g = 255;
@@ -806,6 +949,82 @@ int CodeBuffer::boxBottom(const CodeBox& b) const
     return h_/2 + static_cast<int>(b.size*(h_/2));
 }
 
+int CodeBuffer::showTextLeft() const
+{
+    return w_/2 - static_cast<int>(showText_.size()/2);
+}
 
+int CodeBuffer::showTextRight() const
+{
+    return showTextLeft() + static_cast<int>(showText_.size());
+}
+
+int CodeBuffer::showTextY() const
+{
+    return h_/2;
+}
+
+
+bool Options::load(const std::string& filename)
+{
+    // Read configuration file
+    std::ifstream f(filename);
+    if (!f.good())
+    {
+        std::cerr << "failed to open configuration file: \"" << filename << '\"' << std::endl;
+        return false;
+    }
+
+    // Parse parameters
+    std::string line, param;
+
+    int iVal = 0;
+    double dVal = 0.0;
+    std::string sVal;
+
+    while (std::getline(f, line))
+    {
+        std::istringstream s(line);
+
+        // Parse parameter and its value
+        s >> param;
+
+        auto start = line.find('\"', 0);
+        if (start != std::string::npos)
+        {
+            auto end = line.find('\"', start + 1);
+            if (end != std::string::npos)
+                sVal = line.substr(start + 1, end - start - 1);
+        }
+        else if (line.find('.', 0) != std::string::npos)
+            s >> dVal;
+        else
+            s >> iVal;
+
+        // Store parameter settings
+        if (param == "fullscreen")
+            this->fullscreen = (iVal != 0);
+        else if (param == "auto_boxes")
+            this->autoBoxes = (iVal != 0);
+        else if (param == "blending")
+            this->blending = (iVal != 0);
+        else if (param == "font_size")
+            this->fontSize = iVal;
+        else if (param == "max_code_length")
+            this->maxCodeLength = iVal;
+        else if (param == "max_blend_scale")
+            this->maxBlendScale = dVal;
+        else if (param == "show_text_1")
+            this->showText1 = sVal;
+        else if (param == "show_text_2")
+            this->showText2 = sVal;
+        else if (param == "show_text_3")
+            this->showText3 = sVal;
+        else
+            std::cerr << "invalid parameter in initialization file: \"" << param << '\"' << std::endl;
+    }
+
+    return true;
+}
 
 
