@@ -989,6 +989,9 @@ bool Options::load(const std::string& filename)
         // Parse parameter and its value
         s >> param;
 
+        if (param.empty())
+            continue;
+
         auto start = line.find('\"', 0);
         if (start != std::string::npos)
         {
