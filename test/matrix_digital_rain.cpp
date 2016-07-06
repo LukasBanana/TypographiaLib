@@ -5,6 +5,7 @@
  * See "LICENSE.txt" for license information.
  */
 
+#define NOMINMAX
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -18,6 +19,7 @@
 #include <thread>
 #include <fstream>
 #include <sstream>
+#include <algorithm>
 
 #if defined(_WIN32)
 #   include <Windows.h>
@@ -29,39 +31,37 @@
 
 // ----- MACROS -----
 
-#define WINDOW_WIDTH       1024
-#define WINDOW_HEIGHT      768
-
-#define FRAME_DELAY         70 // delay between frames in milliseconds
-
-#define CODE_CHANGE_PROB    15
-
-#define CODE_BOX_PROB       100
-
-#define CODE_BOX_MOVE       0.035
-#define CODE_BOX_SIZE       3
-
-#define CODE_COLOR_R        97
-#define CODE_COLOR_G        244
-#define CODE_COLOR_B        99
-
-#define MIN_CODE_BRIGHTNESS 0.5
-
-#define VERSION_STR         "v1.01"
+#define VERSION_STR "v1.02"
 
 struct Options
 {
     bool load(const std::string& filename);
 
-    bool        fullscreen      = false;
-    bool        autoBoxes       = false;
-    bool        blending        = true;
-    int         fontSize        = 25;//30
-    int         maxCodeLength   = 30;
-    float       maxBlendScale   = 1.5f;
-    std::string showText1       = "THE MATRIX HAS YOU";
-    std::string showText2       = "WAKE UP NEO";
-    std::string showText3       = "IT IS PURPOSE THAT CREATED US";
+    bool            fullscreen      = false;
+    bool            autoBoxes       = false;
+    bool            blending        = true;
+    bool            showTextClear   = false; // stop codes after show text
+    bool            hideCursor      = true;
+    
+    int             screenWidth     = 1280;
+    int             screenHeight    = 768;
+    int             fontSize        = 25;
+    int             maxCodeLength   = 30;
+    int             frameDelay      = 70; // delay between frames in milliseconds
+    int             codeChangeProb  = 15; // probability for the codes to changes spontaneously (1:15)
+    int             codeBoxSize     = 3;
+    float           codeBoxMove     = 0.035f;
+    int             codeBoxProb     = 100; // probability for the code box to appear spontane
+    float           maxBlendScale   = 1.5f;
+    float           minBrightness   = 0.5f; // minimal code brightness
+    float           maxBrightness   = 1.0f; // maximal code brightness
+    unsigned char   colorR          = 97;
+    unsigned char   colorG          = 244;
+    unsigned char   colorB          = 99;
+
+    std::string     showText1       = "THE MATRIX HAS YOU";
+    std::string     showText2       = "WAKE UP NEO";
+    std::string     showText3       = "IT IS PURPOSE THAT CREATED US";
 };
 
 static Options options;
@@ -114,12 +114,12 @@ class CodeBuffer
         {
             int t = 0;
             char c = 0;
-            double brightness = 1.0;
+            float brightness = 1.0;
             bool flash = false;
 
             void color(unsigned char& r, unsigned char& g, unsigned char& b);
-            void reset(char chr, double bright);
-            void reset(char chr, double bright, int tm);
+            void reset(char chr, float bright);
+            void reset(char chr, float bright, int tm);
             void clear();
         };
 
@@ -127,12 +127,12 @@ class CodeBuffer
         {
             int x = 0;
             int y = 0;
-            double brightness = 1.0;
+            float brightness = 1.0f;
         };
 
         struct CodeBox
         {
-            double size = 0.0;
+            float size = 0.0f;
         };
 
         // --- FUNCTIONS --- //
@@ -146,7 +146,7 @@ class CodeBuffer
         int showTextRight() const;
         int showTextY() const;
 
-        char randomChar() const;
+        char randChar() const;
         Code& getCode(int x, int y);
 
         void appendCodePatterns(char begin, char end);
@@ -181,7 +181,7 @@ class CodeBuffer
 
 using Matrix4x4 = std::array<float, 16>;
 
-int resX = WINDOW_WIDTH, resY = WINDOW_HEIGHT;
+int resX = 0, resY = 0;
 
 CodeBuffer codeBuffer;
 
@@ -401,10 +401,10 @@ void updateElapsedTime()
     
     elapsedTime = t - prevTimestamp;
 
-    if (elapsedTime >= FRAME_DELAY)
+    if (elapsedTime >= options.frameDelay)
     {
-        elapsedTime -= FRAME_DELAY;
-        prevTimestamp += FRAME_DELAY;
+        elapsedTime -= options.frameDelay;
+        prevTimestamp += options.frameDelay;
 
         codeBuffer.update();
     }
@@ -439,8 +439,8 @@ void switchFullscreen(bool enable)
         }
         else
         {
-            resX = WINDOW_WIDTH;
-            resY = WINDOW_HEIGHT;
+            resX = options.screenWidth;
+            resY = options.screenHeight;
             glutPositionWindow(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
             glutReshapeWindow(resX, resY);
         }
@@ -545,14 +545,15 @@ int main(int argc, char* argv[])
     }
     else
     {
-        resX = WINDOW_WIDTH;
-        resY = WINDOW_HEIGHT;
+        resX = options.screenWidth;
+        resY = options.screenHeight;
         glutInitWindowPosition(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
         glutInitWindowSize(resX, resY);
     }
 
     glutCreateWindow("Matrix Digital Rain");
-    glutSetCursor(GLUT_CURSOR_NONE);
+    if (options.hideCursor)
+        glutSetCursor(GLUT_CURSOR_NONE);
     
     glutDisplayFunc(displayCallback);
     glutReshapeFunc(reshapeCallback);
@@ -640,26 +641,26 @@ void CodeBuffer::draw()
     // Update code boxes
     for (auto it = codeBoxes_.begin(); it != codeBoxes_.end();)
     {
-        auto left = boxLeft(*it) - CODE_BOX_SIZE;
-        auto top = boxTop(*it) - CODE_BOX_SIZE;
-        auto right = boxRight(*it) + CODE_BOX_SIZE;
-        auto bottom = boxBottom(*it) + CODE_BOX_SIZE;
+        auto left = boxLeft(*it) - options.codeBoxSize;
+        auto top = boxTop(*it) - options.codeBoxSize;
+        auto right = boxRight(*it) + options.codeBoxSize;
+        auto bottom = boxBottom(*it) + options.codeBoxSize;
 
         if (left >= 0 && top >= 0 && right < w_ && bottom < h_)
         {
             // Flash all codes which are affected by this box
             for (int i = left; i <= right; ++i)
             {
-                for (int j = 0; j < CODE_BOX_SIZE; ++j)
+                for (int j = 0; j < options.codeBoxSize; ++j)
                 {
                     getCode(i, top + j).flash = true;
                     getCode(i, bottom - j).flash = true;
                 }
             }
 
-            for (int i = top + CODE_BOX_SIZE; i <= bottom - CODE_BOX_SIZE; ++i)
+            for (int i = top + options.codeBoxSize; i <= bottom - options.codeBoxSize; ++i)
             {
-                for (int j = 0; j < CODE_BOX_SIZE; ++j)
+                for (int j = 0; j < options.codeBoxSize; ++j)
                 {
                     getCode(left + j, i).flash = true;
                     getCode(right - j, i).flash = true;
@@ -667,7 +668,7 @@ void CodeBuffer::draw()
             }
 
             // Increase box size
-            it->size += CODE_BOX_MOVE;
+            it->size += options.codeBoxMove;
 
             ++it;
         }
@@ -713,8 +714,8 @@ void CodeBuffer::update()
             {
                 ++c.t;
 
-                if (rand() % CODE_CHANGE_PROB == 0)
-                    c.c = randomChar();
+                if (rand() % options.codeChangeProb == 0)
+                    c.c = randChar();
 
                 if (c.t > options.maxCodeLength)
                     c.clear();
@@ -737,9 +738,16 @@ void CodeBuffer::update()
 
                 // Reset next code
                 if (!showText_.empty() && it->y == showTextY() && it->x >= textLeft && it->x < textRight)
-                    c.reset(showText_[it->x - textLeft], it->brightness, -1);
+                {
+                    c.reset(showText_[it->x - textLeft], options.maxBrightness, -1);
+                    if (options.showTextClear)
+                    {
+                        it = codeStrings_.erase(it);
+                        continue;
+                    }
+                }
                 else
-                    c.reset(randomChar(), it->brightness);
+                    c.reset(randChar(), it->brightness);
             }
 
             ++(it->y);
@@ -755,7 +763,7 @@ void CodeBuffer::update()
         appendCodeString();
 
     // Add random effects
-    if (options.autoBoxes && (rand() % CODE_BOX_PROB == 0))
+    if (options.autoBoxes && (rand() % options.codeBoxProb == 0))
         boxFlash();
 }
 
@@ -810,25 +818,19 @@ void CodeBuffer::appendCodePatterns(char begin, char end)
     while (begin++ != end);
 }
 
-static double random()
+static float randFloat()
 {
-    return static_cast<double>(rand()) / RAND_MAX;
+    return static_cast<float>(rand()) / RAND_MAX;
 }
 
-static double random(double a, double b)
+static float randFloat(float a, float b)
 {
-    return a + random()*(b - a);
+    return a + randFloat()*(b - a);
 }
 
 void CodeBuffer::appendCodeString()
 {
-    CodeString codeString;
-    {
-        codeString.x = (rand() % w_);
-        codeString.y = 0;
-        codeString.brightness = random(MIN_CODE_BRIGHTNESS, 1.0);
-    }
-    codeStrings_.push_back(codeString);
+    appendCodeString((rand() % w_), 0);
 }
 
 void CodeBuffer::appendCodeString(int x, int y)
@@ -837,7 +839,7 @@ void CodeBuffer::appendCodeString(int x, int y)
     {
         codeString.x = x;
         codeString.y = y;
-        codeString.brightness = random(MIN_CODE_BRIGHTNESS, 1.0);
+        codeString.brightness = randFloat(options.minBrightness, options.maxBrightness);
     }
     codeStrings_.push_back(codeString);
 }
@@ -847,12 +849,12 @@ void CodeBuffer::appendCodeBox()
     codeBoxes_.push_back(CodeBox());
 }
 
-char CodeBuffer::randomChar() const
+char CodeBuffer::randChar() const
 {
     return codePattern_[rand() % codePatternSize_];
 }
 
-void CodeBuffer::Code::reset(char chr, double bright)
+void CodeBuffer::Code::reset(char chr, float bright)
 {
     if (t >= 0)
     {
@@ -862,7 +864,7 @@ void CodeBuffer::Code::reset(char chr, double bright)
     }
 }
 
-void CodeBuffer::Code::reset(char chr, double bright, int tm)
+void CodeBuffer::Code::reset(char chr, float bright, int tm)
 {
     t = tm;
     c = chr;
@@ -876,15 +878,15 @@ void CodeBuffer::Code::clear()
     brightness = 1.0;
 }
 
-static unsigned char fadeColor(unsigned char c, double fade)
+static unsigned char fadeColor(unsigned char c, float fade)
 {
-    return static_cast<unsigned char>(static_cast<double>(c)*fade);
+    return static_cast<unsigned char>(static_cast<float>(c)*fade);
 }
 
-static unsigned char fadeColor(unsigned char c1, unsigned char c2, double fade)
+static unsigned char fadeColor(unsigned char c1, unsigned char c2, float fade)
 {
-    auto a = static_cast<double>(c1);
-    auto b = static_cast<double>(c2);
+    auto a = static_cast<float>(c1);
+    auto b = static_cast<float>(c2);
     return static_cast<unsigned char>(a + (b - a)*fade);
 }
 
@@ -904,23 +906,23 @@ void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& 
     {
         if (t > boundaryStart)
         {
-            auto f = (1.0 - static_cast<double>(t - boundaryStart) / static_cast<double>(boundarySize)) ;
-            r = fadeColor(CODE_COLOR_R, f);
-            g = fadeColor(CODE_COLOR_G, f);
-            b = fadeColor(CODE_COLOR_B, f);
+            auto f = (1.0f - static_cast<float>(t - boundaryStart) / static_cast<float>(boundarySize)) ;
+            r = fadeColor(options.colorR, f);
+            g = fadeColor(options.colorG, f);
+            b = fadeColor(options.colorB, f);
         }
         else if (t <= 3)
         {
-            auto f = static_cast<double>(t - 1)/2.0;
-            r = fadeColor(255, CODE_COLOR_R, f);
-            g = fadeColor(255, CODE_COLOR_G, f);
-            b = fadeColor(255, CODE_COLOR_B, f);
+            auto f = static_cast<float>(t - 1)/2.0f;
+            r = fadeColor(255, options.colorR, f);
+            g = fadeColor(255, options.colorG, f);
+            b = fadeColor(255, options.colorB, f);
         }
         else
         {
-            r = CODE_COLOR_R;
-            g = CODE_COLOR_G;
-            b = CODE_COLOR_B;
+            r = options.colorR;
+            g = options.colorG;
+            b = options.colorB;
         }
     }
 
@@ -979,11 +981,13 @@ bool Options::load(const std::string& filename)
     std::string line, param;
 
     int iVal = 0;
-    double dVal = 0.0;
+    float fVal = 0.0f;
     std::string sVal;
 
     while (std::getline(f, line))
     {
+        // Remove commentary from line
+        line = line.substr(0, line.find(';'));
         std::istringstream s(line);
 
         // Parse parameter and its value
@@ -991,6 +995,8 @@ bool Options::load(const std::string& filename)
 
         if (param.empty())
             continue;
+
+        std::transform(param.begin(), param.end(), param.begin(), ::tolower);
 
         auto start = line.find('\"', 0);
         if (start != std::string::npos)
@@ -1000,29 +1006,57 @@ bool Options::load(const std::string& filename)
                 sVal = line.substr(start + 1, end - start - 1);
         }
         else if (line.find('.', 0) != std::string::npos)
-            s >> dVal;
+            s >> fVal;
         else
             s >> iVal;
 
         // Store parameter settings
         if (param == "fullscreen")
-            this->fullscreen = (iVal != 0);
+            fullscreen = (iVal != 0);
         else if (param == "auto_boxes")
-            this->autoBoxes = (iVal != 0);
+            autoBoxes = (iVal != 0);
         else if (param == "blending")
-            this->blending = (iVal != 0);
+            blending = (iVal != 0);
+        else if (param == "hide_cursor")
+            hideCursor = (iVal != 0);
+        else if (param == "show_text_clear")
+            showTextClear = (iVal != 0);
+        else if (param == "screen_width")
+            screenWidth = std::abs(iVal);
+        else if (param == "screen_height")
+            screenHeight = std::abs(iVal);
+        else if (param == "color_r")
+            colorR = static_cast<unsigned char>(std::max(0, std::min(iVal, 255)));
+        else if (param == "color_g")
+            colorG = static_cast<unsigned char>(std::max(0, std::min(iVal, 255)));
+        else if (param == "color_b")
+            colorB = static_cast<unsigned char>(std::max(0, std::min(iVal, 255)));
         else if (param == "font_size")
-            this->fontSize = iVal;
+            fontSize = iVal;
         else if (param == "max_code_length")
-            this->maxCodeLength = iVal;
+            maxCodeLength = iVal;
+        else if (param == "frame_delay")
+            frameDelay = iVal;
+        else if (param == "code_change_prob")
+            codeChangeProb = std::max(1, iVal);
+        else if (param == "code_box_size")
+            codeBoxSize = std::max(1, iVal);
+        else if (param == "code_box_move")
+            codeBoxMove = std::max(0.0001f, fVal);
+        else if (param == "code_box_prob")
+            codeBoxProb = std::max(1, iVal);
         else if (param == "max_blend_scale")
-            this->maxBlendScale = dVal;
+            maxBlendScale = fVal;
+        else if (param == "min_brightness")
+            minBrightness = fVal;
+        else if (param == "max_brightness")
+            maxBrightness = fVal;
         else if (param == "show_text_1")
-            this->showText1 = sVal;
+            showText1 = sVal;
         else if (param == "show_text_2")
-            this->showText2 = sVal;
+            showText2 = sVal;
         else if (param == "show_text_3")
-            this->showText3 = sVal;
+            showText3 = sVal;
         else
             std::cerr << "invalid parameter in initialization file: \"" << param << '\"' << std::endl;
     }
