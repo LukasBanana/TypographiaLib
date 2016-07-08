@@ -181,7 +181,17 @@ void initGL()
 
 std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, int flags = 0)
 {
-    auto fontDesc = Tg::FontDescription{ "C:/Windows/Fonts/" + fontName + ".ttf", size, flags };
+    std::string fontPath;
+    
+    #if defined(_WIN32)
+    fontPath = "C:/Windows/Fonts/";
+    #elif defined(__APPLE__)
+    fontPath = "/Library/Fonts/";
+    #endif
+    
+    auto fontFilename = fontPath + fontName + ".ttf";
+    auto fontDesc = Tg::FontDescription{ fontFilename, size, flags };
+    
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 
@@ -190,9 +200,14 @@ bool initScene()
     try
     {
         // load font
+        #if defined(_WIN32)
         //fontSmall = loadFont("times", 32);
         fontSmall = loadFont("consola", 20);
         fontLarge = loadFont("ITCEDSCR", 80);
+        #elif defined(__APPLE__)
+        fontSmall = loadFont("Times New Roman", 32);
+        fontLarge = loadFont("Verdana Italic", 80);
+        #endif
     }
     catch (const std::exception& err)
     {
