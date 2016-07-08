@@ -40,6 +40,10 @@ struct FontGlyphRange
 //! Font glyph data structure.
 struct FontGlyph
 {
+    FontGlyph()
+    {
+    }
+    
     Rect    rect;
     int     xOffset = 0;
     int     yOffset = 0;

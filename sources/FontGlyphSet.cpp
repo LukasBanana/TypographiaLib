@@ -13,9 +13,9 @@ namespace Tg
 
 
 FontGlyphSet::FontGlyphSet(FontGlyphSet&& rhs) :
+    isVertical  ( rhs.isVertical         ),
     glyphRange_ ( rhs.glyphRange_        ),
-    glyphs_     ( std::move(rhs.glyphs_) ),
-    isVertical  ( rhs.isVertical         )
+    glyphs_     ( std::move(rhs.glyphs_) )
 {
 }
 
@@ -27,7 +27,7 @@ void FontGlyphSet::SetGlyphRange(const FontGlyphRange& glyphRange)
 
 const FontGlyph& FontGlyphSet::operator [] (char chr) const
 {
-    return (*this)[static_cast<wchar_t>(unsigned char(chr))];
+    return (*this)[static_cast<wchar_t>(static_cast<unsigned char>(chr))];
 }
 
 const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
@@ -38,7 +38,7 @@ const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
 
 FontGlyph& FontGlyphSet::operator [] (char chr)
 {
-    return (*this)[static_cast<wchar_t>(unsigned char(chr))];
+    return (*this)[static_cast<wchar_t>(static_cast<unsigned char>(chr))];
 }
 
 FontGlyph& FontGlyphSet::operator [] (wchar_t chr)

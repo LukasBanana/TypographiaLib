@@ -28,6 +28,9 @@
 #   include <GLUT/glut.h>
 #endif
 
+// Ignore deprecation of GLUT function when compiling with clang on MacOS
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 
 // ----- MACROS -----
 
@@ -468,7 +471,7 @@ void reshapeCallback(GLsizei w, GLsizei h)
 
 void keyboardCallback(unsigned char key, int x, int y)
 {
-    auto modMask = glutGetModifiers();
+    //auto modMask = glutGetModifiers();
 
     switch (key)
     {
@@ -787,7 +790,6 @@ void CodeBuffer::showText(const std::string& s)
     if (!showText_.empty())
     {
         auto textLeft = showTextLeft();
-        auto textRight = showTextRight();
 
         for (int i = 0; size_t(i) < showText_.size(); ++i)
             getCode(textLeft + i, showTextY()).t = 1;

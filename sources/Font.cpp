@@ -141,7 +141,7 @@ static Size ApproximateFontAtlasSize(unsigned int visualArea)
 
 FontModel BuildFont(const FontDescription& desc, unsigned int border)
 {
-    return std::move(BuildFont(desc, FontGlyphRange(32, 255), border));
+    return /*std::move(*/BuildFont(desc, FontGlyphRange(32, 255), border)/*)*/;
 }
 
 /*
