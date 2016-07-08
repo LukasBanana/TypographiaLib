@@ -34,7 +34,7 @@
 
 // ----- MACROS -----
 
-#define VERSION_STR "v1.02"
+#define VERSION_STR "v1.03"
 
 struct Options
 {
@@ -179,6 +179,32 @@ class CodeBuffer
 
 };
 
+class Timer
+{
+    
+    public:
+    
+        Timer() : startTime_(Clock::now())
+        {
+        }
+    
+        void reset()
+        {
+            startTime_ = Clock::now();
+        }
+    
+        double elapsed() const
+        {
+            return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - startTime_).count();
+        }
+    
+    private:
+    
+        using Clock = std::chrono::high_resolution_clock;
+        std::chrono::time_point<Clock> startTime_;
+    
+};
+
 
 // ----- VARIABLES -----
 
@@ -188,7 +214,7 @@ int resX = 0, resY = 0;
 
 CodeBuffer codeBuffer;
 
-clock_t prevTimestamp = 0, elapsedTime = 0;
+Timer timer;
 
 
 // ----- CLASS "TexturedFont" FUNCTIONS -----
@@ -400,15 +426,11 @@ void drawScene()
 
 void updateElapsedTime()
 {
-    auto t = clock();
+    const auto delay = static_cast<double>(options.frameDelay);
     
-    elapsedTime = t - prevTimestamp;
-
-    if (elapsedTime >= options.frameDelay)
+    if (timer.elapsed() > delay)
     {
-        elapsedTime -= options.frameDelay;
-        prevTimestamp += options.frameDelay;
-
+        timer.reset();
         codeBuffer.update();
     }
 }

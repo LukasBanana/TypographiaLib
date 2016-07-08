@@ -21,6 +21,9 @@
 #   include <GLUT/glut.h>
 #endif
 
+// Ignore deprecation of GLUT function when compiling with clang on MacOS
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 
 // ----- MACROS -----
 
@@ -459,7 +462,7 @@ void reshapeCallback(GLsizei w, GLsizei h)
 
 void keyboardCallback(unsigned char key, int x, int y)
 {
-    auto modMask = glutGetModifiers();
+    //auto modMask = glutGetModifiers();
 
     switch (key)
     {
