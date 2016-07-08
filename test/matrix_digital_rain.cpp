@@ -28,8 +28,10 @@
 #   include <GLUT/glut.h>
 #endif
 
+#ifdef __APPLE__
 // Ignore deprecation of GLUT function when compiling with clang on MacOS
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
 
 // ----- MACROS -----
