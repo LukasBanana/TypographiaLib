@@ -1,6 +1,6 @@
 /*
  * test2.cpp
- * 
+ *
  * This file is part of the "TypographiaLib" project (Copyright (c) 2015 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
@@ -11,6 +11,7 @@
 #include <memory>
 #include <array>
 #include <functional>
+#include <algorithm>
 
 #ifndef TG_UNICODE
 
@@ -19,6 +20,9 @@
 #   include <gl/glut.h>
 #elif defined(__APPLE__)
 #   include <GLUT/glut.h>
+#elif defined(__linux__)
+#   include <GL/gl.h>
+#   include <GL/glut.h>
 #endif
 
 #ifdef __APPLE__
@@ -41,9 +45,9 @@
 
 class TexturedFont : public Tg::Font
 {
-    
+
     public:
-        
+
         TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel& fontModel);
         ~TexturedFont();
 
@@ -53,7 +57,7 @@ class TexturedFont : public Tg::Font
         const Tg::Size& getSize() const;
 
     private:
-        
+
         GLuint      texName_ = 0;
         Tg::Size    texSize_;
 
@@ -61,9 +65,9 @@ class TexturedFont : public Tg::Font
 
 class Blinker
 {
-    
+
     public:
-        
+
         Blinker();
 
         bool visible() const;
@@ -72,7 +76,7 @@ class Blinker
         long long timeInterval = 500;
 
     private:
-        
+
         mutable std::chrono::system_clock::time_point lastTime_;
 
 };
@@ -184,16 +188,16 @@ void initGL()
 std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, int flags = 0)
 {
     std::string fontPath;
-    
+
     #if defined(_WIN32)
     fontPath = "C:/Windows/Fonts/";
     #elif defined(__APPLE__)
     fontPath = "/Library/Fonts/";
     #endif
-    
+
     auto fontFilename = fontPath + fontName + ".ttf";
     auto fontDesc = Tg::FontDescription{ fontFilename, size, flags };
-    
+
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 
@@ -348,7 +352,7 @@ void drawTextField(
     if (textField.IsSelected())
     {
         setColor(COLOR_YELLOW);
-        
+
         Tg::TextFieldString::SizeType start, end;
         textField.GetSelection(start, end);
 
@@ -443,7 +447,7 @@ void drawScene()
 
     // draw text
     drawTextField(*fontSmall, 15, 15, mainTextField, COLOR_LIGHT_BLUE);
-    
+
     if (mainMlText)
     {
         static const int border = 15;
@@ -489,7 +493,7 @@ void keyboardCallback(unsigned char key, int x, int y)
 
         case '\r': // ENTER
             break;
-            
+
         default:
             if (key == 1) // CTRL+A
             {
@@ -555,7 +559,7 @@ int main(int argc, char* argv[])
     glutInitWindowSize(resX, resY);
     glutInitWindowPosition(desktopResX/2 - resX/2, desktopResY/2 - resY/2);
     glutCreateWindow("TypographiaLib Test 2 (OpenGL, GLUT)");
-    
+
     glutDisplayFunc(displayCallback);
     glutReshapeFunc(reshapeCallback);
     glutIdleFunc(idleCallback);

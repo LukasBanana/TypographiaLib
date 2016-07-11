@@ -1,6 +1,6 @@
 /*
  * matrix_digital_rain.cpp
- * 
+ *
  * This file is part of the "TypographiaLib" project (Copyright (c) 2015 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.
  */
@@ -26,6 +26,9 @@
 #   include <gl/glut.h>
 #elif defined(__APPLE__)
 #   include <GLUT/glut.h>
+#elif defined(__linux__)
+#   include <GL/gl.h>
+#   include <GL/glut.h>
 #endif
 
 #ifdef __APPLE__
@@ -47,7 +50,7 @@ struct Options
     bool            blending        = true;
     bool            showTextClear   = false; // stop codes after show text
     bool            hideCursor      = true;
-    
+
     int             screenWidth     = 1280;
     int             screenHeight    = 768;
     int             fontSize        = 25;
@@ -76,9 +79,9 @@ static Options options;
 
 class TexturedFont : public Tg::Font
 {
-    
+
     public:
-        
+
         TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel& fontModel);
         ~TexturedFont();
 
@@ -88,7 +91,7 @@ class TexturedFont : public Tg::Font
         const Tg::Size& getSize() const;
 
     private:
-        
+
         GLuint      texName_ = 0;
         Tg::Size    texSize_;
 
@@ -112,7 +115,7 @@ class CodeBuffer
         void showText(const std::string& s);
 
     private:
-        
+
         // --- STRUCTURES --- //
 
         struct Code
@@ -183,28 +186,28 @@ class CodeBuffer
 
 class Timer
 {
-    
+
     public:
-    
+
         Timer() : startTime_(Clock::now())
         {
         }
-    
+
         void reset()
         {
             startTime_ = Clock::now();
         }
-    
+
         double elapsed() const
         {
             return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - startTime_).count();
         }
-    
+
     private:
-    
+
         using Clock = std::chrono::high_resolution_clock;
         std::chrono::time_point<Clock> startTime_;
-    
+
 };
 
 
@@ -429,7 +432,7 @@ void drawScene()
 void updateElapsedTime()
 {
     const auto delay = static_cast<double>(options.frameDelay);
-    
+
     if (timer.elapsed() > delay)
     {
         timer.reset();
@@ -535,6 +538,8 @@ void keyboardCallback(unsigned char key, int x, int y)
 
 int main(int argc, char* argv[])
 {
+    glutInit(&argc, argv);
+
     const auto desktopResX = glutGet(GLUT_SCREEN_WIDTH);
     const auto desktopResY = glutGet(GLUT_SCREEN_HEIGHT);
 
@@ -560,7 +565,6 @@ int main(int argc, char* argv[])
 
     options.load("matrix_digital_rain.ini");
 
-    glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 
     if (options.fullscreen)
@@ -581,7 +585,7 @@ int main(int argc, char* argv[])
     glutCreateWindow("Matrix Digital Rain");
     if (options.hideCursor)
         glutSetCursor(GLUT_CURSOR_NONE);
-    
+
     glutDisplayFunc(displayCallback);
     glutReshapeFunc(reshapeCallback);
     glutIdleFunc(idleCallback);
@@ -825,7 +829,7 @@ void CodeBuffer::showText(const std::string& s)
     // Append code strings for the new text
     auto textLeft = showTextLeft();
     auto len = static_cast<int>(showText_.size());
-    
+
     for (int i = 0; i < len; ++i)
         appendCodeString(textLeft + i, -(rand() % len));
 }
@@ -920,7 +924,7 @@ void CodeBuffer::Code::color(unsigned char& r, unsigned char& g, unsigned char& 
 {
     const auto boundaryStart = options.maxCodeLength/3;
     const auto boundarySize = options.maxCodeLength - boundaryStart;
-    
+
     if (flash || t < 0)
     {
         r = 255;
