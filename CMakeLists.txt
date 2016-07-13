@@ -16,15 +16,30 @@ set(PROJECT_TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 
 # === Global files ===
 
-file(GLOB_RECURSE HeadersAll "${PROJECT_SOURCE_DIR}/include/*.*")
-file(GLOB_RECURSE SourcesAll "${PROJECT_SOURCE_DIR}/sources/*.*")
+file(GLOB Headers "${PROJECT_SOURCE_DIR}/include/Typo/*.*")
+file(GLOB Sources "${PROJECT_SOURCE_DIR}/sources/*.*")
 
-set(FilesAll ${HeadersAll} ${SourcesAll})
+if(WIN32)
+	file(GLOB SourcesPlatform "${PROJECT_SOURCE_DIR}/sources/Platform/Win32/*.*")
+elseif(APPLE)
+	file(GLOB SourcesPlatform "${PROJECT_SOURCE_DIR}/sources/Platform/MacOS/*.*")
+elseif(UNIX)
+	file(GLOB SourcesPlatform "${PROJECT_SOURCE_DIR}/sources/Platform/Linux/*.*")
+endif()
+
+set(FilesAll ${Headers} ${Sources} ${SourcesPlatform})
 
 
 # === Include directories ===
 
 include_directories("${PROJECT_INCLUDE_DIR}")
+
+
+# === Source groups ===
+
+source_group("Include\\Typo" FILES ${Headers})
+source_group("Sources" FILES ${Sources})
+source_group("Sources\\Platform" FILES ${SourcesPlatform})
 
 
 # === Binaries ===

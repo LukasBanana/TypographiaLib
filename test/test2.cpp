@@ -189,15 +189,15 @@ std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, in
 {
     std::string fontPath;
 
-    #if defined(_WIN32)
+    /*#if defined(_WIN32)
     fontPath = "C:/Windows/Fonts/";
     #elif defined(__APPLE__)
     fontPath = "/Library/Fonts/";
     #elif defined(__linux__)
     fontPath = "/usr/share/fonts/truetype/";
-    #endif
+    #endif*/
 
-    auto fontFilename = fontPath + fontName + ".ttf";
+    auto fontFilename = Tg::SystemFontPath(fontName);//fontPath + fontName + ".ttf";
     auto fontDesc = Tg::FontDescription{ fontFilename, size, flags };
 
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
