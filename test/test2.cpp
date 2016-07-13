@@ -193,6 +193,8 @@ std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, in
     fontPath = "C:/Windows/Fonts/";
     #elif defined(__APPLE__)
     fontPath = "/Library/Fonts/";
+    #elif defined(__linux__)
+    fontPath = "/usr/share/fonts/truetype/";
     #endif
 
     auto fontFilename = fontPath + fontName + ".ttf";
@@ -213,6 +215,9 @@ bool initScene()
         #elif defined(__APPLE__)
         fontSmall = loadFont("Times New Roman", 32);
         fontLarge = loadFont("Verdana Italic", 80);
+        #elif defined(__linux__)
+        fontSmall = loadFont("freefont/FreeMonoBold", 20);
+        fontLarge = loadFont("freefont/FreeSerif", 80);
         #endif
     }
     catch (const std::exception& err)
