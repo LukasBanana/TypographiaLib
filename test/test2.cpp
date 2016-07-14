@@ -187,19 +187,8 @@ void initGL()
 
 std::unique_ptr<TexturedFont> loadFont(const std::string& fontName, int size, int flags = 0)
 {
-    std::string fontPath;
-
-    /*#if defined(_WIN32)
-    fontPath = "C:/Windows/Fonts/";
-    #elif defined(__APPLE__)
-    fontPath = "/Library/Fonts/";
-    #elif defined(__linux__)
-    fontPath = "/usr/share/fonts/truetype/";
-    #endif*/
-
-    auto fontFilename = Tg::SystemFontPath(fontName);//fontPath + fontName + ".ttf";
+    auto fontFilename = Tg::SystemFontPath(fontName, flags);
     auto fontDesc = Tg::FontDescription{ fontFilename, size, flags };
-
     return std::unique_ptr<TexturedFont>(new TexturedFont(fontDesc, Tg::BuildFont(fontDesc)));
 }
 
@@ -209,9 +198,9 @@ bool initScene()
     {
         // load font
         #if defined(_WIN32)
-        //fontSmall = loadFont("times", 32);
-        fontSmall = loadFont("consola", 20);
-        fontLarge = loadFont("ITCEDSCR", 80);
+        //fontSmall = loadFont("Times New Roman", 32);
+        fontSmall = loadFont("Consolas", 20);
+        fontLarge = loadFont("Edwardian Script", 80);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Times New Roman", 32);
         fontLarge = loadFont("Verdana Italic", 80);
@@ -220,9 +209,9 @@ bool initScene()
         fontLarge = loadFont("freefont/FreeSerif", 80);
         #endif
     }
-    catch (const std::exception& err)
+    catch (const std::exception& e)
     {
-        std::cerr << err.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         #ifdef _WIN32
         system("pause");
         #endif

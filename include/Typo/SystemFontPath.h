@@ -21,6 +21,7 @@ namespace Tg
 \param[in] fontName Specifies the font name (without file extension).
 \param[in] flags Specifies the font flags. This can be a bitwise OR combination of the values of the 'FontFlags' enumeration.
 \see FontFlags
+\expection std::runtime_error Depends on the platform.
 */
 std::string SystemFontPath(std::string fontName, int flags = 0);
 

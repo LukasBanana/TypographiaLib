@@ -5,6 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
+#include "GetFontFile.h"
+
 #include <Typo/SystemFontPath.h>
 
 
@@ -14,12 +16,13 @@ namespace Tg
 
 std::string SystemFontPath(std::string fontName, int flags)
 {
-    std::string fontFilename;
+    static const std::string fontPath = "C:\\Windows\\Fonts\\";
 
-    std::string fontPath = "C:/Windows/Fonts/";
-    fontFilename = fontPath + fontName + ".ttf";
+    std::string filename;
+    if (GetFontFile(fontName, filename))
+        return fontPath + filename;
 
-    return fontFilename;
+    return "";
 }
 
 
