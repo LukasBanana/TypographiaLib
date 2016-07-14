@@ -1,5 +1,5 @@
 /*
- * SystemFontPath.cpp (Win32)
+ * GetFontFile.cpp (Win32)
  * 
  * This file is part of the "TypographiaLib" project (Copyright (c) 2015 by Lukas Hermanns)
  * See "LICENSE.txt" for license information.

@@ -202,8 +202,8 @@ bool initScene()
         fontSmall = loadFont("Consolas", 20);
         fontLarge = loadFont("Edwardian Script", 80);
         #elif defined(__APPLE__)
-        fontSmall = loadFont("Times New Roman", 32);
-        fontLarge = loadFont("Verdana Italic", 80);
+        fontSmall = loadFont("Courier New", 32);
+        fontLarge = loadFont("Brush Script", 80);
         #elif defined(__linux__)
         fontSmall = loadFont("freefont/FreeMonoBold", 20);
         fontLarge = loadFont("freefont/FreeSerif", 80);
