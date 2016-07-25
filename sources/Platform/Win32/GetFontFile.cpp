@@ -22,7 +22,7 @@ This source code was derived from a public domain software by Hans Dietrich (200
 
 static bool OpenRegistryKey(HKEY key, const std::string& subKeyName, HKEY& subKeyHandle)
 {
-	return (RegOpenKeyEx(key, subKeyName.c_str(), 0, KEY_READ, (&subKeyHandle)) == ERROR_SUCCESS);
+    return (RegOpenKeyEx(key, subKeyName.c_str(), 0, KEY_READ, (&subKeyHandle)) == ERROR_SUCCESS);
 }
 
 static void CloseRegistryKey(HKEY subKeyHandle)
@@ -33,33 +33,33 @@ static void CloseRegistryKey(HKEY subKeyHandle)
 
 static bool GetNextFontName(HKEY key, std::string& name, std::string& value, DWORD index)
 {
-	char valueName[MAX_PATH];
-	DWORD valueNameSize = (sizeof(valueName) - 1);
-	
+    char valueName[MAX_PATH];
+    DWORD valueNameSize = (sizeof(valueName) - 1);
+    
     BYTE valueData[MAX_PATH];
-	DWORD valueDataSize = (sizeof(valueData) - 1);
+    DWORD valueDataSize = (sizeof(valueData) - 1);
 
-	DWORD type = 0;
+    DWORD type = 0;
 
-	LONG retval = RegEnumValue(
+    LONG retval = RegEnumValue(
         key, index, valueName, &valueNameSize, NULL, 
-		&type, valueData, &valueDataSize
+        &type, valueData, &valueDataSize
     );
 
-	if (retval == ERROR_SUCCESS) 
-	{
+    if (retval == ERROR_SUCCESS) 
+    {
         name = std::string(reinterpret_cast<const char*>(valueName));
         value = std::string(reinterpret_cast<const char*>(valueData));
         return true;
-	}
-	
+    }
+    
     return false;
 }
 
 bool GetFontFile(std::string fontName, std::string& fontFilename)
 {
     /* Clear output filename and check for valid input */
-	fontFilename.clear();
+    fontFilename.clear();
 
     if (fontName.empty())
         return false;
@@ -67,10 +67,10 @@ bool GetFontFile(std::string fontName, std::string& fontFilename)
     /* Convert input font name to lower case */
     std::transform(fontName.begin(), fontName.end(), fontName.begin(), ::tolower);
     
-	const std::string regKeyName = "Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
-	std::string name, value;
+    const std::string regKeyName = "Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+    std::string name, value;
 
-	bool result = false;
+    bool result = false;
 
     /* Open registry key for fonts */
     HKEY regKey = NULL;
@@ -80,23 +80,23 @@ bool GetFontFile(std::string fontName, std::string& fontFilename)
     /* Iterate over all fonts in the Windows registry */
     DWORD index = 0;
 
-	while (GetNextFontName(regKey, name, value, index++))
-	{
+    while (GetNextFontName(regKey, name, value, index++))
+    {
         /* Find input font name within current name in lower case */
         std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
         if (name.find(fontName) != std::string::npos)
-		{
-			fontFilename = value;
-			result = true;
-			break;
-		}
-	}
+        {
+            fontFilename = value;
+            result = true;
+            break;
+        }
+    }
 
     /* Clean up */
     CloseRegistryKey(regKey);
 
-	return result;
+    return result;
 }
 
 
