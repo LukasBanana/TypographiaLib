@@ -12,7 +12,7 @@ Overview
 Dependencies
 ------------
 
-Build this library requires the [FreeType Project](http://freetype.org/)
+Building this library requires the [FreeType Project](https://www.freetype.org/)
 
 
 Screenshots
