@@ -1,27 +1,29 @@
 TypographiaLib - A simple C++ library for font drawing
 ======================================================
 
-License
+Overview
 -------
 
-[3-Clause BSD License](https://github.com/LukasBanana/GaussianLib/blob/master/LICENSE.txt)
+* **Version**: 1.00 Alpha
+* **License**: [3-Clause BSD License](https://github.com/LukasBanana/GaussianLib/blob/master/LICENSE.txt)
+* **Documentation**: [GeometronLib Docu.pdf](https://github.com/LukasBanana/GeometronLib/blob/master/docu/GeometronLib%20Docu.pdf)
 
-Status
-------
-
-**Alpha**
 
 Dependencies
 ------------
-This library makes use of the *FreeType* project (see http://freetype.org/)
 
-Screenshot
-----------
+Build this library requires the [FreeType Project](http://freetype.org/)
+
+
+Screenshots
+-----------
+
 <p align="center">Example with <b>TextFieldString</b>, and <b>MultiLineString</b>:</p>
 <p align="center"><img src="media/typolib_example01.png" alt="media/typolib_example01.png"/></p>
 
-<p align="center">Screenshot of the <b>Matrix Digital Rain</b> example (see the <a href="https://www.youtube.com/watch?v=CAV1fQeAozo">video</a>):</p>
+<p align="center">Screenshot of the <b>Matrix Digital Rain</b> example (see it on <a href="https://www.youtube.com/watch?v=CAV1fQeAozo">YouTube</a>):</p>
 <p align="center"><img src="media/typolib_example02.png" alt="media/typolib_example02.png"/></p>
+
 
 Example
 -------
