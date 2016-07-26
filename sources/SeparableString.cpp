@@ -16,15 +16,9 @@ SeparableString::~SeparableString()
 {
 }
 
-const String& SeparableString::GetSeparators() const
-{
-    static const String sep = STRING_LITERAL(" \t\"',;.:-()[]{}/\\");
-    return sep;
-}
-
 bool SeparableString::IsSeparator(const Char& chr) const
 {
-    return GetSeparators().find(chr) != String::npos;
+    return !((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z'));
 }
 
 

@@ -31,14 +31,11 @@ class SeparableString
 
         virtual ~SeparableString();
         
-        //! Returns a string with all separator characters.
-        virtual const String& GetSeparators() const;
-        
         /**
-        Returns true if the specified character is a separator.
+        \brief Returns true if the specified character is a separator.
         \see GetSeparators
         */
-        bool IsSeparator(const Char& chr) const;
+        virtual bool IsSeparator(const Char& chr) const;
 
 };
 
