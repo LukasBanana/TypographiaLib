@@ -10,6 +10,7 @@
 
 
 #include "MultiLineString.h"
+#include "Point.h"
 
 
 namespace Tg
@@ -25,6 +26,8 @@ class TextFieldMultiLineString : private MultiLineString
     
     public:
         
+        using Point = Point<SizeType>;
+
         TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);
 
         TextFieldMultiLineString& operator = (const String& str);
@@ -41,21 +44,17 @@ class TextFieldMultiLineString : private MultiLineString
         /* --- Cursor operations --- */
         
         //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
-        void SetCursorPosition(SizeType positionX, SizeType positionY);
+        void SetCursorPosition(const Point& position);
 
-        //! Returns the current cursor position. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
-        void GetCursorPosition(SizeType& positionX, SizeType& positionY) const;
-
-        //! Returns the current (horizontal) cursor position. This is always in the range [0, GetText().size()].
-        inline SizeType GetCursorPositionX() const
+        inline void SetCursorPosition(SizeType positionX, SizeType positionY)
         {
-            return cursorPosX_;
+            SetCursorPosition({ positionX, positionY });
         }
 
-        //! Returns the current (vertical) cursor position. This is always in the range [0, GetLines().size()).
-        inline SizeType GetCursorPositionY() const
+        //! Returns the current cursor position. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
+        inline const Point& GetCursorPosition() const
         {
-            return cursorPosY_;
+            return cursorPos_;
         }
 
         //! Returns true if the cursor X position is at the beginning.
@@ -108,18 +107,18 @@ class TextFieldMultiLineString : private MultiLineString
         /**
         \brief Sets the new selection area.
         \param[in] start Specifies the selection start. This may also be larger than 'end'.
-        \param[in] end Specifies the selection end (or rather the new cursor psoition).
+        \param[in] end Specifies the selection end (or rather the new cursor position).
         \remarks This also modifies the cursor position.
         \see SetCursorPosition
         \see selectionEnabled
         */
-        void SetSelection(SizeType start, SizeType end);
+        void SetSelection(const Point& start, const Point& end);
 
         /**
         \brief Retrieves the selection range, so that 'start' is always less than or equal to 'end'.
         \see selectionEnabled
         */
-        void GetSelection(SizeType& start, SizeType& end) const;
+        void GetSelection(Point& start, Point& end) const;
 
         //! Selects the entire string content.
         void SelectAll();
@@ -238,21 +237,16 @@ class TextFieldMultiLineString : private MultiLineString
         String::const_iterator Iter() const;
 #endif
 
-        //! Returns the specified X position, clamped to the range [0, GetText().size()].
-        SizeType ClampedPosX(SizeType pos) const;
-
-        //! Returns the specified Y position, clamped to the range [0, GetLines().size()).
-        SizeType ClampedPosY(SizeType pos) const;
+        //! Returns the specified X position, clamped to the range { [0, GetText().size()], [0, GetLines().size()) }.
+        Point ClampedPos(Point pos) const;
 
         //! Updates the cursor- and selection start position to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void UpdateCursorRange();
 
         /* === Member === */
 
-        SizeType    cursorPosX_ = 0;
-        SizeType    cursorPosY_ = 0;
-        SizeType    selStartX_  = 0;
-        SizeType    selStartY_  = 0;
+        Point cursorPos_;
+        Point selStart_;
         
 };
 
