@@ -42,7 +42,7 @@ class MultiLineString : public SeparableString
         
         MultiLineString& operator += (const Char& chr);
         
-        operator const String& () const
+        inline operator const String& () const
         {
             return text_;
         }
@@ -67,7 +67,7 @@ class MultiLineString : public SeparableString
         void SetGlyphSet(const FontGlyphSet& glyphSet);
         
         //! Returns the current font glyph set for this multi-line string.
-        const FontGlyphSet& GetGlyphSet() const
+        inline const FontGlyphSet& GetGlyphSet() const
         {
             return *glyphSet_;
         }
@@ -80,13 +80,13 @@ class MultiLineString : public SeparableString
         \remarks If this is too small, it might be smaller than the value of 'GetWidth',
         because at least one single character must fit into each line.
         */
-        int GetMaxWidth() const
+        inline int GetMaxWidth() const
         {
             return maxWidth_;
         }
         
         //! Returns the width of the widest line.
-        int GetWidth() const
+        inline int GetWidth() const
         {
             return width_;
         }
@@ -95,7 +95,7 @@ class MultiLineString : public SeparableString
         void SetText(const String& text);
 
         //! Returns the base text.
-        const String& GetText() const
+        inline const String& GetText() const
         {
             return text_;
         }
@@ -104,11 +104,11 @@ class MultiLineString : public SeparableString
         \brief Returns the list of all text lines.
         \see TextLine
         */
-        const std::vector<TextLine>& GetLines() const
+        inline const std::vector<TextLine>& GetLines() const
         {
             return lines_;
         }
-        
+
     protected:
         
         //! Returns the width of the specified character

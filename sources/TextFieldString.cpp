@@ -41,15 +41,12 @@ TextFieldString& TextFieldString::operator += (const Char& chr)
 
 void TextFieldString::SetCursorPosition(SizeType position)
 {
-    /* Clamp position to the range [0, size] */
-    position = ClampedPos(position);
+    /* Clamp position to the range [0, length] */
+    cursorPos_ = ClampedPos(position);
 
-    /* Always set cursor position */
-    cursorPos_ = position;
-
-    /* If selection is enabled, also set selection start */
+    /* If selection is disabled, also set selection start */
     if (!selectionEnabled)
-        selStart_ = position;
+        selStart_ = cursorPos_;
 }
 
 bool TextFieldString::IsCursorBegin() const
@@ -64,7 +61,10 @@ bool TextFieldString::IsCursorEnd() const
 
 void TextFieldString::MoveCursor(int direction)
 {
+    /* Get line size and quit if moving the cursor is not possible */
     auto size = GetText().size();
+    if (size == 0)
+        return;
 
     auto AdjustDir = [size](SizeType& p)
     {
@@ -72,54 +72,51 @@ void TextFieldString::MoveCursor(int direction)
         p -= (p / size)*size;
     };
 
-    if (size > 0)
+    if (direction < 0)
     {
-        if (direction < 0)
-        {
-            auto dir = static_cast<SizeType>(-direction);
+        auto dir = static_cast<SizeType>(-direction);
 
-            if (GetCursorPosition() >= dir)
+        if (GetCursorPosition() >= dir)
+        {
+            /* Move cursor left */
+            SetCursorPosition(GetCursorPosition() - dir);
+        }
+        else
+        {
+            if (cursorLoopEnabled)
             {
-                /* Move cursor left */
-                SetCursorPosition(GetCursorPosition() - dir);
+                /* Locate cursor to the end and move on (subtract all repeated loops) */
+                AdjustDir(dir);
+                SetCursorPosition(size - dir);
             }
             else
             {
-                if (cursorLoopEnabled)
-                {
-                    /* Locate cursor to the end and move on (subtract all repeated loops) */
-                    AdjustDir(dir);
-                    SetCursorPosition(size - dir);
-                }
-                else
-                {
-                    /* Locate cursor to the beginning */
-                    MoveCursorBegin();
-                }
+                /* Locate cursor to the beginning */
+                MoveCursorBegin();
             }
         }
-        else if (direction > 0)
-        {
-            auto dir = static_cast<SizeType>(direction);
+    }
+    else if (direction > 0)
+    {
+        auto dir = static_cast<SizeType>(direction);
 
-            if (GetCursorPosition() + dir <= size)
+        if (GetCursorPosition() + dir <= size)
+        {
+            /* Move cursor right */
+            SetCursorPosition(GetCursorPosition() + dir);
+        }
+        else
+        {
+            if (cursorLoopEnabled)
             {
-                /* Move cursor right */
-                SetCursorPosition(GetCursorPosition() + dir);
+                /* Locate cursor to the beginning and move on (subtract all repeated loops) */
+                AdjustDir(dir);
+                SetCursorPosition(dir);
             }
             else
             {
-                if (cursorLoopEnabled)
-                {
-                    /* Locate cursor to the beginning and move on (subtract all repeated loops) */
-                    AdjustDir(dir);
-                    SetCursorPosition(dir);
-                }
-                else
-                {
-                    /* Locate cursor to the end */
-                    MoveCursorEnd();
-                }
+                /* Locate cursor to the end */
+                MoveCursorEnd();
             }
         }
     }

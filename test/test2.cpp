@@ -95,6 +95,7 @@ Tg::TextFieldString mainTextField(
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr<Tg::MultiLineString> mainMlText;
+std::unique_ptr<Tg::TextFieldMultiLineString> textFieldArea;
 std::unique_ptr<TexturedFont> fontSmall, fontLarge;
 
 
@@ -200,7 +201,8 @@ bool initScene()
         #if defined(_WIN32)
         //fontSmall = loadFont("Times New Roman", 32);
         fontSmall = loadFont("Consolas", 20);
-        fontLarge = loadFont("Edwardian Script", 80);
+        //fontLarge = loadFont("Edwardian Script", 80);
+        fontLarge = loadFont("Courier New", 30);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
         fontLarge = loadFont("Brush Script", 80);
@@ -226,6 +228,10 @@ bool initScene()
     );
 
     mainMlText = std::unique_ptr<Tg::MultiLineString>(new Tg::MultiLineString(fontLarge->GetGlyphSet(), resX, str));
+
+    textFieldArea = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
+
+    std::string s = *textFieldArea;
 
     mainTextField.cursorLoopEnabled = true;
 
