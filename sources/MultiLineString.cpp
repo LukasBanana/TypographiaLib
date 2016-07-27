@@ -46,7 +46,6 @@ void MultiLineString::PushBack(const Char& chr)
     /* Update main string */
     text_ += chr;
 
-    /* Get glyph set from font */
     if (IsNewLine(chr))
     {
         /* Append empty line */
@@ -77,10 +76,7 @@ void MultiLineString::PushBack(const Char& chr)
             }
             else
             {
-                /*
-                Reset lines, because separators may change
-                the current (last) line and the new line
-                */
+                /* Reset lines -> separators may change the current (last) line and the new line */
                 ResetLines();
             }
         }
@@ -115,6 +111,76 @@ void MultiLineString::PopBack()
 
     /* Always update widest width when characters are removed */
     UpdateWidestWidth();
+}
+
+void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const Char& chr, bool replace)
+{
+    /* Validate parameters and get selected line */
+    if (lineIndex >= lines_.size() || positionInLine > lines_[lineIndex].text.size())
+        return;
+
+    auto& line = lines_[lineIndex];
+
+    /* Update main string */
+    auto textPos = GetTextPosition(lineIndex, positionInLine);
+    text_.insert(textPos, 1, chr);
+
+    if (IsNewLine(chr))
+    {
+
+
+    }
+    else
+    {
+        /* Get width of new character */
+        auto width = CharWidth(chr);
+
+        if (replace)
+        {
+
+        }
+        else
+        {
+            /* Check if character fits into last line */
+            if (FitIntoLine(line.width + width))
+            {
+                /* Update line and widest width */
+                line.width += width;
+                line.text.insert(positionInLine, 1, chr);
+                UpdateWidestWidth(line.width);
+            }
+            else
+            {
+                /* Reset lines -> separators may change the current (last) line and the new line */
+                ResetLines();
+            }
+        }
+    }
+}
+
+void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
+{
+    //todo...
+}
+
+MultiLineString::SizeType MultiLineString::GetTextPosition(SizeType lineIndex, SizeType positionInLine) const
+{
+    if (lineIndex >= lines_.size() || positionInLine > lines_[lineIndex].text.size())
+        return String::npos;
+
+    SizeType pos = 0;
+
+    for (SizeType i = 0; i < lineIndex; ++i)
+    {
+        auto len = lines_[i].text.size();
+        pos += len;
+        if (pos < text_.size() && IsNewLine(text_[pos]))
+            ++pos;
+    }
+
+    pos += positionInLine;
+
+    return pos;
 }
 
 void MultiLineString::SetGlyphSet(const FontGlyphSet& glyphSet)

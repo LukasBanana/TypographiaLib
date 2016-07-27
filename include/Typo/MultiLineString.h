@@ -61,6 +61,37 @@ class MultiLineString : public SeparableString
         void PopBack();
         
         /**
+        \brief Inserts the specified character at the specified location.
+        \param[in] lineIndex Specifies the line where to insert the new character.
+        \param[in] positionInLine Specifies the position within the specified line string.
+        This value must be in the range [0, line.size()], i.e. it can also be at the end of the string (not only line.size() - 1).
+        \param[in] chr Specifies the new character. This can also be a new line character.
+        \param[in] replace Specifies whether to replace the previous character or insert a new one. By default false.
+        \remarks If the position (i.e. 'lineIndex' and 'positionInLine') are invalid, this function call has no effect.
+        */
+        void Insert(SizeType lineIndex, SizeType positionInLine, const Char& chr, bool replace = false);
+
+        /**
+        \brief Removes the character at the specified location.
+        \param[in] lineIndex Specifies the line where to remove a character.
+        \param[in] positionInLine Specifies the position within the specified line string.
+        This value must be in the range [0, line.size()], i.e. it can also be at the end of the string (not only line.size() - 1).
+        \remarks If the position (i.e. 'lineIndex' and 'positionInLine') are invalid, this function call has no effect.
+        */
+        void Remove(SizeType lineIndex, SizeType positionInLine);
+
+        /**
+        \brief Converts the specified position as string index within the main text string.
+        \param[in] lineIndex Specifies the index of the text line.
+        \param[in] positionInLine Specifies the position within the specified line string.
+        This value must be in the range [0, line.size()], i.e. it can also be at the end of the string (not only line.size() - 1).
+        \return Position within the main text string or 'String::npos' if the specified location is invalid.
+        \remarks The return value is in the range [0, GetText().size()], i.e. it can exceed the main text position by 1 character!
+        \see GetText
+        */
+        SizeType GetTextPosition(SizeType lineIndex, SizeType positionInLine) const;
+
+        /**
         \brief Sets the new font glyph set and updates all lines.
         \see GetLines
         */

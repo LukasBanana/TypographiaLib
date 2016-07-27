@@ -254,6 +254,7 @@ bool TextFieldMultiLineString::IsSelected() const
     return (GetCursorPosition() != selStart_);
 }
 
+//TODO -> return correct new line characters (i.e. do not insert automatically in each line!)
 String TextFieldMultiLineString::GetSelectionText() const
 {
     String text;
@@ -354,19 +355,31 @@ void TextFieldMultiLineString::RemoveSequenceRight()
 
 void TextFieldMultiLineString::RemoveSelection()
 {
-#if 0
     /* Get selection range */
-    SizeType start, end;
+    Point start, end;
     GetSelection(start, end);
 
-    /* Remove sub string */
-    if (start < end)
-        text_.erase(start, end - start);
+    /* Remove characters from the start position */
+    if (IsSelected())
+    {
+#if 0
+        /* Determine how many characters must be removed */
+        std::size_t num = 0;
+
+        num += GetLineText(start.y).size() - start.x;
+
+        for (auto y = start.y + 1; y < end.y; ++y)
+            num += GetLineText(y).size();
+
+        /* Remove the determined amount of characters from the start position */
+        while (num-- > 0)
+            MultiLineString::Remove(start.y, start.x);
+#endif
+    }
 
     /* Locate cursor to the selection start */
     selectionEnabled = false;
     SetCursorPosition(start);
-#endif
 }
 
 bool TextFieldMultiLineString::IsInsertionActive() const
@@ -376,7 +389,6 @@ bool TextFieldMultiLineString::IsInsertionActive() const
 
 void TextFieldMultiLineString::Insert(const Char& chr)
 {
-#if 0
     if (IsValidChar(chr))
     {
         /* Replace selection by character */
@@ -384,24 +396,20 @@ void TextFieldMultiLineString::Insert(const Char& chr)
         if (isSel)
             RemoveSelection();
 
-        if (IsCursorEnd())
+        if (IsCursorBottom() && IsCursorEnd())
         {
             /* Push back the new character */
-            text_ += chr;
+            PushBack(chr);
         }
         else
         {
             /* Insert the new character (only use insertion if selection was not replaced) */
-            if (insertionEnabled && !isSel)
-                text_[GetCursorPosition()] = chr;
-            else
-                text_.insert(Iter(), chr);
+            MultiLineString::Insert(GetCursorPosition().y, GetCursorPosition().x, chr, (insertionEnabled && !isSel));
         }
 
         /* Move cursor position */
-        MoveCursor(1);
+        MoveCursor(1, 0);
     }
-#endif
 }
 
 void TextFieldMultiLineString::Put(const Char& chr)
