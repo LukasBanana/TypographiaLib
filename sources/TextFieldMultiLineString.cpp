@@ -340,19 +340,12 @@ void TextFieldMultiLineString::RemoveSelection()
     /* Remove characters from the start position */
     if (IsSelected())
     {
-#if 0
-        /* Determine how many characters must be removed */
-        std::size_t num = 0;
+        /* Remove the selected amount of characters from the start position */
+        auto startPos = GetTextPosition(start.y, start.x);
+        auto endPos = GetTextPosition(end.y, end.x);
 
-        num += GetLineText(start.y).size() - start.x;
-
-        for (auto y = start.y + 1; y < end.y; ++y)
-            num += GetLineText(y).size();
-
-        /* Remove the determined amount of characters from the start position */
-        while (num-- > 0)
+        for (; startPos < endPos; ++startPos)
             MultiLineString::Remove(start.y, start.x);
-#endif
     }
 
     /* Locate cursor to the selection start */
