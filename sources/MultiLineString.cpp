@@ -46,6 +46,9 @@ void MultiLineString::PushBack(const Char& chr)
     /* Update main string */
     text_ += chr;
 
+#if 1
+    ResetLines();
+#else
     if (IsNewLine(chr))
         AppendLine();
     else
@@ -75,6 +78,7 @@ void MultiLineString::PushBack(const Char& chr)
                 ResetLines();
         }
     }
+#endif
 }
 
 void MultiLineString::PopBack()
@@ -85,6 +89,9 @@ void MultiLineString::PopBack()
     /* Update main string */
     text_.pop_back();
 
+#if 1
+    ResetLines();
+#else
     /* Get last character from last line */
     auto& line = lines_.back();
     auto chr = line.text.back();
@@ -109,11 +116,19 @@ void MultiLineString::PopBack()
     /* Update widest width when a character is removed from the current widest line */
     if (lineWidth == width_)
         UpdateWidestWidth();
+#endif
 }
 
 void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const Char& chr, bool replace)
 {
-    /* Validate parameters and get selected line */
+    /* Check if push-back is sufficient */
+    if (lines_.empty() && lineIndex == 0 && positionInLine == 0)
+    {
+        PushBack(chr);
+        return;
+    }
+
+    /* Get current line */
     if (lineIndex >= lines_.size())
         return;
 
@@ -122,7 +137,7 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
     if (positionInLine > line.text.size())
         return;
 
-    /* Check if pop-back is sufficient */
+    /* Check if push-back is sufficient */
     if (lineIndex + 1 == lines_.size() && positionInLine == line.text.size())
     {
         PushBack(chr);
@@ -145,9 +160,9 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
         text_.insert(textPos, 1, chr);
 
     /* Update selected line with new character */
+#if 1
     ResetLines();
-    return;
-
+#else
     if (IsNewLine(chr))
         ResetLines();
     else
@@ -184,6 +199,7 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
                 ResetLines();
         }
     }
+#endif
 }
 
 void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
@@ -209,9 +225,9 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
     auto chr = text_[textPos];
     text_.erase(textPos, 1);
 
+#if 1
     ResetLines();
-    return;
-
+#else
     /* Update selected line with removed character */
     if (IsNewLine(chr))
         ResetLines();
@@ -238,6 +254,7 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
         if (lineWidth == width_)
             UpdateWidestWidth();
     }
+#endif
 }
 
 MultiLineString::SizeType MultiLineString::GetTextIndex(SizeType lineIndex, SizeType positionInLine) const
@@ -273,7 +290,7 @@ void MultiLineString::GetTextPosition(SizeType textIndex, SizeType& lineIndex, S
     textIndex = std::min(textIndex, text_.size());
     SizeType i = 0;
 
-    while (i < textIndex)
+    while (i < textIndex && lineIndex < lines_.size())
     {
         /* Move iteration index */
         positionInLine = std::min(textIndex - i, lines_[lineIndex].text.size());
@@ -389,7 +406,7 @@ void MultiLineString::ResetLines()
     Char chr = 0;
 
     /* Setup all wrapped lines */
-    for (std::size_t pos = 0, sepLen = 0, len = 0, num = text_.size(); ( pos < num ); pos += len)
+    for (std::size_t pos = 0, sepLen = 0, len = 0, maxLen = text_.size(); ( pos < maxLen ); pos += len)
     {
         /* Find maximal length for current line */
         for (chr = 0, len = 0, sepLen = 0, nextWidth = 0, width = 0; ( FitIntoLine(nextWidth) ); ++len)
@@ -404,7 +421,7 @@ void MultiLineString::ResetLines()
                 sepWidth = width;
             }
 
-            if (pos + len >= num)
+            if (pos + len >= maxLen)
                 break;
 
             /* Get current character from base string */
@@ -419,13 +436,13 @@ void MultiLineString::ResetLines()
         }
 
         /* Clamp line size to a minimum of one character */
-        if (len == 0 && nextWidth > 0 && pos < num)
+        if (len == 0 && nextWidth > 0 && pos < maxLen)
         {
             ++len;
             width = nextWidth;
         }
         /* Jump back to the previous separated text (if break was not caused by a new-line or end-of-line) */
-        else if (sepLen > 0 && !IsNewLine(chr) && pos + len < num)
+        else if (sepLen > 0 && !IsNewLine(chr) && pos + len < maxLen)
         {
             len = sepLen;
             width = sepWidth;

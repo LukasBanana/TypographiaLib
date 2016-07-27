@@ -104,11 +104,11 @@ class TextFieldMultiLineString : private MultiLineString
         //! Jumps to the next right sided space.
         void JumpRight();
 
-        //! Jumps a specific amount of lines up.
-        //void JumpUp();
+        //! Jumps to the previous text passage (separated by empty lines).
+        void JumpUp();
 
-        //! Jumps a specific amount of lines down.
-        //void JumpDown();
+        //! Jumps to the next text passage (separated by empty lines).
+        void JumpDown();
 
         /* --- Selection operations --- */
 
@@ -287,8 +287,16 @@ class TextFieldMultiLineString : private MultiLineString
         //! Updates the cursor- and selection start position to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void UpdateCursorRange();
 
+        //! Returns the current selection state.
         SelectionState GetSelectionState() const;
+
+        //! Sets the new selection state.
         void SetSelectionState(const SelectionState& state);
+
+        //! Returns true if the line above the cursor is empty (also true if the cursor is at the top).
+        bool IsUpperLineEmpty() const;
+        //! Returns true if the line below the cursor is empty (also true if the cursor is at the bottom).
+        bool IsLowerLineEmpty() const;
 
         /* === Member === */
 

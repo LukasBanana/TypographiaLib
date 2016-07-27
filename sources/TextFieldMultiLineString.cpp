@@ -90,7 +90,7 @@ bool TextFieldMultiLineString::IsCursorEnd() const
 
 bool TextFieldMultiLineString::IsCursorTop() const
 {
-    return (GetCursorCoordinate().y == 0);
+    return (GetLines().empty() || GetCursorCoordinate().y == 0);
 }
 
 bool TextFieldMultiLineString::IsCursorBottom() const
@@ -186,24 +186,38 @@ void TextFieldMultiLineString::MoveCursorBottom()
 
 void TextFieldMultiLineString::JumpLeft()
 {
-    if (IsSeparator(CharLeft()))
-    {
-        while (!IsCursorBegin() && IsSeparator(CharLeft()))
-            MoveCursorX(-1);
-    }
-    while (!IsCursorBegin() && !IsSeparator(CharLeft()))
+    /* Move left to first non-separator character, then move left to the last non-separator character */
+    while ( ( !IsCursorTop() || !IsCursorBegin() ) && IsSeparator(CharLeft()) )
+        MoveCursorX(-1);
+    while ( ( !IsCursorTop() || !IsCursorBegin() ) && !IsSeparator(CharLeft()) )
         MoveCursorX(-1);
 }
 
 void TextFieldMultiLineString::JumpRight()
 {
-    if (IsSeparator(CharRight()))
-    {
-        while (!IsCursorEnd() && IsSeparator(CharRight()))
-            MoveCursorX(1);
-    }
-    while (!IsCursorEnd() && !IsSeparator(CharRight()))
+    /* Move right to first non-separator character, then move right to the last non-separator character */
+    while ( ( !IsCursorBottom() || !IsCursorEnd() ) && IsSeparator(CharRight()) )
         MoveCursorX(1);
+    while ( ( !IsCursorBottom() || !IsCursorEnd() ) && !IsSeparator(CharRight()) )
+        MoveCursorX(1);
+}
+
+void TextFieldMultiLineString::JumpUp()
+{
+    /* Move up to the first non-empty line, then move up to the last non-empty line */
+    while (!IsCursorTop() && IsUpperLineEmpty())
+        MoveCursorY(-1);
+    while (!IsCursorTop() && !IsUpperLineEmpty())
+        MoveCursorY(-1);
+}
+
+void TextFieldMultiLineString::JumpDown()
+{
+    /* Move down to the first non-empty line, then move down to the last non-empty line */
+    while (!IsCursorBottom() && IsLowerLineEmpty())
+        MoveCursorY(1);
+    while (!IsCursorBottom() && !IsLowerLineEmpty())
+        MoveCursorY(1);
 }
 
 /* --- Selection operations --- */
@@ -338,28 +352,28 @@ void TextFieldMultiLineString::RemoveSequenceRight()
 
 void TextFieldMultiLineString::RemoveSelection()
 {
-    /* Get selection range */
-    Point start, end;
-    GetSelection(start, end);
-
-    /* Locate cursor to the selection start */
-    selectionEnabled = false;
-    SetCursorCoordinate(start);
-
     /* Remove characters from the start position */
-    auto selState = GetSelectionState();
-
     if (IsSelected())
     {
+        /* Get selection range */
+        Point start, end;
+        GetSelection(start, end);
+
+        /* Locate cursor to the selection start */
+        selectionEnabled = false;
+        SetCursorCoordinate(start);
+
+        auto selState = GetSelectionState();
+
         /* Remove the selected amount of characters from the start position */
         auto startPos = GetTextIndex(start.y, start.x);
         auto endPos = GetTextIndex(end.y, end.x);
 
         for (; startPos < endPos; ++startPos)
             MultiLineString::Remove(start.y, start.x);
-    }
 
-    SetSelectionState(selState);
+        SetSelectionState(selState);
+    }
 }
 
 bool TextFieldMultiLineString::IsInsertionActive() const
@@ -478,6 +492,16 @@ void TextFieldMultiLineString::SetSelectionState(const SelectionState& state)
     GetTextPosition(state.endPos, end.y, end.x);
 
     SetSelection(start, end);
+}
+
+bool TextFieldMultiLineString::IsUpperLineEmpty() const
+{
+    return (IsCursorBegin() || GetLines()[GetCursorCoordinate().y - 1].text.empty());
+}
+
+bool TextFieldMultiLineString::IsLowerLineEmpty() const
+{
+    return (IsCursorBottom() || GetLines()[GetCursorCoordinate().y + 1].text.empty());
 }
 
 

@@ -88,7 +88,7 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-bool focusOnTextArea = false;
+bool focusOnTextArea = true;
 
 Tg::TextFieldString mainTextField(
     //">$ This is an input text field! Use arrows, shift, and ctrl keys"
@@ -657,7 +657,7 @@ void specialCallback(int key, int x, int y)
             else
             {
                 if (focusOnTextArea)
-                    mainMlText->MoveCursor(-1, 0);
+                    mainMlText->MoveCursorX(-1);
                 else
                     mainTextField.MoveCursor(-1);
             }
@@ -676,7 +676,7 @@ void specialCallback(int key, int x, int y)
             else
             {
                 if (focusOnTextArea)
-                    mainMlText->MoveCursor(1, 0);
+                    mainMlText->MoveCursorX(1);
                 else
                     mainTextField.MoveCursor(1);
             }
@@ -687,7 +687,10 @@ void specialCallback(int key, int x, int y)
         case GLUT_KEY_UP:
             if (focusOnTextArea)
             {
-                mainMlText->MoveCursor(0, -1);
+                if (ctrl)
+                    mainMlText->JumpUp();
+                else
+                    mainMlText->MoveCursorY(-1);
                 mainTextFieldBlinker.refresh();
                 mainMlText->_TEST_();
             }
@@ -696,7 +699,10 @@ void specialCallback(int key, int x, int y)
         case GLUT_KEY_DOWN:
             if (focusOnTextArea)
             {
-                mainMlText->MoveCursor(0, 1);
+                if (ctrl)
+                    mainMlText->JumpDown();
+                else
+                    mainMlText->MoveCursorY(1);
                 mainTextFieldBlinker.refresh();
                 mainMlText->_TEST_();
             }

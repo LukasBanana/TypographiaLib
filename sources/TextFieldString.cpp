@@ -134,22 +134,18 @@ void TextFieldString::MoveCursorEnd()
 
 void TextFieldString::JumpLeft()
 {
-    if (IsSeparator(CharLeft()))
-    {
-        while (!IsCursorBegin() && IsSeparator(CharLeft()))
-            MoveCursor(-1);
-    }
+    /* Move left to first non-separator character, then move left to the last non-separator character */
+    while (!IsCursorBegin() && IsSeparator(CharLeft()))
+        MoveCursor(-1);
     while (!IsCursorBegin() && !IsSeparator(CharLeft()))
         MoveCursor(-1);
 }
 
 void TextFieldString::JumpRight()
 {
-    if (IsSeparator(CharRight()))
-    {
-        while (!IsCursorEnd() && IsSeparator(CharRight()))
-            MoveCursor(1);
-    }
+    /* Move right to first non-separator character, then move right to the last non-separator character */
+    while (!IsCursorEnd() && IsSeparator(CharRight()))
+        MoveCursor(1);
     while (!IsCursorEnd() && !IsSeparator(CharRight()))
         MoveCursor(1);
 }
