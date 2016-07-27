@@ -21,7 +21,7 @@ namespace Tg
 \brief Text field multi-line string class.
 \remarks In a model-view-controller pattern, this is the model for a user input text field.
 */
-class TextFieldMultiLineString : private MultiLineString
+class TextFieldMultiLineString : /*private*/public MultiLineString
 {
     
     public:
@@ -211,6 +211,9 @@ class TextFieldMultiLineString : private MultiLineString
         //! Returns the content of the current line (where the cursor is located).
         const String& GetLineText() const;
 
+        //! Returns the content of the specified line.
+        const String& GetLineText(std::size_t lineIndex) const;
+
         /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
@@ -218,9 +221,6 @@ class TextFieldMultiLineString : private MultiLineString
 
         //! Specifies whether selection is enabled or disabled. By default false.
         bool selectionEnabled = false;
-
-        //! Specifies whether the cursor can be moved in a loop or not. By default false.
-        bool cursorLoopEnabled = false;
 
     protected:
         

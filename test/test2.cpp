@@ -88,14 +88,15 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
+bool focusOnTextArea = false;
+
 Tg::TextFieldString mainTextField(
     //">$ This is an input text field! Use arrows, shift, and ctrl keys"
     "user@PC$ ls -la --color=never | grep -ri \"Foo bar\""
 );
 Blinker mainTextFieldBlinker;
 
-std::unique_ptr<Tg::MultiLineString> mainMlText;
-std::unique_ptr<Tg::TextFieldMultiLineString> textFieldArea;
+std::unique_ptr<Tg::TextFieldMultiLineString> mainMlText;
 std::unique_ptr<TexturedFont> fontSmall, fontLarge;
 
 
@@ -120,9 +121,7 @@ TexturedFont::TexturedFont(const Tg::FontDescription& desc, const Tg::FontModel&
     }
     unbind();
 
-    #if 1//!!!
-    auto geometries = Tg::BuildFontGeometrySet(fontModel);
-    #endif
+    //auto geometries = Tg::BuildFontGeometrySet(fontModel);
 }
 
 TexturedFont::~TexturedFont()
@@ -202,13 +201,13 @@ bool initScene()
         //fontSmall = loadFont("Times New Roman", 32);
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
-        fontLarge = loadFont("Courier New", 30);
+        fontLarge = loadFont("Consolas", 30);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
-        fontLarge = loadFont("Brush Script", 80);
+        fontLarge = loadFont("Brush Script", 30);
         #elif defined(__linux__)
         fontSmall = loadFont("freefont/FreeMonoBold", 20);
-        fontLarge = loadFont("freefont/FreeSerif", 80);
+        fontLarge = loadFont("freefont/FreeSerif", 30);
         #endif
     }
     catch (const std::exception& e)
@@ -223,15 +222,11 @@ bool initScene()
     // setup multi-line string
     std::string str = (
         "Hello, World!\n"
-        "\n"
-        "This is an example of a multi-line string with a restricted screen width"
+        "This is an example of a multi-line string with a restricted screen width\n"
+        "How is it goin' bro?"
     );
 
-    mainMlText = std::unique_ptr<Tg::MultiLineString>(new Tg::MultiLineString(fontLarge->GetGlyphSet(), resX, str));
-
-    textFieldArea = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
-
-    std::string s = *textFieldArea;
+    mainMlText = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
 
     mainTextField.cursorLoopEnabled = true;
 
@@ -364,9 +359,9 @@ void drawTextField(
         );
     }
 
-    if (mainTextFieldBlinker.visible())
+    // draw cursor
+    if (!focusOnTextArea && mainTextFieldBlinker.visible())
     {
-        // draw cursor
         setColor(COLOR_WHITE);
 
         posX += font.TextWidth(textField.GetText(), 0, textField.GetCursorPosition());
@@ -394,17 +389,95 @@ void drawTextField(
 
 void drawMultiLineText(
     const TexturedFont& font, int posX, int posY,
-    const Tg::MultiLineString& mlText, unsigned int color = COLOR_WHITE)
+    const Tg::TextFieldMultiLineString& textArea, unsigned int color = COLOR_WHITE)
 {
     // draw bounding box around the text
     setColor(COLOR_WHITE);
-    drawBox(posX, posY, posX + mlText.GetMaxWidth(), posY + mlText.GetLines().size()*font.GetDesc().height);
+    drawBox(posX, posY, posX + textArea.GetMaxWidth(), posY + textArea.GetLines().size()*font.GetDesc().height);
 
     // draw each text line
-    for (const auto& line : mlText.GetLines())
+    auto prevPosY = posY;
+
+    for (const auto& line : textArea.GetLines())
     {
         drawText(font, posX, posY, line.text, color);
         posY += font.GetDesc().height;
+    }
+
+    posY = prevPosY;
+
+    // draw selection
+    if (textArea.IsSelected())
+    {
+        setColor(COLOR_YELLOW);
+
+        Tg::TextFieldMultiLineString::Point start, end;
+        textArea.GetSelection(start, end);
+
+        if (start.y == end.y)
+        {
+            drawBox(
+                posX + font.TextWidth(textArea.GetLineText(), 0, start.x),
+                posY + start.y*font.GetDesc().height + 2,
+                posX + font.TextWidth(textArea.GetLineText(), 0, end.x),
+                posY + start.y*font.GetDesc().height + font.GetDesc().height + 7
+            );
+        }
+        else
+        {
+            drawBox(
+                posX + font.TextWidth(textArea.GetLineText(start.y), 0, start.x),
+                posY + start.y*font.GetDesc().height + 2,
+                posX + font.TextWidth(textArea.GetLineText(start.y), 0),
+                posY + start.y*font.GetDesc().height + font.GetDesc().height + 7
+            );
+
+            for (auto y = start.y + 1; y < end.y; ++y)
+            {
+                drawBox(
+                    posX,
+                    posY + y*font.GetDesc().height + 2,
+                    posX + font.TextWidth(textArea.GetLineText(y), 0),
+                    posY + y*font.GetDesc().height + font.GetDesc().height + 7
+                );
+            }
+
+            drawBox(
+                posX,
+                posY + end.y*font.GetDesc().height + 2,
+                posX + font.TextWidth(textArea.GetLineText(end.y), 0, end.x),
+                posY + end.y*font.GetDesc().height + font.GetDesc().height + 7
+            );
+        }
+    }
+
+    // draw cursor
+    if (focusOnTextArea && !textArea.GetLines().empty() && mainTextFieldBlinker.visible())
+    {
+        setColor(COLOR_WHITE);
+
+        const auto& text = textArea.GetLineText();
+        posX += font.TextWidth(text, 0, textArea.GetCursorPosition().x);
+        posY += textArea.GetCursorPosition().y * font.GetDesc().height;
+
+        if (textArea.IsInsertionActive())
+        {
+            drawBox(
+                posX,
+                posY + font.GetDesc().height + 4,
+                posX + font.TextWidth(text, textArea.GetCursorPosition().x, 1),
+                posY + font.GetDesc().height + 5
+            );
+        }
+        else
+        {
+            drawBox(
+                posX,
+                posY + 5,
+                posX + 1,
+                posY + font.GetDesc().height + 5
+            );
+        }
     }
 }
 
@@ -494,16 +567,35 @@ void keyboardCallback(unsigned char key, int x, int y)
         case '\r': // ENTER
             break;
 
+        case '\t':
+            focusOnTextArea = !focusOnTextArea;
+            break;
+
         default:
-            if (key == 1) // CTRL+A
+            if (focusOnTextArea)
             {
-                if (mainTextField.IsSelected())
-                    mainTextField.Deselect();
+                if (key == 1) // CTRL+A
+                {
+                    if (mainMlText->IsSelected())
+                        mainMlText->Deselect();
+                    else
+                        mainMlText->SelectAll();
+                }
                 else
-                    mainTextField.SelectAll();
+                    mainMlText->Put(char(key));
             }
             else
-                mainTextField.Put(char(key));
+            {
+                if (key == 1) // CTRL+A
+                {
+                    if (mainTextField.IsSelected())
+                        mainTextField.Deselect();
+                    else
+                        mainTextField.SelectAll();
+                }
+                else
+                    mainTextField.Put(char(key));
+            }
             break;
     }
 }
@@ -512,38 +604,88 @@ void specialCallback(int key, int x, int y)
 {
     auto modMask = glutGetModifiers();
 
-    mainTextField.selectionEnabled = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
+    bool selEnabled = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
+
+    if (focusOnTextArea)
+        mainMlText->selectionEnabled = selEnabled;
+    else
+        mainTextField.selectionEnabled = selEnabled;
 
     switch (key)
     {
         case GLUT_KEY_HOME:
-            mainTextField.MoveCursorBegin();
+            if (focusOnTextArea)
+                mainMlText->MoveCursorBegin();
+            else
+                mainTextField.MoveCursorBegin();
             mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_END:
-            mainTextField.MoveCursorEnd();
+            if (focusOnTextArea)
+                mainMlText->MoveCursorEnd();
+            else
+                mainTextField.MoveCursorEnd();
             mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_LEFT:
             if ((modMask & GLUT_ACTIVE_CTRL) != 0)
-                mainTextField.JumpLeft();
+            {
+                if (focusOnTextArea)
+                    mainMlText->JumpLeft();
+                else
+                    mainTextField.JumpLeft();
+            }
             else
-                mainTextField.MoveCursor(-1);
+            {
+                if (focusOnTextArea)
+                    mainMlText->MoveCursor(-1, 0);
+                else
+                    mainTextField.MoveCursor(-1);
+            }
             mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_RIGHT:
             if ((modMask & GLUT_ACTIVE_CTRL) != 0)
-                mainTextField.JumpRight();
+            {
+                if (focusOnTextArea)
+                    mainMlText->JumpRight();
+                else
+                    mainTextField.JumpRight();
+            }
             else
-                mainTextField.MoveCursor(1);
+            {
+                if (focusOnTextArea)
+                    mainMlText->MoveCursor(1, 0);
+                else
+                    mainTextField.MoveCursor(1);
+            }
             mainTextFieldBlinker.refresh();
             break;
 
+        case GLUT_KEY_UP:
+            if (focusOnTextArea)
+            {
+                mainMlText->MoveCursor(0, -1);
+                mainTextFieldBlinker.refresh();
+            }
+            break;
+
+        case GLUT_KEY_DOWN:
+            if (focusOnTextArea)
+            {
+                mainMlText->MoveCursor(0, 1);
+                mainTextFieldBlinker.refresh();
+            }
+            break;
+
         case GLUT_KEY_INSERT:
-            mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
+            if (focusOnTextArea)
+                mainMlText->insertionEnabled = !mainMlText->insertionEnabled;
+            else
+                mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
             mainTextFieldBlinker.refresh();
             break;
     }

@@ -69,19 +69,10 @@ bool TextFieldMultiLineString::IsCursorBottom() const
     return (GetLines().empty() || GetCursorPosition().y == GetLines().size() - 1);
 }
 
-template <typename T>
-static void AdjustDir(T size, T& dir)
-{
-    --dir;
-    dir -= (dir / size)*size;
-};
-
 void TextFieldMultiLineString::MoveCursorX(int direction)
 {
     /* Get line size and quit if moving the cursor is not possible */
     auto size = GetLineText().size();
-    if (size == 0)
-        return;
 
     if (direction < 0)
     {
@@ -92,20 +83,16 @@ void TextFieldMultiLineString::MoveCursorX(int direction)
             /* Move cursor left */
             SetCursorPosition(GetCursorPosition().x - dir, GetCursorPosition().y);
         }
-        else
+        else if (GetCursorPosition().y > 0)
         {
-            if (cursorLoopEnabled)
-            {
-                /* Locate cursor to the end and move on (subtract all repeated loops) */
-                AdjustDir(size, dir);
-                SetCursorPosition(size - dir, GetCursorPosition().y);
-            }
-            else
-            {
-                /* Locate cursor to the beginning */
-                MoveCursorBegin();
-            }
+            /* Locate cursor to the end and move on in the previous line */
+            direction += static_cast<int>(GetCursorPosition().x);
+            MoveCursorY(-1);
+            MoveCursorEnd();
+            MoveCursorX(direction + 1);
         }
+        else
+            MoveCursorBegin();
     }
     else if (direction > 0)
     {
@@ -116,20 +103,16 @@ void TextFieldMultiLineString::MoveCursorX(int direction)
             /* Move cursor right */
             SetCursorPosition(GetCursorPosition().x + dir, GetCursorPosition().y);
         }
-        else
+        else if (GetCursorPosition().y + 1 < GetLines().size())
         {
-            if (cursorLoopEnabled)
-            {
-                /* Locate cursor to the beginning and move on (subtract all repeated loops) */
-                AdjustDir(size, dir);
-                SetCursorPosition(dir, GetCursorPosition().y);
-            }
-            else
-            {
-                /* Locate cursor to the end */
-                MoveCursorEnd();
-            }
+            /* Locate cursor to the beginning and move on in the next line */
+            direction -= static_cast<int>(size - GetCursorPosition().x);
+            MoveCursorBegin();
+            MoveCursorY(1);
+            MoveCursorX(direction - 1);
         }
+        else
+            MoveCursorEnd();
     }
 }
 
@@ -151,17 +134,8 @@ void TextFieldMultiLineString::MoveCursorY(int direction)
         }
         else
         {
-            if (cursorLoopEnabled)
-            {
-                /* Locate cursor to the bottom and move on (subtract all repeated loops) */
-                AdjustDir(count, dir);
-                SetCursorPosition(GetCursorPosition().x, count - dir - 1);
-            }
-            else
-            {
-                /* Locate cursor to the top */
-                MoveCursorTop();
-            }
+            /* Locate cursor to the top */
+            MoveCursorTop();
         }
     }
     else if (direction > 0)
@@ -175,17 +149,8 @@ void TextFieldMultiLineString::MoveCursorY(int direction)
         }
         else
         {
-            if (cursorLoopEnabled)
-            {
-                /* Locate cursor to the top and move on (subtract all repeated loops) */
-                AdjustDir(count, dir);
-                SetCursorPosition(GetCursorPosition().x, dir);
-            }
-            else
-            {
-                /* Locate cursor to the bottom */
-                MoveCursorBottom();
-            }
+            /* Locate cursor to the bottom */
+            MoveCursorBottom();
         }
     }
 }
@@ -446,9 +411,14 @@ void TextFieldMultiLineString::SetText(const String& text)
 
 const String& TextFieldMultiLineString::GetLineText() const
 {
+    return GetLineText(GetCursorPosition().y);
+}
+
+const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
+{
     static const String dummyString;
-    if (GetCursorPosition().y < GetLines().size())
-        return GetLines()[GetCursorPosition().y].text;
+    if (lineIndex < GetLines().size())
+        return GetLines()[lineIndex].text;
     return dummyString;
 }
 
