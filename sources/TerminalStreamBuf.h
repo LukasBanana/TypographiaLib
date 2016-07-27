@@ -25,6 +25,9 @@ class TerminalStreamBuf : public std::streambuf
         
         TerminalStreamBuf(TextFieldMultiLineString& textField);
 
+        /* --- Base class overloading --- */
+
+	    int_type overflow(int_type c) override;
 
     private:
         

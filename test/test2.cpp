@@ -89,6 +89,7 @@ using Matrix4x4 = std::array<float, 16>;
 int resX = 800, resY = 600;
 
 bool focusOnTextArea = true;
+bool showTerminal = true;
 
 Tg::TextFieldString mainTextField(
     //">$ This is an input text field! Use arrows, shift, and ctrl keys"
@@ -97,7 +98,9 @@ Tg::TextFieldString mainTextField(
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr<Tg::TextFieldMultiLineString> mainMlText;
-std::shared_ptr<TexturedFont> fontSmall, fontLarge;
+std::unique_ptr<Tg::Terminal> terminal;
+
+std::shared_ptr<TexturedFont> fontSmall, fontLarge, fontTerm;
 
 
 // ----- CLASS "TexturedFont" FUNCTIONS -----
@@ -202,12 +205,15 @@ bool initScene()
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
         fontLarge = fontSmall;//loadFont("Consolas", 30);
+        fontTerm = loadFont("Courier New", 20);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
-        fontLarge = loadFont("Brush Script", 30);
+        fontLarge = fontSmall;//loadFont("Brush Script", 30);
+        fontTerm = fontSmall;
         #elif defined(__linux__)
         fontSmall = loadFont("freefont/FreeMonoBold", 20);
         fontLarge = loadFont("freefont/FreeSerif", 30);
+        fontTerm = fontSmall;
         #endif
     }
     catch (const std::exception& e)
@@ -229,7 +235,12 @@ bool initScene()
     mainMlText = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
     mainMlText->wrapLines = true;
 
+    terminal = std::unique_ptr<Tg::Terminal>(new Tg::Terminal(fontTerm->GetGlyphSet(), resX));
+
     mainTextField.cursorLoopEnabled = true;
+
+    terminal->out << "Terminal Example" << std::endl;
+    terminal->out << "This should be overwritten!\rOVERWRITTEN";
 
     return true;
 }
@@ -524,9 +535,15 @@ void drawScene()
     // draw text
     drawTextField(*fontSmall, 15, 15, mainTextField, COLOR_LIGHT_BLUE);
 
-    if (mainMlText)
+    static const int border = 15;
+
+    if (showTerminal && terminal)
     {
-        static const int border = 15;
+        terminal->SetMaxWidth(resX - border*2);
+        drawMultiLineText(*fontTerm, border, border + 100, terminal->GetTextField());
+    }
+    else if (mainMlText)
+    {
         mainMlText->SetMaxWidth(resX - border*2);
         drawMultiLineText(*fontLarge, border, border + 100, *mainMlText);
     }
@@ -557,6 +574,21 @@ void reshapeCallback(GLsizei w, GLsizei h)
     displayCallback();
 }
 
+void putChar(const std::string& s)
+{
+    if (showTerminal)
+        terminal->out << s;
+    else if (focusOnTextArea)
+        mainMlText->Put(s);
+    else
+        mainTextField.Put(s);
+}
+
+void putChar(char c)
+{
+    putChar(std::string(1, c));
+}
+
 void keyboardCallback(unsigned char key, int x, int y)
 {
     auto modMask = glutGetModifiers();
@@ -571,22 +603,17 @@ void keyboardCallback(unsigned char key, int x, int y)
 
         case '\r': // ENTER
             if (focusOnTextArea)
-            {
-                mainMlText->Put(char(key));
-            }
+                putChar('\n');
             break;
 
         case '\t':
-            if (focusOnTextArea)
-                mainMlText->Put("  ");
-            else
-                mainTextField.Put("  ");
+            putChar("  ");
             break;
 
         default:
-            if (focusOnTextArea)
+            if (key == 1) // CTRL+A
             {
-                if (key == 1) // CTRL+A
+                if (focusOnTextArea)
                 {
                     if (mainMlText->IsSelected())
                         mainMlText->Deselect();
@@ -594,20 +621,15 @@ void keyboardCallback(unsigned char key, int x, int y)
                         mainMlText->SelectAll();
                 }
                 else
-                    mainMlText->Put(char(key));
-            }
-            else
-            {
-                if (key == 1) // CTRL+A
                 {
                     if (mainTextField.IsSelected())
                         mainTextField.Deselect();
                     else
                         mainTextField.SelectAll();
                 }
-                else
-                    mainTextField.Put(char(key));
             }
+            else
+                putChar(char(key));
             break;
     }
 }
@@ -727,6 +749,10 @@ void specialCallback(int key, int x, int y)
                 std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
             else
                 std::cout << "Selected Text:" << std::endl << mainTextField.GetSelectionText() << std::endl << std::endl;
+            break;
+
+        case GLUT_KEY_F3:
+            showTerminal = !showTerminal;
             break;
     }
 }

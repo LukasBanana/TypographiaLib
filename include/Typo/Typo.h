@@ -14,6 +14,7 @@
 #include "TextFieldString.h"
 #include "TextFieldMultiLineString.h"
 #include "SystemFontPath.h"
+#include "Terminal.h"
 
 
 #endif

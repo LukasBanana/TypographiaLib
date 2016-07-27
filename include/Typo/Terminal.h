@@ -31,9 +31,15 @@ class Terminal
         
         Terminal(const FontGlyphSet& glyphSet, int maxWidth);
 
-        const TextFieldMultiLineString& GetTextField() const
+        inline const TextFieldMultiLineString& GetTextField() const
         {
             return textField_;
+        }
+
+        //! Sets the new maximal width.
+        inline void SetMaxWidth(int maxWidth)
+        {
+            textField_.SetMaxWidth(maxWidth);
         }
 
         //! Terminal input stream.
