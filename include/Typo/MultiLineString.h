@@ -162,6 +162,9 @@ class MultiLineString : public SeparableString
         //! Returns true if the specified character is a new-line character, i.e. '\n' (line-feed) or '\r' (carriage return).
         bool IsNewLine(const Char& chr) const;
         
+        //! Returns true if the specified character is a space character, i.e. ' ' or '\t'.
+        bool IsSpace(const Char& chr) const;
+
         //! Returns true if the specified width fits into a line, i.e. does not exceed the maximal width.
         bool FitIntoLine(int width) const;
         
@@ -190,7 +193,13 @@ class MultiLineString : public SeparableString
 
         //! Resets all text lines.
         void ResetLines();
+
+        //! Rebuilds all text lines. (THIS WILL REPLACE "ResetLines")
+        void RebuildLines();
         
+        SizeType AppendLinesFromSubText(SizeType offset);
+        SizeType AppendLineFromSubText(SizeType start, SizeType end, int subTextWidth);
+
         /* === Member === */
 
         const FontGlyphSet*     glyphSet_;

@@ -8,6 +8,8 @@
 #include <Typo/MultiLineString.h>
 #include <algorithm>
 
+#include <iostream>//!!!
+
 
 namespace Tg
 {
@@ -356,7 +358,12 @@ int MultiLineString::CharWidth(const Char& chr) const
 
 bool MultiLineString::IsNewLine(const Char& chr) const
 {
-    return chr == Char('\n') || chr == Char('\r');
+    return (chr == Char('\n') || chr == Char('\r'));
+}
+
+bool MultiLineString::IsSpace(const Char& chr) const
+{
+    return (chr == Char(' ') || chr == Char('\t'));
 }
 
 bool MultiLineString::FitIntoLine(int width) const
@@ -394,6 +401,9 @@ void MultiLineString::AppendLine()
 
 void MultiLineString::ResetLines()
 {
+#if 1
+    RebuildLines();
+#else
     /* Reset line strings */
     lines_.clear();
     width_ = 0;
@@ -458,6 +468,103 @@ void MultiLineString::ResetLines()
         if (IsNewLine(chr))
             ++len;
     }
+#endif
+}
+
+void MultiLineString::RebuildLines()
+{
+    /* Reset line strings */
+    lines_.clear();
+    width_ = 0;
+
+    /* Start recursion for line appending */
+    if (!text_.empty())
+    {
+        SizeType offset = 0;
+        while (offset <= text_.size())
+            offset = AppendLinesFromSubText(offset);
+    }
+
+    #if 0
+    std::cout << std::endl << "<REBUILD LINES>" << std::endl;
+    for (const auto& l : lines_)
+        std::cout << l.text << std::endl;
+    std::cout << "</REBUILD LINES>" << std::endl;
+    std::cout << "<TEXT>" << std::endl;
+    std::cout << text_ << std::endl;
+    std::cout << "</TEXT>" << std::endl;
+    #endif
+}
+
+/*
+"Hello\n\nWorld\nFoo Bar LoL"
+   |
+   V
+"Hello"
+""
+"World"
+"Foo Bar LoL"
+*/
+
+MultiLineString::SizeType MultiLineString::AppendLinesFromSubText(SizeType offset)
+{
+    if (offset > text_.size())
+        return String::npos;
+
+    int subTextWidth = 0;
+
+    SizeType pos = offset;
+    auto posWordEnd = pos;
+    auto len = text_.size();
+    Char prevChr = 0;
+
+    for (; pos < len; ++pos)
+    {
+        /* Get current character and its width */
+        auto chr = text_[pos];
+        auto chrWidth = CharWidth(chr);
+
+        /* Check for new-line character */
+        if (IsNewLine(chr))
+        {
+            /* Append sub text without new-line character */
+            return AppendLineFromSubText(offset, pos, subTextWidth) + 1;
+        }
+
+        /* Check if new character fits into the current line */
+        if (FitIntoLine(subTextWidth + chrWidth))
+        {
+            /* Accumulate sub text width */
+            subTextWidth += chrWidth;
+        }
+        else if (posWordEnd == offset)
+        {
+            /* Does not fit -> append line with truncated word */
+            return AppendLineFromSubText(offset, pos, subTextWidth);
+        }
+        else
+        {
+            /* Does not fit -> move back to last non-space character */
+            return AppendLineFromSubText(offset, posWordEnd + 1, subTextWidth);
+        }
+
+        /* Store position after the last non-space character of the last complete word */
+        if (IsSpace(chr) && !IsSpace(prevChr))
+            posWordEnd = pos;
+
+        /* Store previous character */
+        prevChr = chr;
+    }
+
+    /* Append last line */
+    return AppendLineFromSubText(offset, pos, subTextWidth) + 1;
+}
+
+MultiLineString::SizeType MultiLineString::AppendLineFromSubText(SizeType start, SizeType end, int subTextWidth)
+{
+    if (start <= end)
+        AppendLine(text_.substr(start, end - start), subTextWidth);
+    return end;
 }
 
 

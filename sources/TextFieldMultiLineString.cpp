@@ -18,9 +18,8 @@ namespace Tg
 void TextFieldMultiLineString::_TEST_()
 {
     auto p = GetCursorCoordinate();
-    std::cout << std::endl;
-    std::cout << "index = " << GetCursorIndex() << ", x = " << p.x << ", y = " << p.y << std::endl;
-    std::cout << "left = '" << CharLeft() << "', right = '" << CharRight() << '\'' << std::endl;
+    std::cout << "index = " << GetCursorIndex() << ", x = " << p.x << ", y = " << p.y << ", lines = " << GetLines().size();
+    std::cout << ", left = '" << CharLeft() << "', right = '" << CharRight() << '\'' << std::endl;
 }
 
 TextFieldMultiLineString::TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text) :
@@ -63,7 +62,7 @@ void TextFieldMultiLineString::SetCursorCoordinate(Point position)
 
 void TextFieldMultiLineString::SetCursorIndex(SizeType index)
 {
-    /* First clamp Y position to the range [0, lines), then clamp X position to the range [0, length] */
+    /* Clmap position to the rnage [0, GetText().size()] */
     cursorPos_ = ClampedPos(index);
 
     /* If selection is disabled, also set selection start */

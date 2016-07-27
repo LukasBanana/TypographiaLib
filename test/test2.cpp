@@ -221,7 +221,7 @@ bool initScene()
 
     // setup multi-line string
     std::string str = (
-        "Hello, World!\n"
+        "Hello, World!\n\n"
         "This is an example of a multi-line string with a restricted screen width\n"
         "How is it goin' bro?"
     );
@@ -568,7 +568,10 @@ void keyboardCallback(unsigned char key, int x, int y)
 
         case '\r': // ENTER
             if (focusOnTextArea)
+            {
                 mainMlText->Put(char(key));
+                mainMlText->_TEST_();
+            }
             break;
 
         case '\t':
@@ -587,6 +590,7 @@ void keyboardCallback(unsigned char key, int x, int y)
                 }
                 else
                     mainMlText->Put(char(key));
+                mainMlText->_TEST_();
             }
             else
             {
