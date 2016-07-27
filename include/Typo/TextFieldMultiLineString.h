@@ -293,9 +293,16 @@ class TextFieldMultiLineString : private MultiLineString
         //! Sets the new selection state.
         void SetSelectionState(const SelectionState& state);
 
-        //! Returns true if the line above the cursor is empty (also true if the cursor is at the top).
+        /**
+        \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).
+        \remarks This function must not be called, if the cursor is at the top!
+        */
         bool IsUpperLineEmpty() const;
-        //! Returns true if the line below the cursor is empty (also true if the cursor is at the bottom).
+
+        /**
+        \brief Returns true if the line below the cursor is empty (also true if the cursor is at the bottom).
+        \remarks This function must not be called, if the cursor is at the bottom!
+        */
         bool IsLowerLineEmpty() const;
 
         /* === Member === */

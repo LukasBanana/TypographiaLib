@@ -496,12 +496,12 @@ void TextFieldMultiLineString::SetSelectionState(const SelectionState& state)
 
 bool TextFieldMultiLineString::IsUpperLineEmpty() const
 {
-    return (IsCursorBegin() || GetLines()[GetCursorCoordinate().y - 1].text.empty());
+    return GetLines()[GetCursorCoordinate().y - 1].text.empty();
 }
 
 bool TextFieldMultiLineString::IsLowerLineEmpty() const
 {
-    return (IsCursorBottom() || GetLines()[GetCursorCoordinate().y + 1].text.empty());
+    return GetLines()[GetCursorCoordinate().y + 1].text.empty();
 }
 
 
