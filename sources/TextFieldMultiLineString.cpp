@@ -263,8 +263,8 @@ String TextFieldMultiLineString::GetSelectionText() const
         Point start, end;
         GetSelection(start, end);
 
-        auto startPos = GetTextPosition(start.y, start.x);
-        auto endPos = GetTextPosition(end.y, end.x);
+        auto startPos = GetTextIndex(start.y, start.x);
+        auto endPos = GetTextIndex(end.y, end.x);
 
         return GetText().substr(startPos, endPos - startPos);
     }
@@ -341,8 +341,8 @@ void TextFieldMultiLineString::RemoveSelection()
     if (IsSelected())
     {
         /* Remove the selected amount of characters from the start position */
-        auto startPos = GetTextPosition(start.y, start.x);
-        auto endPos = GetTextPosition(end.y, end.x);
+        auto startPos = GetTextIndex(start.y, start.x);
+        auto endPos = GetTextIndex(end.y, end.x);
 
         for (; startPos < endPos; ++startPos)
             MultiLineString::Remove(start.y, start.x);
@@ -407,8 +407,23 @@ void TextFieldMultiLineString::SetText(const String& text)
 
 void TextFieldMultiLineString::SetMaxWidth(int maxWidth)
 {
-    MultiLineString::SetMaxWidth(maxWidth);
-    UpdateCursorRange();
+    if (GetMaxWidth() != maxWidth)
+    {
+        /* Get selection position within current lines */
+        Point start, end;
+        GetSelection(start, end);
+
+        auto startPos = GetTextIndex(start.y, start.x);
+        auto endPos = GetTextIndex(end.y, end.x);
+
+        /* Set maximal width */
+        MultiLineString::SetMaxWidth(maxWidth);
+
+        /* Reset selection position within new lines */
+        GetTextPosition(startPos, start.y, start.x);
+        GetTextPosition(endPos, end.y, end.x);
+        SetSelection(start, end);
+    }
 }
 
 const String& TextFieldMultiLineString::GetLineText() const

@@ -133,7 +133,7 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
         replace = false;
 
     /* Update main string */
-    auto textPos = GetTextPosition(lineIndex, positionInLine);
+    auto textPos = GetTextIndex(lineIndex, positionInLine);
     if (replace)
     {
         if (textPos < text_.size())
@@ -202,7 +202,7 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
     }
 
     /* Update main string */
-    auto textPos = GetTextPosition(lineIndex, positionInLine);
+    auto textPos = GetTextIndex(lineIndex, positionInLine);
     auto chr = text_[textPos];
     text_.erase(textPos, 1);
 
@@ -234,7 +234,7 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
     }
 }
 
-MultiLineString::SizeType MultiLineString::GetTextPosition(SizeType lineIndex, SizeType positionInLine) const
+MultiLineString::SizeType MultiLineString::GetTextIndex(SizeType lineIndex, SizeType positionInLine) const
 {
     if (lineIndex >= lines_.size() || positionInLine > lines_[lineIndex].text.size())
         return String::npos;
@@ -252,6 +252,32 @@ MultiLineString::SizeType MultiLineString::GetTextPosition(SizeType lineIndex, S
     pos += positionInLine;
 
     return pos;
+}
+
+void MultiLineString::GetTextPosition(SizeType textIndex, SizeType& lineIndex, SizeType& positionInLine) const
+{
+    /* Reset output parameters and valid text index */
+    lineIndex = 0;
+    positionInLine = 0;
+
+    if (textIndex > text_.size() || lines_.empty() || text_.empty())
+        return;
+
+    /* Count all new lines */
+    for (SizeType i = 0; i < textIndex;)
+    {
+        auto len = std::min(textIndex - i, lines_[lineIndex].text.size());
+        i += len;
+
+        if (i < textIndex)
+        {
+            ++lineIndex;
+            if (IsNewLine(text_[i]))
+                ++i;
+        }
+        else
+            positionInLine = len;
+    }
 }
 
 void MultiLineString::SetGlyphSet(const FontGlyphSet& glyphSet)

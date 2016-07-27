@@ -556,7 +556,9 @@ void reshapeCallback(GLsizei w, GLsizei h)
 
 void keyboardCallback(unsigned char key, int x, int y)
 {
-    //auto modMask = glutGetModifiers();
+    auto modMask = glutGetModifiers();
+
+    bool ctrl = ((modMask & GLUT_ACTIVE_CTRL) != 0);
 
     switch (key)
     {
@@ -606,18 +608,24 @@ void specialCallback(int key, int x, int y)
 {
     auto modMask = glutGetModifiers();
 
-    bool selEnabled = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
+    bool ctrl = ((modMask & GLUT_ACTIVE_CTRL) != 0);
+    bool shift = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
 
     if (focusOnTextArea)
-        mainMlText->selectionEnabled = selEnabled;
+        mainMlText->selectionEnabled = shift;
     else
-        mainTextField.selectionEnabled = selEnabled;
+        mainTextField.selectionEnabled = shift;
 
     switch (key)
     {
         case GLUT_KEY_HOME:
             if (focusOnTextArea)
-                mainMlText->MoveCursorBegin();
+            {
+                if (ctrl)
+                    mainMlText->MoveCursorTop();
+                else
+                    mainMlText->MoveCursorBegin();
+            }
             else
                 mainTextField.MoveCursorBegin();
             mainTextFieldBlinker.refresh();
@@ -625,14 +633,19 @@ void specialCallback(int key, int x, int y)
 
         case GLUT_KEY_END:
             if (focusOnTextArea)
-                mainMlText->MoveCursorEnd();
+            {
+                if (ctrl)
+                    mainMlText->MoveCursorBottom();
+                else
+                    mainMlText->MoveCursorEnd();
+            }
             else
                 mainTextField.MoveCursorEnd();
             mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_LEFT:
-            if ((modMask & GLUT_ACTIVE_CTRL) != 0)
+            if (ctrl)
             {
                 if (focusOnTextArea)
                     mainMlText->JumpLeft();
@@ -650,7 +663,7 @@ void specialCallback(int key, int x, int y)
             break;
 
         case GLUT_KEY_RIGHT:
-            if ((modMask & GLUT_ACTIVE_CTRL) != 0)
+            if (ctrl)
             {
                 if (focusOnTextArea)
                     mainMlText->JumpRight();

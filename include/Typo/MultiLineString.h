@@ -81,15 +81,27 @@ class MultiLineString : public SeparableString
         void Remove(SizeType lineIndex, SizeType positionInLine);
 
         /**
-        \brief Converts the specified position as string index within the main text string.
+        \brief Converts the specified position into a string index within the main text string.
         \param[in] lineIndex Specifies the index of the text line.
         \param[in] positionInLine Specifies the position within the specified line string.
         This value must be in the range [0, line.size()], i.e. it can also be at the end of the string (not only line.size() - 1).
         \return Position within the main text string or 'String::npos' if the specified location is invalid.
         \remarks The return value is in the range [0, GetText().size()], i.e. it can exceed the main text position by 1 character!
         \see GetText
+        \see GetTextPosition
         */
-        SizeType GetTextPosition(SizeType lineIndex, SizeType positionInLine) const;
+        SizeType GetTextIndex(SizeType lineIndex, SizeType positionInLine) const;
+
+        /**
+        \brief Converts the specified string index within the main text string into a position.
+        \param[in] textIndex Specifies the index of the text line. This must be in the
+        range [0, GetText().size()], i.e. it can also be at the end of the string (not only line.size() - 1).
+        \param[out] lineIndex Specifies the resulting index of the text line.
+        \param[out] positionInLine Specifies the resulting position within the resulting line string.
+        \see GetText
+        \see GetTextIndex
+        */
+        void GetTextPosition(SizeType textIndex, SizeType& lineIndex, SizeType& positionInLine) const;
 
         /**
         \brief Sets the new font glyph set and updates all lines.
