@@ -66,7 +66,7 @@ bool TextFieldMultiLineString::IsCursorTop() const
 
 bool TextFieldMultiLineString::IsCursorBottom() const
 {
-    return (GetLines().empty() || GetCursorPosition().y == GetLines().size() - 1);
+    return (GetLines().empty() || GetCursorPosition().y + 1 == GetLines().size());
 }
 
 void TextFieldMultiLineString::MoveCursorX(int direction)
@@ -286,41 +286,31 @@ Char TextFieldMultiLineString::CharRight() const
 
 void TextFieldMultiLineString::RemoveLeft()
 {
-#if 0
     if (IsSelected())
     {
         /* First remove selection */
         RemoveSelection();
     }
-    else if (!IsCursorBegin())
+    else if (!IsCursorTop() || !IsCursorBegin())
     {
-        /* Remove character and then move cursor left */
-        MoveCursor(-1);
-        if (IsCursorEnd())
-            text_.pop_back();
-        else
-            text_.erase(Iter());
+        /* Move cursor left and then remove character */
+        MoveCursor(-1, 0);
+        Remove(GetCursorPosition().y, GetCursorPosition().x);
     }
-#endif
 }
 
 void TextFieldMultiLineString::RemoveRight()
 {
-#if 0
     if (IsSelected())
     {
         /* First remove selection */
         RemoveSelection();
     }
-    else if (!IsCursorEnd())
+    else if (!IsCursorBottom() || !IsCursorEnd())
     {
         /* Only remove character without moving the cursor */
-        if ((GetCursorPosition() + 1) == text_.size())
-            text_.pop_back();
-        else
-            text_.erase(Iter());
+        Remove(GetCursorPosition().y, GetCursorPosition().x);
     }
-#endif
 }
 
 void TextFieldMultiLineString::RemoveSequenceLeft()

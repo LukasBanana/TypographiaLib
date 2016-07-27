@@ -75,7 +75,7 @@ class MultiLineString : public SeparableString
         \brief Removes the character at the specified location.
         \param[in] lineIndex Specifies the line where to remove a character.
         \param[in] positionInLine Specifies the position within the specified line string.
-        This value must be in the range [0, line.size()], i.e. it can also be at the end of the string (not only line.size() - 1).
+        This value must be in the range [0, line.size()), i.e. it can not be at the end of the string (only line.size() - 1).
         \remarks If the position (i.e. 'lineIndex' and 'positionInLine') are invalid, this function call has no effect.
         */
         void Remove(SizeType lineIndex, SizeType positionInLine);

@@ -85,10 +85,13 @@ void MultiLineString::PopBack()
     /* Update main string */
     text_.pop_back();
 
-    /* Remove last character from last line */
+    /* Get last character from last line */
     auto& line = lines_.back();
     auto chr = line.text.back();
 
+    auto lineWidth = line.width;
+
+    /* Remove last character from last line */
     line.text.pop_back();
 
     if (line.text.empty())
@@ -103,8 +106,9 @@ void MultiLineString::PopBack()
         line.width -= width;
     }
 
-    /* Always update widest width when characters are removed */
-    UpdateWidestWidth();
+    /* Update widest width when a character is removed from the current widest line */
+    if (lineWidth == width_)
+        UpdateWidestWidth();
 }
 
 void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const Char& chr, bool replace)
@@ -117,6 +121,13 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
 
     if (positionInLine > line.text.size())
         return;
+
+    /* Check if pop-back is sufficient */
+    if (lineIndex + 1 == lines_.size() && positionInLine == line.text.size())
+    {
+        PushBack(chr);
+        return;
+    }
 
     if (positionInLine == line.text.size() || IsNewLine(chr))
         replace = false;
@@ -180,15 +191,47 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
 
     auto& line = lines_[lineIndex];
 
-    if (positionInLine > line.text.size())
+    if ( positionInLine > line.text.size() || ( lineIndex + 1 == lines_.size() && positionInLine == line.text.size() ) )
         return;
 
+    /* Check if pop-back is sufficient */
+    if (lineIndex + 1 == lines_.size() && positionInLine + 1 == line.text.size())
+    {
+        PopBack();
+        return;
+    }
 
+    /* Update main string */
+    auto textPos = GetTextPosition(lineIndex, positionInLine);
+    auto chr = text_[textPos];
+    text_.erase(textPos, 1);
 
+    /* Update selected line with removed character */
+    if (IsNewLine(chr))
+        ResetLines();
+    else
+    {
+        auto lineWidth = line.width;
 
+        /* Remove character from line */
+        line.text.erase(positionInLine, 1);
 
-    /* Always update widest width when characters are removed */
-    UpdateWidestWidth();
+        if (line.text.empty())
+        {
+            /* Remove last line if it's empty */
+            lines_.pop_back();
+        }
+        else
+        {
+            /* Update width in current line */
+            int width = CharWidth(chr);
+            line.width -= width;
+        }
+
+        /* Update widest width when a character is removed from the current widest line */
+        if (lineWidth == width_)
+            UpdateWidestWidth();
+    }
 }
 
 MultiLineString::SizeType MultiLineString::GetTextPosition(SizeType lineIndex, SizeType positionInLine) const
