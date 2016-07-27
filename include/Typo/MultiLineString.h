@@ -116,10 +116,7 @@ class MultiLineString : public SeparableString
         
     private:
         
-        /**
-        Returns true if the specified character is a new-line character,
-        i.e. '\n' (line-feed) or '\r' (carriage return).
-        */
+        //! Returns true if the specified character is a new-line character, i.e. '\n' (line-feed) or '\r' (carriage return).
         bool IsNewLine(const Char& chr) const;
         
         //! Returns true if the specified width fits into a line, i.e. does not exceed the maximal width.

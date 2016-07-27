@@ -251,17 +251,34 @@ void TextFieldMultiLineString::Deselect()
 
 bool TextFieldMultiLineString::IsSelected() const
 {
-    return (GetCursorPosition().x != selStart_.x || GetCursorPosition().y != selStart_.y);
+    return (GetCursorPosition() != selStart_);
 }
 
 String TextFieldMultiLineString::GetSelectionText() const
 {
-    /*SizeType start, end;
-    GetSelection(start, end);
-    return (start < end) ? text_.substr(start, end - start) : String();*/
-
     String text;
 
+    if (IsSelected())
+    {
+        Point start, end;
+        GetSelection(start, end);
+
+        if (start.y < end.y)
+        {
+            text += GetLineText(start.y).substr(start.x);
+            text += '\n';
+
+            for (auto y = start.y + 1; y < end.y; ++y)
+            {
+                text += GetLineText(y);
+                text += '\n';
+            }
+
+            text += GetLineText(end.y).substr(0, end.x);
+        }
+        else
+            text = GetLineText(start.y).substr(start.x, end.x - start.x);
+    }
 
     return text;
 }
@@ -406,6 +423,12 @@ void TextFieldMultiLineString::Put(const String& text)
 void TextFieldMultiLineString::SetText(const String& text)
 {
     MultiLineString::SetText(text);
+    UpdateCursorRange();
+}
+
+void TextFieldMultiLineString::SetMaxWidth(int maxWidth)
+{
+    MultiLineString::SetMaxWidth(maxWidth);
     UpdateCursorRange();
 }
 

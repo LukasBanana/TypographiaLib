@@ -565,6 +565,10 @@ void keyboardCallback(unsigned char key, int x, int y)
             break;
 
         case '\r': // ENTER
+            if (focusOnTextArea)
+                std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
+            else
+                std::cout << "Selected Text:" << std::endl << mainTextField.GetSelectionText() << std::endl << std::endl;
             break;
 
         case '\t':

@@ -21,7 +21,7 @@ namespace Tg
 \brief Text field multi-line string class.
 \remarks In a model-view-controller pattern, this is the model for a user input text field.
 */
-class TextFieldMultiLineString : /*private*/public MultiLineString
+class TextFieldMultiLineString : private MultiLineString
 {
     
     public:
@@ -136,7 +136,12 @@ class TextFieldMultiLineString : /*private*/public MultiLineString
         */
         bool IsSelected() const;
 
-        //! Returns the selected text.
+        /**
+        \brief Returns the selected text.
+        \remarks This is different to TextFieldString::GetSelectionText due to multiple lines:
+        Each line break contains the new line character '\n' at the end,
+        even if the line break only appears due to the restricted string area.
+        */
         String GetSelectionText() const;
 
         /* --- String content --- */
@@ -199,13 +204,46 @@ class TextFieldMultiLineString : /*private*/public MultiLineString
         //! Inserts the specified text.
         virtual void Put(const String& text);
 
-        //! Sets the content of the text field and clamps the cursor position.
-        inline void SetText(const String& text);
+        //! \see MultiLineString::SetGlyphSet
+        inline void SetGlyphSet(const FontGlyphSet& glyphSet)
+        {
+            MultiLineString::SetGlyphSet(glyphSet);
+        }
+        
+        //! \see MultiLineString::GetGlyphSet
+        inline const FontGlyphSet& GetGlyphSet() const
+        {
+            return MultiLineString::GetGlyphSet();
+        }
 
-        //! Returns the content of the text field.
+        //! Sets the new maximal width.
+        void SetMaxWidth(int maxWidth);
+
+        //! \see MultiLineString::GetMaxWidth
+        inline int GetMaxWidth() const
+        {
+            return MultiLineString::GetMaxWidth();
+        }
+
+        //! \see MultiLineString::GetWidth
+        inline int GetWidth() const
+        {
+            return MultiLineString::GetWidth();
+        }
+
+        //! Sets the content of the text field and clamps the cursor position.
+        void SetText(const String& text);
+
+        //! \see MultiLineString::GetText
         inline const String& GetText() const
         {
             return MultiLineString::GetText();
+        }
+
+        //! \see MultiLineString::GetLines
+        inline const std::vector<TextLine>& GetLines() const
+        {
+            return MultiLineString::GetLines();
         }
 
         //! Returns the content of the current line (where the cursor is located).
