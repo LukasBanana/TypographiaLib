@@ -254,7 +254,6 @@ bool TextFieldMultiLineString::IsSelected() const
     return (GetCursorPosition() != selStart_);
 }
 
-//TODO -> return correct new line characters (i.e. do not insert automatically in each line!)
 String TextFieldMultiLineString::GetSelectionText() const
 {
     String text;
@@ -264,21 +263,10 @@ String TextFieldMultiLineString::GetSelectionText() const
         Point start, end;
         GetSelection(start, end);
 
-        if (start.y < end.y)
-        {
-            text += GetLineText(start.y).substr(start.x);
-            text += '\n';
+        auto startPos = GetTextPosition(start.y, start.x);
+        auto endPos = GetTextPosition(end.y, end.x);
 
-            for (auto y = start.y + 1; y < end.y; ++y)
-            {
-                text += GetLineText(y);
-                text += '\n';
-            }
-
-            text += GetLineText(end.y).substr(0, end.x);
-        }
-        else
-            text = GetLineText(start.y).substr(start.x, end.x - start.x);
+        return GetText().substr(startPos, endPos - startPos);
     }
 
     return text;

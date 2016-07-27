@@ -174,7 +174,21 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
 
 void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
 {
-    //todo...
+    /* Validate parameters and get selected line */
+    if (lineIndex >= lines_.size())
+        return;
+
+    auto& line = lines_[lineIndex];
+
+    if (positionInLine > line.text.size())
+        return;
+
+
+
+
+
+    /* Always update widest width when characters are removed */
+    UpdateWidestWidth();
 }
 
 MultiLineString::SizeType MultiLineString::GetTextPosition(SizeType lineIndex, SizeType positionInLine) const
