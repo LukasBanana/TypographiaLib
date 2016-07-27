@@ -212,7 +212,7 @@ bool initScene()
         fontTerm = fontSmall;
         #elif defined(__linux__)
         fontSmall = loadFont("freefont/FreeMonoBold", 20);
-        fontLarge = loadFont("freefont/FreeSerif", 30);
+        fontLarge = fontSmall;//loadFont("freefont/FreeSerif", 30);
         fontTerm = fontSmall;
         #endif
     }
