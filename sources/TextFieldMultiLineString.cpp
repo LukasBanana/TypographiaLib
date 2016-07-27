@@ -8,19 +8,10 @@
 #include <Typo/TextFieldMultiLineString.h>
 #include <algorithm>
 
-#include <iostream>//!!!
-
 
 namespace Tg
 {
 
-
-void TextFieldMultiLineString::_TEST_()
-{
-    auto p = GetCursorCoordinate();
-    std::cout << "index = " << GetCursorIndex() << ", x = " << p.x << ", y = " << p.y << ", lines = " << GetLines().size();
-    std::cout << ", left = '" << CharLeft() << "', right = '" << CharRight() << '\'' << std::endl;
-}
 
 TextFieldMultiLineString::TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text) :
     MultiLineString( glyphSet, maxWidth, text )
@@ -40,7 +31,7 @@ TextFieldMultiLineString& TextFieldMultiLineString::operator += (const String& s
     return *this;
 }
 
-TextFieldMultiLineString& TextFieldMultiLineString::operator += (const Char& chr)
+TextFieldMultiLineString& TextFieldMultiLineString::operator += (Char chr)
 {
     Insert(chr);
     return *this;
@@ -160,16 +151,42 @@ void TextFieldMultiLineString::MoveCursor(int directionX, int directionY)
     MoveCursorX(directionX);
 }
 
+//!INCOMPLETE! (due to trunaced spaces at an implicit line break)
 void TextFieldMultiLineString::MoveCursorBegin()
 {
-    //TODO -> move within complete line (terminated by an explicit new line character)
-    SetCursorCoordinate(0, GetCursorCoordinate().y);
+    if (wrapLines)
+    {
+        /* Move cursor left until the left sided character is a new-line character */
+        while (!IsCursorTop() || !IsCursorBegin())
+        {
+            SetCursorCoordinate(0, GetCursorCoordinate().y);
+            if (!IsNewLine(CharLeft()))
+                MoveCursorX(-1);
+            else
+                break;
+        }
+    }
+    else
+        SetCursorCoordinate(0, GetCursorCoordinate().y);
 }
 
+//!INCOMPLETE! (due to trunaced spaces at an implicit line break)
 void TextFieldMultiLineString::MoveCursorEnd()
 {
-    //TODO -> move within complete line (terminated by an explicit new line character)
-    SetCursorCoordinate(GetLineText().size(), GetCursorCoordinate().y);
+    if (wrapLines)
+    {
+        /* Move cursor right until the right sided character is a new-line character */
+        while (!IsCursorBottom() || !IsCursorEnd())
+        {
+            SetCursorCoordinate(GetLineText().size(), GetCursorCoordinate().y);
+            if (!IsNewLine(CharRight()))
+                MoveCursorX(1);
+            else
+                break;
+        }
+    }
+    else
+        SetCursorCoordinate(GetLineText().size(), GetCursorCoordinate().y);
 }
 
 void TextFieldMultiLineString::MoveCursorTop()
@@ -280,7 +297,7 @@ String TextFieldMultiLineString::GetSelectionText() const
         auto startPos = GetTextIndex(start.y, start.x);
         auto endPos = GetTextIndex(end.y, end.x);
 
-        return GetText().substr(startPos, endPos - startPos);
+        text = GetText().substr(startPos, endPos - startPos);
     }
 
     return text;
@@ -380,7 +397,7 @@ bool TextFieldMultiLineString::IsInsertionActive() const
     return insertionEnabled && !IsCursorEnd() && !IsSelected();
 }
 
-void TextFieldMultiLineString::Insert(const Char& chr)
+void TextFieldMultiLineString::Insert(Char chr)
 {
     if (IsValidChar(chr))
     {
@@ -388,6 +405,10 @@ void TextFieldMultiLineString::Insert(const Char& chr)
         auto isSel = IsSelected();
         if (isSel)
             RemoveSelection();
+
+        /* Replace '\r' by '\n' */
+        if (chr == '\r')
+            chr = '\n';
 
         /* Insert the new character (only use insertion if selection was not replaced) */
         auto selState = GetSelectionState();
@@ -399,7 +420,7 @@ void TextFieldMultiLineString::Insert(const Char& chr)
     }
 }
 
-void TextFieldMultiLineString::Put(const Char& chr)
+void TextFieldMultiLineString::Put(Char chr)
 {
     if (chr == Char('\b'))
         RemoveLeft();
@@ -449,7 +470,7 @@ const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
  * ======= Protected: =======
  */
 
-bool TextFieldMultiLineString::IsValidChar(const Char& chr) const
+bool TextFieldMultiLineString::IsValidChar(Char chr) const
 {
     return (unsigned(chr) >= 32 || chr == '\r' || chr == '\n');
 }

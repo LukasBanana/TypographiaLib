@@ -97,7 +97,7 @@ Tg::TextFieldString mainTextField(
 Blinker mainTextFieldBlinker;
 
 std::unique_ptr<Tg::TextFieldMultiLineString> mainMlText;
-std::unique_ptr<TexturedFont> fontSmall, fontLarge;
+std::shared_ptr<TexturedFont> fontSmall, fontLarge;
 
 
 // ----- CLASS "TexturedFont" FUNCTIONS -----
@@ -201,7 +201,7 @@ bool initScene()
         //fontSmall = loadFont("Times New Roman", 32);
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
-        fontLarge = loadFont("Consolas", 30);
+        fontLarge = fontSmall;//loadFont("Consolas", 30);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
         fontLarge = loadFont("Brush Script", 30);
@@ -222,11 +222,12 @@ bool initScene()
     // setup multi-line string
     std::string str = (
         "Hello, World!\n\n"
-        "This is an example of a multi-line string with a restricted screen width\n"
+        "This is a small example of a multi-line string within a restricted screen width\n"
         "How is it goin' bro?"
     );
 
     mainMlText = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
+    mainMlText->wrapLines = true;
 
     mainTextField.cursorLoopEnabled = true;
 
@@ -271,9 +272,9 @@ void drawFontGlyph(const Tg::FontGlyph& glyph, float invTexWidth, float invTexHe
     movePen(-glyph.xOffset, glyph.yOffset);
 }
 
-void drawBox(int left, int top, int right, int bottom)
+void drawBox(int left, int top, int right, int bottom, bool lines = false)
 {
-    glBegin(GL_LINE_LOOP);
+    glBegin(lines ? GL_LINE_LOOP : GL_QUADS);
     {
         glVertex2i(left , top   );
         glVertex2i(right, top   );
@@ -333,20 +334,10 @@ void drawTextField(
     const TexturedFont& font, int posX, int posY,
     const Tg::TextFieldString& textField, unsigned int color = COLOR_WHITE)
 {
-    // draw text
-    drawText(
-        font, posX, posY, textField.GetText(), color,
-        [color](char chr)
-        {
-            // change color for special characters
-            setColor(isChar(chr, { '#', '$', '|', '+', '*', '<', '>', '_', '@', '=' }) ? COLOR_RED : color);
-        }
-    );
-
     // draw selection
     if (textField.IsSelected())
     {
-        setColor(COLOR_YELLOW);
+        setColor(COLOR_LIGHT_BLUE);
 
         Tg::TextFieldString::SizeType start, end;
         textField.GetSelection(start, end);
@@ -358,6 +349,16 @@ void drawTextField(
             posY + font.GetDesc().height + 7
         );
     }
+
+    // draw text
+    drawText(
+        font, posX, posY, textField.GetText(), color,
+        [color](char chr)
+        {
+            // change color for special characters
+            setColor(isChar(chr, { '#', '$', '|', '+', '*', '<', '>', '_', '@', '=' }) ? COLOR_RED : color);
+        }
+    );
 
     // draw cursor
     if (!focusOnTextArea && mainTextFieldBlinker.visible())
@@ -393,23 +394,12 @@ void drawMultiLineText(
 {
     // draw bounding box around the text
     setColor(COLOR_WHITE);
-    drawBox(posX, posY, posX + textArea.GetMaxWidth(), posY + textArea.GetLines().size()*font.GetDesc().height);
-
-    // draw each text line
-    auto prevPosY = posY;
-
-    for (const auto& line : textArea.GetLines())
-    {
-        drawText(font, posX, posY, line.text, color);
-        posY += font.GetDesc().height;
-    }
-
-    posY = prevPosY;
+    drawBox(posX, posY, posX + textArea.GetMaxWidth(), posY + textArea.GetLines().size()*font.GetDesc().height, true);
 
     // draw selection
     if (textArea.IsSelected())
     {
-        setColor(COLOR_YELLOW);
+        setColor(COLOR_LIGHT_BLUE);
 
         Tg::TextFieldMultiLineString::Point start, end;
         textArea.GetSelection(start, end);
@@ -418,40 +408,43 @@ void drawMultiLineText(
         {
             drawBox(
                 posX + font.TextWidth(textArea.GetLineText(), 0, start.x),
-                posY + start.y*font.GetDesc().height + 2,
+                posY + start.y*font.GetDesc().height + 4,
                 posX + font.TextWidth(textArea.GetLineText(), 0, end.x),
-                posY + start.y*font.GetDesc().height + font.GetDesc().height + 7
+                posY + start.y*font.GetDesc().height + font.GetDesc().height + 4
             );
         }
         else
         {
             drawBox(
                 posX + font.TextWidth(textArea.GetLineText(start.y), 0, start.x),
-                posY + start.y*font.GetDesc().height + 2,
+                posY + start.y*font.GetDesc().height + 4,
                 posX + font.TextWidth(textArea.GetLineText(start.y), 0),
-                posY + start.y*font.GetDesc().height + font.GetDesc().height + 7
+                posY + start.y*font.GetDesc().height + font.GetDesc().height + 4
             );
 
             for (auto y = start.y + 1; y < end.y; ++y)
             {
                 drawBox(
                     posX,
-                    posY + y*font.GetDesc().height + 2,
+                    posY + y*font.GetDesc().height + 4,
                     posX + font.TextWidth(textArea.GetLineText(y), 0),
-                    posY + y*font.GetDesc().height + font.GetDesc().height + 7
+                    posY + y*font.GetDesc().height + font.GetDesc().height + 4
                 );
             }
 
             drawBox(
                 posX,
-                posY + end.y*font.GetDesc().height + 2,
+                posY + end.y*font.GetDesc().height + 4,
                 posX + font.TextWidth(textArea.GetLineText(end.y), 0, end.x),
-                posY + end.y*font.GetDesc().height + font.GetDesc().height + 7
+                posY + end.y*font.GetDesc().height + font.GetDesc().height + 4
             );
         }
     }
 
     // draw cursor
+    auto prevPosX = posX;
+    auto prevPosY = posY;
+
     if (focusOnTextArea && !textArea.GetLines().empty() && mainTextFieldBlinker.visible())
     {
         setColor(COLOR_WHITE);
@@ -478,6 +471,16 @@ void drawMultiLineText(
                 posY + font.GetDesc().height + 5
             );
         }
+    }
+
+    posX = prevPosX;
+    posY = prevPosY;
+
+    // draw each text line
+    for (const auto& line : textArea.GetLines())
+    {
+        drawText(font, posX, posY, line.text, color);
+        posY += font.GetDesc().height;
     }
 }
 
@@ -570,12 +573,14 @@ void keyboardCallback(unsigned char key, int x, int y)
             if (focusOnTextArea)
             {
                 mainMlText->Put(char(key));
-                mainMlText->_TEST_();
             }
             break;
 
         case '\t':
-            focusOnTextArea = !focusOnTextArea;
+            if (focusOnTextArea)
+                mainMlText->Put("  ");
+            else
+                mainTextField.Put("  ");
             break;
 
         default:
@@ -590,7 +595,6 @@ void keyboardCallback(unsigned char key, int x, int y)
                 }
                 else
                     mainMlText->Put(char(key));
-                mainMlText->_TEST_();
             }
             else
             {
@@ -629,7 +633,6 @@ void specialCallback(int key, int x, int y)
                     mainMlText->MoveCursorTop();
                 else
                     mainMlText->MoveCursorBegin();
-                mainMlText->_TEST_();
             }
             else
                 mainTextField.MoveCursorBegin();
@@ -643,7 +646,6 @@ void specialCallback(int key, int x, int y)
                     mainMlText->MoveCursorBottom();
                 else
                     mainMlText->MoveCursorEnd();
-                mainMlText->_TEST_();
             }
             else
                 mainTextField.MoveCursorEnd();
@@ -665,7 +667,6 @@ void specialCallback(int key, int x, int y)
                 else
                     mainTextField.MoveCursor(-1);
             }
-            if (focusOnTextArea) mainMlText->_TEST_();
             mainTextFieldBlinker.refresh();
             break;
 
@@ -684,7 +685,6 @@ void specialCallback(int key, int x, int y)
                 else
                     mainTextField.MoveCursor(1);
             }
-            if (focusOnTextArea) mainMlText->_TEST_();
             mainTextFieldBlinker.refresh();
             break;
 
@@ -696,7 +696,6 @@ void specialCallback(int key, int x, int y)
                 else
                     mainMlText->MoveCursorY(-1);
                 mainTextFieldBlinker.refresh();
-                mainMlText->_TEST_();
             }
             break;
 
@@ -708,7 +707,6 @@ void specialCallback(int key, int x, int y)
                 else
                     mainMlText->MoveCursorY(1);
                 mainTextFieldBlinker.refresh();
-                mainMlText->_TEST_();
             }
             break;
 
@@ -721,6 +719,10 @@ void specialCallback(int key, int x, int y)
             break;
 
         case GLUT_KEY_F1:
+            focusOnTextArea = !focusOnTextArea;
+            break;
+
+        case GLUT_KEY_F2:
             if (focusOnTextArea)
                 std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
             else

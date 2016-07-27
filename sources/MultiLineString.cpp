@@ -8,8 +8,6 @@
 #include <Typo/MultiLineString.h>
 #include <algorithm>
 
-#include <iostream>//!!!
-
 
 namespace Tg
 {
@@ -21,7 +19,7 @@ MultiLineString::MultiLineString(const FontGlyphSet& glyphSet, int maxWidth, con
     width_      ( 0         ),
     text_       ( text      )
 {
-    ResetLines();
+    RebuildLines();
 }
 
 MultiLineString& MultiLineString::operator = (const String& str)
@@ -49,7 +47,7 @@ void MultiLineString::PushBack(const Char& chr)
     text_ += chr;
 
 #if 1
-    ResetLines();
+    RebuildLines();
 #else
     if (IsNewLine(chr))
         AppendLine();
@@ -77,7 +75,7 @@ void MultiLineString::PushBack(const Char& chr)
                 UpdateWidestWidth(line.width);
             }
             else
-                ResetLines();
+                RebuildLines();
         }
     }
 #endif
@@ -92,7 +90,7 @@ void MultiLineString::PopBack()
     text_.pop_back();
 
 #if 1
-    ResetLines();
+    RebuildLines();
 #else
     /* Get last character from last line */
     auto& line = lines_.back();
@@ -163,10 +161,10 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
 
     /* Update selected line with new character */
 #if 1
-    ResetLines();
+    RebuildLines();
 #else
     if (IsNewLine(chr))
-        ResetLines();
+        RebuildLines();
     else
     {
         /* Get width of new character */
@@ -185,7 +183,7 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
                 UpdateWidestWidth(line.width);
             }
             else
-                ResetLines();
+                RebuildLines();
         }
         else
         {
@@ -198,7 +196,7 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
                 UpdateWidestWidth(line.width);
             }
             else
-                ResetLines();
+                RebuildLines();
         }
     }
 #endif
@@ -228,11 +226,11 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
     text_.erase(textPos, 1);
 
 #if 1
-    ResetLines();
+    RebuildLines();
 #else
     /* Update selected line with removed character */
     if (IsNewLine(chr))
-        ResetLines();
+        RebuildLines();
     else
     {
         auto lineWidth = line.width;
@@ -323,7 +321,7 @@ void MultiLineString::GetTextPosition(SizeType textIndex, SizeType& lineIndex, S
 void MultiLineString::SetGlyphSet(const FontGlyphSet& glyphSet)
 {
     glyphSet_ = &glyphSet;
-    ResetLines();
+    RebuildLines();
 }
 
 void MultiLineString::SetMaxWidth(int maxWidth)
@@ -331,14 +329,14 @@ void MultiLineString::SetMaxWidth(int maxWidth)
     if (maxWidth_ != maxWidth)
     {
         maxWidth_ = maxWidth;
-        ResetLines();
+        RebuildLines();
     }
 }
 
 void MultiLineString::SetText(const String& text)
 {
     text_ = text;
-    ResetLines();
+    RebuildLines();
 }
 
 
@@ -351,11 +349,6 @@ int MultiLineString::CharWidth(const Char& chr) const
     return GetGlyphSet()[chr].advance;
 }
 
-
-/*
- * ======= Private: =======
- */
-
 bool MultiLineString::IsNewLine(const Char& chr) const
 {
     return (chr == Char('\n') || chr == Char('\r'));
@@ -366,9 +359,15 @@ bool MultiLineString::IsSpace(const Char& chr) const
     return (chr == Char(' ') || chr == Char('\t'));
 }
 
+
+/*
+ * ======= Private: =======
+ */
+
+
 bool MultiLineString::FitIntoLine(int width) const
 {
-    return width <= GetMaxWidth();
+    return (width <= GetMaxWidth());
 }
 
 void MultiLineString::UpdateWidestWidth(int width)
@@ -399,78 +398,6 @@ void MultiLineString::AppendLine()
     AppendLine(String(), 0);
 }
 
-void MultiLineString::ResetLines()
-{
-#if 1
-    RebuildLines();
-#else
-    /* Reset line strings */
-    lines_.clear();
-    width_ = 0;
-
-    if (text_.empty())
-        return;
-
-    /* Get glyph set from font */
-    int nextWidth = 0, width = 0, sepWidth = 0;
-    Char chr = 0;
-
-    /* Setup all wrapped lines */
-    for (std::size_t pos = 0, sepLen = 0, len = 0, maxLen = text_.size(); ( pos < maxLen ); pos += len)
-    {
-        /* Find maximal length for current line */
-        for (chr = 0, len = 0, sepLen = 0, nextWidth = 0, width = 0; ( FitIntoLine(nextWidth) ); ++len)
-        {
-            /* Store new line width */
-            width = nextWidth;
-
-            /* Check for separator of previous character */
-            if (IsSeparator(chr))
-            {
-                sepLen = len;
-                sepWidth = width;
-            }
-
-            if (pos + len >= maxLen)
-                break;
-
-            /* Get current character from base string */
-            chr = text_[pos + len];
-
-            /* Break line for new-line character */
-            if (IsNewLine(chr))
-                break;
-
-            /* Add width of current character */
-            nextWidth += CharWidth(chr);
-        }
-
-        /* Clamp line size to a minimum of one character */
-        if (len == 0 && nextWidth > 0 && pos < maxLen)
-        {
-            ++len;
-            width = nextWidth;
-        }
-        /* Jump back to the previous separated text (if break was not caused by a new-line or end-of-line) */
-        else if (sepLen > 0 && !IsNewLine(chr) && pos + len < maxLen)
-        {
-            len = sepLen;
-            width = sepWidth;
-        }
-
-        /* Add new line to list */
-        if (len > 0)
-            AppendLine(text_.substr(pos, len), width);
-        else
-            AppendLine();
-
-        /* Ignore new-line characters in output text */
-        if (IsNewLine(chr))
-            ++len;
-    }
-#endif
-}
-
 void MultiLineString::RebuildLines()
 {
     /* Reset line strings */
@@ -484,27 +411,7 @@ void MultiLineString::RebuildLines()
         while (offset <= text_.size())
             offset = AppendLinesFromSubText(offset);
     }
-
-    #if 0
-    std::cout << std::endl << "<REBUILD LINES>" << std::endl;
-    for (const auto& l : lines_)
-        std::cout << l.text << std::endl;
-    std::cout << "</REBUILD LINES>" << std::endl;
-    std::cout << "<TEXT>" << std::endl;
-    std::cout << text_ << std::endl;
-    std::cout << "</TEXT>" << std::endl;
-    #endif
 }
-
-/*
-"Hello\n\nWorld\nFoo Bar LoL"
-   |
-   V
-"Hello"
-""
-"World"
-"Foo Bar LoL"
-*/
 
 MultiLineString::SizeType MultiLineString::AppendLinesFromSubText(SizeType offset)
 {

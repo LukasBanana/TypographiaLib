@@ -26,8 +26,6 @@ class TextFieldMultiLineString : private MultiLineString
     
     public:
         
-        void _TEST_();
-
         using Point = Point<SizeType>;
 
         TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);
@@ -36,7 +34,7 @@ class TextFieldMultiLineString : private MultiLineString
         
         TextFieldMultiLineString& operator += (const String& str);
         
-        TextFieldMultiLineString& operator += (const Char& chr);
+        TextFieldMultiLineString& operator += (Char chr);
         
         inline operator const String& () const
         {
@@ -198,7 +196,7 @@ class TextFieldMultiLineString : private MultiLineString
         \see insertionEnabled
         \see RemoveSelection
         */
-        void Insert(const Char& chr);
+        void Insert(Char chr);
 
         /**
         \brief Inserts the specified character with some exceptions.
@@ -207,7 +205,7 @@ class TextFieldMultiLineString : private MultiLineString
         - char(127) which will remove all characters before the cursor until the next separator appears.
         \see Insert
         */
-        virtual void Put(const Char& chr);
+        virtual void Put(Char chr);
         
         //! Inserts the specified text.
         virtual void Put(const String& text);
@@ -268,10 +266,13 @@ class TextFieldMultiLineString : private MultiLineString
         //! Specifies whether selection is enabled or disabled. By default false.
         bool selectionEnabled = false;
 
+        //! Specifies whether cursor movement wraps around complete lines. By default false.
+        bool wrapLines = false;
+
     protected:
         
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
-        virtual bool IsValidChar(const Char& chr) const;
+        virtual bool IsValidChar(Char chr) const;
 
     private:
         
