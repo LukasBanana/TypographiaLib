@@ -145,6 +145,9 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
         text_.insert(textPos, 1, chr);
 
     /* Update selected line with new character */
+    ResetLines();
+    return;
+
     if (IsNewLine(chr))
         ResetLines();
     else
@@ -206,6 +209,9 @@ void MultiLineString::Remove(SizeType lineIndex, SizeType positionInLine)
     auto chr = text_[textPos];
     text_.erase(textPos, 1);
 
+    ResetLines();
+    return;
+
     /* Update selected line with removed character */
     if (IsNewLine(chr))
         ResetLines();
@@ -241,11 +247,12 @@ MultiLineString::SizeType MultiLineString::GetTextIndex(SizeType lineIndex, Size
 
     SizeType pos = 0;
 
+    /* Accumulate size of each line until the specified line index */
     for (SizeType i = 0; i < lineIndex; ++i)
     {
         auto len = lines_[i].text.size();
         pos += len;
-        if (pos < text_.size() && IsNewLine(text_[pos]))
+        if (IsNewLine(text_[pos]))
             ++pos;
     }
 
@@ -260,23 +267,37 @@ void MultiLineString::GetTextPosition(SizeType textIndex, SizeType& lineIndex, S
     lineIndex = 0;
     positionInLine = 0;
 
-    if (textIndex > text_.size() || lines_.empty() || text_.empty())
+    if (lines_.empty() || text_.empty())
         return;
 
-    /* Count all new lines */
-    for (SizeType i = 0; i < textIndex;)
+    textIndex = std::min(textIndex, text_.size());
+    SizeType i = 0;
+
+    while (i < textIndex)
     {
-        auto len = std::min(textIndex - i, lines_[lineIndex].text.size());
-        i += len;
+        /* Move iteration index */
+        positionInLine = std::min(textIndex - i, lines_[lineIndex].text.size());
+        i += positionInLine;
 
         if (i < textIndex)
         {
             ++lineIndex;
-            if (IsNewLine(text_[i]))
+            if (i < text_.size() && IsNewLine(text_[i]))
+            {
                 ++i;
+                positionInLine = 0;
+            }
         }
-        else
-            positionInLine = len;
+    }
+
+    /*
+    If the position is at the end of a line, and this end has no explicit new line character,
+    then move on to the beginning of the next line
+    */
+    if (lineIndex + 1 < lines_.size() && positionInLine == lines_[lineIndex].text.size() && !IsNewLine(text_[i]))
+    {
+        ++lineIndex;
+        positionInLine = 0;
     }
 }
 

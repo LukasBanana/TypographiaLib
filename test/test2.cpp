@@ -457,15 +457,15 @@ void drawMultiLineText(
         setColor(COLOR_WHITE);
 
         const auto& text = textArea.GetLineText();
-        posX += font.TextWidth(text, 0, textArea.GetCursorPosition().x);
-        posY += textArea.GetCursorPosition().y * font.GetDesc().height;
+        posX += font.TextWidth(text, 0, textArea.GetCursorCoordinate().x);
+        posY += textArea.GetCursorCoordinate().y * font.GetDesc().height;
 
         if (textArea.IsInsertionActive())
         {
             drawBox(
                 posX,
                 posY + font.GetDesc().height + 4,
-                posX + font.TextWidth(text, textArea.GetCursorPosition().x, 1),
+                posX + font.TextWidth(text, textArea.GetCursorCoordinate().x, 1),
                 posY + font.GetDesc().height + 5
             );
         }
@@ -625,6 +625,7 @@ void specialCallback(int key, int x, int y)
                     mainMlText->MoveCursorTop();
                 else
                     mainMlText->MoveCursorBegin();
+                mainMlText->_TEST_();
             }
             else
                 mainTextField.MoveCursorBegin();
@@ -638,6 +639,7 @@ void specialCallback(int key, int x, int y)
                     mainMlText->MoveCursorBottom();
                 else
                     mainMlText->MoveCursorEnd();
+                mainMlText->_TEST_();
             }
             else
                 mainTextField.MoveCursorEnd();
@@ -659,6 +661,7 @@ void specialCallback(int key, int x, int y)
                 else
                     mainTextField.MoveCursor(-1);
             }
+            if (focusOnTextArea) mainMlText->_TEST_();
             mainTextFieldBlinker.refresh();
             break;
 
@@ -677,6 +680,7 @@ void specialCallback(int key, int x, int y)
                 else
                     mainTextField.MoveCursor(1);
             }
+            if (focusOnTextArea) mainMlText->_TEST_();
             mainTextFieldBlinker.refresh();
             break;
 
@@ -685,6 +689,7 @@ void specialCallback(int key, int x, int y)
             {
                 mainMlText->MoveCursor(0, -1);
                 mainTextFieldBlinker.refresh();
+                mainMlText->_TEST_();
             }
             break;
 
@@ -693,6 +698,7 @@ void specialCallback(int key, int x, int y)
             {
                 mainMlText->MoveCursor(0, 1);
                 mainTextFieldBlinker.refresh();
+                mainMlText->_TEST_();
             }
             break;
 

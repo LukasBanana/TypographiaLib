@@ -26,6 +26,8 @@ class TextFieldMultiLineString : private MultiLineString
     
     public:
         
+        void _TEST_();
+
         using Point = Point<SizeType>;
 
         TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);
@@ -43,19 +45,25 @@ class TextFieldMultiLineString : private MultiLineString
 
         /* --- Cursor operations --- */
         
-        //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
-        void SetCursorPosition(const Point& position);
+        //! Sets the cursor position by the specified text index.
+        void SetCursorIndex(SizeType index);
 
-        inline void SetCursorPosition(SizeType positionX, SizeType positionY)
-        {
-            SetCursorPosition({ positionX, positionY });
-        }
-
-        //! Returns the current cursor position. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
-        inline const Point& GetCursorPosition() const
+        //! Returns the text index of the current cursor position.
+        inline SizeType GetCursorIndex() const
         {
             return cursorPos_;
         }
+
+        //! Sets the new cursor XY coordinate. This will be clamped to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
+        void SetCursorCoordinate(Point position);
+
+        inline void SetCursorCoordinate(SizeType positionX, SizeType positionY)
+        {
+            SetCursorCoordinate({ positionX, positionY });
+        }
+
+        //! Returns the current cursor XY coordinate. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
+        Point GetCursorCoordinate() const;
 
         //! Returns true if the cursor X position is at the beginning.
         bool IsCursorBegin() const;
@@ -267,24 +275,27 @@ class TextFieldMultiLineString : private MultiLineString
 
     private:
         
-#if 0
-        //! Returns the iterator to the string at the specified cursor position.
-        String::iterator Iter();
-
-        //! Returns the constant iterator to the string at the specified cursor position.
-        String::const_iterator Iter() const;
-#endif
+        struct SelectionState
+        {
+            SizeType startPos = 0;
+            SizeType endPos = 0;
+        };
 
         //! Returns the specified X position, clamped to the range { [0, GetText().size()], [0, GetLines().size()) }.
-        Point ClampedPos(Point pos) const;
+        SizeType ClampedPos(SizeType pos) const;
 
         //! Updates the cursor- and selection start position to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void UpdateCursorRange();
 
+        SelectionState GetSelectionState() const;
+        void SetSelectionState(const SelectionState& state);
+
         /* === Member === */
 
-        Point cursorPos_;
-        Point selStart_;
+        SizeType cursorPos_ = 0;
+        SizeType selStart_  = 0;
+        //Point cursorPos_;
+        //Point selStart_;
         
 };
 

@@ -207,12 +207,12 @@ String TextFieldString::GetSelectionText() const
 
 Char TextFieldString::CharLeft() const
 {
-    return !IsCursorBegin() ? GetText()[GetCursorPosition() - 1] : Char(0);
+    return (!IsCursorBegin() ? GetText()[GetCursorPosition() - 1] : Char(0));
 }
 
 Char TextFieldString::CharRight() const
 {
-    return !IsCursorEnd() ? GetText()[GetCursorPosition()] : Char(0);
+    return (!IsCursorEnd() ? GetText()[GetCursorPosition()] : Char(0));
 }
 
 void TextFieldString::RemoveLeft()
@@ -370,7 +370,7 @@ TextFieldString::SizeType TextFieldString::ClampedPos(SizeType pos) const
 
 void TextFieldString::UpdateCursorRange()
 {
-    cursorPos_ = ClampedPos(GetCursorPosition());
+    cursorPos_ = ClampedPos(cursorPos_);
     selStart_ = ClampedPos(selStart_);
 }
 
