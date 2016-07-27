@@ -322,7 +322,7 @@ void TextFieldString::Put(const Char& chr)
         RemoveLeft();
     else if (chr == Char(127))
         RemoveRight();
-    else if (unsigned(chr) >= 32)
+    else
         Insert(chr);
 }
 

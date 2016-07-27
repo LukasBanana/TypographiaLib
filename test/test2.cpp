@@ -566,9 +566,7 @@ void keyboardCallback(unsigned char key, int x, int y)
 
         case '\r': // ENTER
             if (focusOnTextArea)
-                std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
-            else
-                std::cout << "Selected Text:" << std::endl << mainTextField.GetSelectionText() << std::endl << std::endl;
+                mainMlText->Put(char(key));
             break;
 
         case '\t':
@@ -691,6 +689,13 @@ void specialCallback(int key, int x, int y)
             else
                 mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
             mainTextFieldBlinker.refresh();
+            break;
+
+        case GLUT_KEY_F1:
+            if (focusOnTextArea)
+                std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
+            else
+                std::cout << "Selected Text:" << std::endl << mainTextField.GetSelectionText() << std::endl << std::endl;
             break;
     }
 }

@@ -47,10 +47,7 @@ void MultiLineString::PushBack(const Char& chr)
     text_ += chr;
 
     if (IsNewLine(chr))
-    {
-        /* Append empty line */
         AppendLine();
-    }
     else
     {
         /* Get width of new character */
@@ -75,10 +72,7 @@ void MultiLineString::PushBack(const Char& chr)
                 UpdateWidestWidth(line.width);
             }
             else
-            {
-                /* Reset lines -> separators may change the current (last) line and the new line */
                 ResetLines();
-            }
         }
     }
 }
@@ -116,20 +110,32 @@ void MultiLineString::PopBack()
 void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const Char& chr, bool replace)
 {
     /* Validate parameters and get selected line */
-    if (lineIndex >= lines_.size() || positionInLine > lines_[lineIndex].text.size())
+    if (lineIndex >= lines_.size())
         return;
 
     auto& line = lines_[lineIndex];
 
+    if (positionInLine > line.text.size())
+        return;
+
+    if (positionInLine == line.text.size() || IsNewLine(chr))
+        replace = false;
+
     /* Update main string */
     auto textPos = GetTextPosition(lineIndex, positionInLine);
-    text_.insert(textPos, 1, chr);
-
-    if (IsNewLine(chr))
+    if (replace)
     {
-
-
+        if (textPos < text_.size())
+            text_[textPos] = chr;
+        else
+            return;
     }
+    else
+        text_.insert(textPos, 1, chr);
+
+    /* Update selected line with new character */
+    if (IsNewLine(chr))
+        ResetLines();
     else
     {
         /* Get width of new character */
@@ -137,23 +143,31 @@ void MultiLineString::Insert(SizeType lineIndex, SizeType positionInLine, const 
 
         if (replace)
         {
+            auto prevWidth = CharWidth(line.text[positionInLine]);
 
+            /* Check if character fits into current line */
+            if (FitIntoLine(line.width + width - prevWidth))
+            {
+                /* Replace character and update widest width */
+                line.width += width - prevWidth;
+                line.text[positionInLine] = chr;
+                UpdateWidestWidth(line.width);
+            }
+            else
+                ResetLines();
         }
         else
         {
-            /* Check if character fits into last line */
+            /* Check if character fits into current line */
             if (FitIntoLine(line.width + width))
             {
-                /* Update line and widest width */
+                /* Insert character and update widest width */
                 line.width += width;
                 line.text.insert(positionInLine, 1, chr);
                 UpdateWidestWidth(line.width);
             }
             else
-            {
-                /* Reset lines -> separators may change the current (last) line and the new line */
                 ResetLines();
-            }
         }
     }
 }
