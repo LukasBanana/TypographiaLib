@@ -412,7 +412,7 @@ void drawMultiLineText(
     {
         setColor(COLOR_LIGHT_BLUE);
 
-        Tg::TextFieldMultiLineString::Point start, end;
+        Tg::Point start, end;
         textArea.GetSelection(start, end);
 
         if (start.y == end.y)

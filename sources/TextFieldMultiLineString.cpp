@@ -61,7 +61,7 @@ void TextFieldMultiLineString::SetCursorIndex(SizeType index)
         selStart_ = cursorPos_;
 }
 
-TextFieldMultiLineString::Point TextFieldMultiLineString::GetCursorCoordinate() const
+Point TextFieldMultiLineString::GetCursorCoordinate() const
 {
     Point pos;
     GetTextPosition(GetCursorIndex(), pos.y, pos.x);

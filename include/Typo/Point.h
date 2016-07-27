@@ -14,29 +14,29 @@ namespace Tg
 
 
 //! Simple point structure with members: 'x', and 'y'.
-template <typename T>
 struct Point
 {
     Point() = default;
-    Point(const T& x, const T& y) :
+
+    inline Point(std::size_t x, std::size_t y) :
         x( x ),
         y( y )
     {
     }
 
-    T x = T(0);
-    T y = T(0);
+    std::size_t x = 0;
+    std::size_t y = 0;
 };
 
 
 template <typename T>
-inline bool operator == (const Point<T>& lhs, const Point<T>& rhs)
+inline bool operator == (const Point& lhs, const Point& rhs)
 {
     return (lhs.x == rhs.x && lhs.y == rhs.y);
 }
 
 template <typename T>
-inline bool operator != (const Point<T>& lhs, const Point<T>& rhs)
+inline bool operator != (const Point& lhs, const Point& rhs)
 {
     return !(lhs == rhs);
 }

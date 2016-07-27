@@ -26,8 +26,6 @@ class TextFieldMultiLineString : private MultiLineString
     
     public:
         
-        using Point = Point<SizeType>;
-
         TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);
 
         TextFieldMultiLineString& operator = (const String& str);
@@ -310,8 +308,6 @@ class TextFieldMultiLineString : private MultiLineString
 
         SizeType cursorPos_ = 0;
         SizeType selStart_  = 0;
-        //Point cursorPos_;
-        //Point selStart_;
         
 };
 
