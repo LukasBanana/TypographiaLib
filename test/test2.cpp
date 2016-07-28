@@ -591,7 +591,21 @@ void putChar(const std::string& s)
     if (showTerminal)
         terminal->out << s;
     else if (focusOnTextArea)
+    {
         mainMlText->Put(s);
+        if (s == "\n")
+        {
+            auto text = mainMlText->GetLineText(mainMlText->GetCursorCoordinate().y - 1);
+            if (text.find(' ', 0) != std::string::npos)
+            {
+                auto pos = text.find_first_not_of(' ', 0);
+                if (pos != std::string::npos)
+                    mainMlText->Put(std::string(pos, ' '));
+                else
+                    mainMlText->Put(std::string(text.size(), ' '));
+            }
+        }
+    }
     else
         mainTextField.Put(s);
 }
