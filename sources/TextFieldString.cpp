@@ -189,7 +189,14 @@ void TextFieldString::Deselect()
 
 bool TextFieldString::IsSelected() const
 {
-    return GetCursorPosition() != selStart_;
+    return (GetCursorPosition() != selStart_);
+}
+
+bool TextFieldString::IsAllSelected() const
+{
+    SizeType start, end;
+    GetSelection(start, end);
+    return (start == 0 && end == GetText().size());
 }
 
 String TextFieldString::GetSelectionText() const

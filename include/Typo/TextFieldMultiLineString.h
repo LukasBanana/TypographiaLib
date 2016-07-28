@@ -124,7 +124,10 @@ class TextFieldMultiLineString : private MultiLineString
         */
         void GetSelection(Point& start, Point& end) const;
 
-        //! Selects the entire string content.
+        /**
+        \brief Selects the entire string content.
+        \see IsAllSelected
+        */
         void SelectAll();
 
         /**
@@ -137,8 +140,16 @@ class TextFieldMultiLineString : private MultiLineString
         /**
         \brief Returns true if any string part is currently being selected.
         \see GetSelection
+        \see IsAllSelected
         */
         bool IsSelected() const;
+
+        /**
+        \brief Returns true if the entire string part is currently being selected.
+        \see SelectAll
+        \see IsSelected
+        */
+        bool IsAllSelected() const;
 
         /**
         \brief Returns the selected text.
@@ -306,8 +317,8 @@ class TextFieldMultiLineString : private MultiLineString
 
         /* === Member === */
 
-        SizeType cursorPos_ = 0;
-        SizeType selStart_  = 0;
+        SizeType cursorPos_         = 0;
+        SizeType selStart_          = 0;
         
 };
 

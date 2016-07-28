@@ -285,6 +285,15 @@ bool TextFieldMultiLineString::IsSelected() const
     return (GetCursorIndex() != selStart_);
 }
 
+bool TextFieldMultiLineString::IsAllSelected() const
+{
+    auto start = GetCursorIndex();
+    auto end = selStart_;
+    if (start > end)
+        std::swap(start, end);
+    return (start == 0 && end == GetText().size());
+}
+
 String TextFieldMultiLineString::GetSelectionText() const
 {
     String text;

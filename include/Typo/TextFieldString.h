@@ -90,7 +90,10 @@ class TextFieldString : public SeparableString
         */
         void GetSelection(SizeType& start, SizeType& end) const;
 
-        //! Selects the entire string content.
+        /**
+        \brief Selects the entire string content.
+        \see IsAllSelected
+        */
         void SelectAll();
 
         /**
@@ -103,8 +106,16 @@ class TextFieldString : public SeparableString
         /**
         \brief Returns true if any string part is currently being selected.
         \see GetSelection
+        \see IsAllSelected
         */
         bool IsSelected() const;
+
+        /**
+        \brief Returns true if the entire string part is currently being selected.
+        \see SelectAll
+        \see IsSelected
+        */
+        bool IsAllSelected() const;
 
         //! Returns the selected text.
         String GetSelectionText() const;

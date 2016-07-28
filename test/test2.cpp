@@ -88,8 +88,8 @@ using Matrix4x4 = std::array<float, 16>;
 
 int resX = 800, resY = 600;
 
-bool focusOnTextArea = true;
-bool showTerminal = true;
+bool focusOnTextArea    = true;
+bool showTerminal       = false;
 
 Tg::TextFieldString mainTextField(
     //">$ This is an input text field! Use arrows, shift, and ctrl keys"
@@ -229,7 +229,19 @@ bool initScene()
     std::string str = (
         "Hello, World!\n\n"
         "This is a small example of a multi-line string within a restricted screen width\n"
-        "How is it goin' bro?"
+        "The text field can be used for in-game text editors, terminal outputs or whatever.\n\n"
+        "Move the cursor with the arrow keys, use Ctrl and Shift keys\n"
+        "like you would do in any other text editor\n"
+        "By moving the cursor up and down while holding the Ctrl key,\n"
+        "you can jump to the previous or next paragraph.\n\n"
+        "The interface of this class is straightforward.\n"
+        "Here is an example:\n\n"
+        "int main() {\n"
+        "    /* ... */\n"
+        "    Tg::TextFieldMultiLineString textField(fontGlyphSet, 100, \"Example Input Text\");\n"
+        "    textField.MoveCursorX(-10);\n"
+        "    textField.JumpUp();\n"
+        "}\n"
     );
 
     mainMlText = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
@@ -615,14 +627,14 @@ void keyboardCallback(unsigned char key, int x, int y)
             {
                 if (focusOnTextArea)
                 {
-                    if (mainMlText->IsSelected())
+                    if (mainMlText->IsAllSelected())
                         mainMlText->Deselect();
                     else
                         mainMlText->SelectAll();
                 }
                 else
                 {
-                    if (mainTextField.IsSelected())
+                    if (mainTextField.IsAllSelected())
                         mainTextField.Deselect();
                     else
                         mainTextField.SelectAll();
