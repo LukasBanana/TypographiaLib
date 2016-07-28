@@ -103,6 +103,8 @@ void TextFieldMultiLineString::MoveCursorX(int direction)
         auto dir = static_cast<SizeType>(direction);
         SetCursorIndex(std::min(GetText().size(), GetCursorIndex() + dir));
     }
+
+    StoreCursorCoordX();
 }
 
 void TextFieldMultiLineString::MoveCursorY(int direction)
@@ -142,6 +144,8 @@ void TextFieldMultiLineString::MoveCursorY(int direction)
             MoveCursorBottom();
         }
     }
+
+    RestoreCursorCoordX();
 }
 
 void TextFieldMultiLineString::MoveCursor(int directionX, int directionY)
@@ -531,6 +535,16 @@ bool TextFieldMultiLineString::IsUpperLineEmpty() const
 bool TextFieldMultiLineString::IsLowerLineEmpty() const
 {
     return GetLines()[GetCursorCoordinate().y + 1].text.empty();
+}
+
+void TextFieldMultiLineString::StoreCursorCoordX()
+{
+    storedCursorCoordX_ = GetCursorCoordinate().x;
+}
+
+void TextFieldMultiLineString::RestoreCursorCoordX()
+{
+    SetCursorCoordinate(storedCursorCoordX_, GetCursorCoordinate().y);
 }
 
 

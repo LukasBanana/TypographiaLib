@@ -315,10 +315,15 @@ class TextFieldMultiLineString : private MultiLineString
         */
         bool IsLowerLineEmpty() const;
 
+        void StoreCursorCoordX();
+        void RestoreCursorCoordX();
+
         /* === Member === */
 
-        SizeType cursorPos_         = 0;
-        SizeType selStart_          = 0;
+        SizeType cursorPos_             = 0;
+        SizeType selStart_              = 0;
+
+        SizeType storedCursorCoordX_    = 0;
         
 };
 
