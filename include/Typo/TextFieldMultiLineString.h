@@ -285,23 +285,11 @@ class TextFieldMultiLineString : private MultiLineString
 
     private:
         
-        /*struct SelectionState
-        {
-            SizeType startPos = 0;
-            SizeType endPos = 0;
-        };*/
-
         //! Returns the specified X position, clamped to the range { [0, GetText().size()], [0, GetLines().size()) }.
         SizeType ClampedPos(SizeType pos) const;
 
         //! Updates the cursor- and selection start position to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void UpdateCursorRange();
-
-        //! Returns the current selection state.
-        //SelectionState GetSelectionState() const;
-
-        //! Sets the new selection state.
-        //void SetSelectionState(const SelectionState& state);
 
         /**
         \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).
