@@ -10,6 +10,7 @@
 
 
 #include "MultiLineString.h"
+#include "TextField.h"
 #include "Point.h"
 
 
@@ -21,7 +22,7 @@ namespace Tg
 \brief Text field multi-line string class.
 \remarks In a model-view-controller pattern, this is the model for a user input text field.
 */
-class TextFieldMultiLineString : private MultiLineString
+class TextFieldMultiLineString : public TextField
 {
     
     public:
@@ -36,7 +37,7 @@ class TextFieldMultiLineString : private MultiLineString
         
         inline operator const String& () const
         {
-            return MultiLineString::operator const Tg::String &();
+            return text_;
         }
 
         /* --- Cursor operations --- */
@@ -222,13 +223,13 @@ class TextFieldMultiLineString : private MultiLineString
         //! \see MultiLineString::SetGlyphSet
         inline void SetGlyphSet(const FontGlyphSet& glyphSet)
         {
-            MultiLineString::SetGlyphSet(glyphSet);
+            text_.SetGlyphSet(glyphSet);
         }
         
         //! \see MultiLineString::GetGlyphSet
         inline const FontGlyphSet& GetGlyphSet() const
         {
-            return MultiLineString::GetGlyphSet();
+            return text_.GetGlyphSet();
         }
 
         //! Sets the new maximal width.
@@ -237,13 +238,13 @@ class TextFieldMultiLineString : private MultiLineString
         //! \see MultiLineString::GetMaxWidth
         inline int GetMaxWidth() const
         {
-            return MultiLineString::GetMaxWidth();
+            return text_.GetMaxWidth();
         }
 
         //! \see MultiLineString::GetWidth
         inline int GetWidth() const
         {
-            return MultiLineString::GetWidth();
+            return text_.GetWidth();
         }
 
         //! Sets the content of the text field and clamps the cursor position.
@@ -252,13 +253,13 @@ class TextFieldMultiLineString : private MultiLineString
         //! \see MultiLineString::GetText
         inline const String& GetText() const
         {
-            return MultiLineString::GetText();
+            return text_.GetText();
         }
 
         //! \see MultiLineString::GetLines
-        inline const std::vector<TextLine>& GetLines() const
+        inline const std::vector<MultiLineString::TextLine>& GetLines() const
         {
-            return MultiLineString::GetLines();
+            return text_.GetLines();
         }
 
         //! Returns the content of the current line (where the cursor is located).
@@ -270,13 +271,13 @@ class TextFieldMultiLineString : private MultiLineString
         /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
-        bool insertionEnabled = false;
+        bool insertionEnabled   = false;
 
         //! Specifies whether selection is enabled or disabled. By default false.
-        bool selectionEnabled = false;
+        bool selectionEnabled   = false;
 
         //! Specifies whether cursor movement wraps around complete lines. By default false.
-        bool wrapLines = false;
+        bool wrapLines          = false;
 
     protected:
         
@@ -308,10 +309,12 @@ class TextFieldMultiLineString : private MultiLineString
 
         /* === Member === */
 
-        SizeType cursorPos_             = 0;
-        SizeType selStart_              = 0;
+        MultiLineString text_;
 
-        SizeType storedCursorCoordX_    = 0;
+        SizeType        cursorPos_          = 0;
+        SizeType        selStart_           = 0;
+
+        SizeType        storedCursorCoordX_ = 0;
         
 };
 

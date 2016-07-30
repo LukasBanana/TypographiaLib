@@ -9,8 +9,8 @@
 #define __TG_MULTI_LINE_STRING_H__
 
 
+#include "Char.h"
 #include "Font.h"
-#include "SeparableString.h"
 
 #include <vector>
 
@@ -23,11 +23,14 @@ namespace Tg
 \brief Multi-line string class.
 \remarks This can be used to easily manage multi-line text inside a restricted area.
 */
-class MultiLineString : public SeparableString
+class MultiLineString
 {
     
     public:
         
+        //! String size type alias.
+        using SizeType = String::size_type;
+
         struct TextLine
         {
             String  text;
@@ -152,8 +155,6 @@ class MultiLineString : public SeparableString
             return lines_;
         }
 
-    protected:
-        
         //! Returns the width of the specified character
         virtual int CharWidth(const Char& chr) const;
         

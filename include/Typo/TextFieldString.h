@@ -9,7 +9,7 @@
 #define __TG_TEXT_FIELD_STRING_H__
 
 
-#include "SeparableString.h"
+#include "TextField.h"
 
 
 namespace Tg
@@ -20,7 +20,7 @@ namespace Tg
 \brief Text field string class.
 \remarks In a model-view-controller pattern, this is the model for a user input text field.
 */
-class TextFieldString : public SeparableString
+class TextFieldString : public TextField
 {
     
     public:
@@ -192,13 +192,13 @@ class TextFieldString : public SeparableString
         /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
-        bool insertionEnabled = false;
+        bool insertionEnabled   = false;
 
         //! Specifies whether selection is enabled or disabled. By default false.
-        bool selectionEnabled = false;
+        bool selectionEnabled   = false;
 
         //! Specifies whether the cursor can be moved in a loop or not. By default false.
-        bool cursorLoopEnabled = false;
+        bool cursorLoopEnabled  = false;
 
     protected:
         

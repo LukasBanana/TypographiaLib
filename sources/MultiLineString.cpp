@@ -339,11 +339,6 @@ void MultiLineString::SetText(const String& text)
     RebuildLines();
 }
 
-
-/*
- * ======= Protected: =======
- */
-
 int MultiLineString::CharWidth(const Char& chr) const
 {
     return GetGlyphSet()[chr].advance;

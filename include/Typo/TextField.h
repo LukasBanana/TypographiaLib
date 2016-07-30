@@ -9,25 +9,27 @@
 #define __TG_TEXT_FIELD_H__
 
 
-#include "SeparableString.h"
+#include "Char.h"
 
 
 namespace Tg
 {
 
 
-//! Text field interface.
+//! Base class for all text fields.
 class TextField
 {
     
     public:
         
-        virtual ~TextField()
-        {
-        }
+        //! String size type alias.
+        using SizeType = String::size_type;
+
+        virtual ~TextField();
 
         /* --- Selection --- */
 
+#if 0
         /**
         \brief Selects the entire string content.
         \see IsAllSelected
@@ -126,7 +128,14 @@ class TextField
 
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
         virtual bool IsValidChar(const Char& chr) const = 0;
+#endif
+        /**
+        \brief Returns true if the specified character is a separator.
+        \see GetSeparators
+        */
+        virtual bool IsSeparator(const Char& chr) const;
 
+#if 0
         /* --- Memento --- */
 
         //! Restores the previous state of the text field.
@@ -140,6 +149,7 @@ class TextField
 
         //! Returns true if "Redo" can be used. Otherwise the internal memento state is at the end.
         virtual bool CanRedo() const = 0;
+#endif
 
 };
 
