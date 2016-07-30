@@ -339,9 +339,8 @@ void TextFieldMultiLineString::RemoveLeft()
     {
         /* Move cursor left and then remove character */
         MoveCursorX(-1);
-        //auto selState = GetSelectionState();
-        MultiLineString::Remove(GetCursorCoordinate().y, GetCursorCoordinate().x);
-        //SetSelectionState(selState);
+        auto cursorCoord = GetCursorCoordinate();
+        MultiLineString::Remove(cursorCoord.y, cursorCoord.x);
     }
 }
 
@@ -355,9 +354,8 @@ void TextFieldMultiLineString::RemoveRight()
     else if (!IsCursorEnd())
     {
         /* Only remove character without moving the cursor */
-        //auto selState = GetSelectionState();
-        MultiLineString::Remove(GetCursorCoordinate().y, GetCursorCoordinate().x);
-        //SetSelectionState(selState);
+        auto cursorCoord = GetCursorCoordinate();
+        MultiLineString::Remove(cursorCoord.y, cursorCoord.x);
     }
 }
 
@@ -392,16 +390,12 @@ void TextFieldMultiLineString::RemoveSelection()
         selectionEnabled = false;
         SetCursorCoordinate(start);
 
-        //auto selState = GetSelectionState();
-
         /* Remove the selected amount of characters from the start position */
         auto startPos = GetTextIndex(start.y, start.x);
         auto endPos = GetTextIndex(end.y, end.x);
 
         for (; startPos < endPos; ++startPos)
             MultiLineString::Remove(start.y, start.x);
-
-        //SetSelectionState(selState);
     }
 }
 
@@ -424,9 +418,7 @@ void TextFieldMultiLineString::Insert(Char chr)
             chr = '\n';
 
         /* Insert the new character (only use insertion if selection was not replaced) */
-        //auto selState = GetSelectionState();
         MultiLineString::Insert(GetCursorCoordinate().y, GetCursorCoordinate().x, chr, (insertionEnabled && !isSel));
-        //SetSelectionState(selState);
 
         /* Move cursor position */
         MoveCursorX(1);
@@ -459,10 +451,8 @@ void TextFieldMultiLineString::SetMaxWidth(int maxWidth)
 {
     if (GetMaxWidth() != maxWidth)
     {
-        //auto selState = GetSelectionState();
         MultiLineString::SetMaxWidth(maxWidth);
         StoreCursorCoordX();
-        //SetSelectionState(selState);
     }
 }
 
@@ -504,29 +494,6 @@ void TextFieldMultiLineString::UpdateCursorRange()
     cursorPos_ = ClampedPos(GetCursorIndex());
     selStart_ = ClampedPos(selStart_);
 }
-
-/*TextFieldMultiLineString::SelectionState TextFieldMultiLineString::GetSelectionState() const
-{
-    SelectionState state;
-
-    Point start, end;
-    GetSelection(start, end);
-
-    state.startPos = GetTextIndex(start.y, start.x);
-    state.endPos = GetTextIndex(end.y, end.x);
-
-    return state;
-}
-
-void TextFieldMultiLineString::SetSelectionState(const SelectionState& state)
-{
-    Point start, end;
-    
-    GetTextPosition(state.startPos, start.y, start.x);
-    GetTextPosition(state.endPos, end.y, end.x);
-
-    SetSelection(start, end);
-}*/
 
 bool TextFieldMultiLineString::IsUpperLineEmpty() const
 {

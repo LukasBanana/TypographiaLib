@@ -636,12 +636,12 @@ void keyboardCallback(unsigned char key, int x, int y)
             putChar("  ");
             break;
 
-        case 127:
+        /*case 127:
             if (ctrl)
                 mainMlText->RemoveSequenceLeft();
             else
                 mainMlText->Put(char(127));
-            break;
+            break;*/
 
         default:
             if (key == 1) // CTRL+A
