@@ -61,10 +61,10 @@ class TextFieldMultiLineString : private MultiLineString
         //! Returns the current cursor XY coordinate. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         Point GetCursorCoordinate() const;
 
-        //! Returns true if the cursor X position is at the beginning.
+        //! Returns true if the cursor is at the beginning.
         bool IsCursorBegin() const;
         
-        //! Returns true if the cursor X position is at the end.
+        //! Returns true if the cursor is at the end.
         bool IsCursorEnd() const;
 
         //! Returns true if the cursor Y position is at the top.
@@ -285,11 +285,11 @@ class TextFieldMultiLineString : private MultiLineString
 
     private:
         
-        struct SelectionState
+        /*struct SelectionState
         {
             SizeType startPos = 0;
             SizeType endPos = 0;
-        };
+        };*/
 
         //! Returns the specified X position, clamped to the range { [0, GetText().size()], [0, GetLines().size()) }.
         SizeType ClampedPos(SizeType pos) const;
@@ -298,10 +298,10 @@ class TextFieldMultiLineString : private MultiLineString
         void UpdateCursorRange();
 
         //! Returns the current selection state.
-        SelectionState GetSelectionState() const;
+        //SelectionState GetSelectionState() const;
 
         //! Sets the new selection state.
-        void SetSelectionState(const SelectionState& state);
+        //void SetSelectionState(const SelectionState& state);
 
         /**
         \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).

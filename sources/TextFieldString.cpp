@@ -51,12 +51,12 @@ void TextFieldString::SetCursorPosition(SizeType position)
 
 bool TextFieldString::IsCursorBegin() const
 {
-    return GetCursorPosition() == 0;
+    return (GetCursorPosition() == 0);
 }
 
 bool TextFieldString::IsCursorEnd() const
 {
-    return GetCursorPosition() == text_.size();
+    return (GetCursorPosition() == text_.size());
 }
 
 void TextFieldString::MoveCursor(int direction)
