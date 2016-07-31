@@ -232,10 +232,10 @@ class TextField
         /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
-        bool        insertionEnabled    = false;
+        bool insertionEnabled = false;
 
         //! Specifies whether selection is enabled or disabled. By default false.
-        bool        selectionEnabled    = false;
+        bool selectionEnabled = false;
 
     protected:
 
