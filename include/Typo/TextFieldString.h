@@ -45,7 +45,7 @@ class TextFieldString : public TextField
         //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
         void SetCursorPosition(SizeType position);
 
-        //! Returns the current (horizontal) cursor position. This is always in the range [0, GetText().size()].
+        //! Returns the current cursor position. This is always in the range [0, GetText().size()].
         inline SizeType GetCursorPosition() const
         {
             return cursorPos_;

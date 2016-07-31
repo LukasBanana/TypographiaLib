@@ -41,7 +41,7 @@ TextFieldString& TextFieldString::operator += (const Char& chr)
 
 void TextFieldString::SetCursorPosition(SizeType position)
 {
-    /* Clamp position to the range [0, length] */
+    /* Clamp position to the range [0, GetText().size()] */
     cursorPos_ = ClampedPos(position);
 
     /* If selection is disabled, also set selection start */

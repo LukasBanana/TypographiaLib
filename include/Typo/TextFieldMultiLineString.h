@@ -42,11 +42,11 @@ class TextFieldMultiLineString : public TextField
 
         /* --- Cursor operations --- */
         
-        //! Sets the cursor position by the specified text index.
-        void SetCursorIndex(SizeType index);
+        //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
+        void SetCursorPosition(SizeType position);
 
-        //! Returns the text index of the current cursor position.
-        inline SizeType GetCursorIndex() const
+        //! Returns the current cursor position. This is always in the range [0, GetText().size()].
+        inline SizeType GetCursorPosition() const
         {
             return cursorPos_;
         }
@@ -114,7 +114,7 @@ class TextFieldMultiLineString : public TextField
         \param[in] start Specifies the selection start. This may also be larger than 'end'.
         \param[in] end Specifies the selection end (or rather the new cursor position).
         \remarks This also modifies the cursor position.
-        \see SetCursorPosition
+        \see SetCursorCoordinate
         \see selectionEnabled
         */
         void SetSelection(const Point& start, const Point& end);
