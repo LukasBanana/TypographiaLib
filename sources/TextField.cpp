@@ -159,6 +159,23 @@ bool TextField::IsSeparator(Char chr) const
     return !((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z'));
 }
 
+/* --- Memento --- */
+
+void TextField::StoreSelection()
+{
+    selectionStates_.push({ GetCursorPosition(), selStart_ });
+}
+
+void TextField::RestoreSelection()
+{
+    if (!selectionStates_.empty())
+    {
+        const auto& state = selectionStates_.top();
+        SetCursorPosition(state.cursorPos);
+        SetSelection(state.selStart, state.cursorPos);
+    }
+}
+
 
 /*
  * ======= Private: =======

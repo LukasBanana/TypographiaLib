@@ -419,11 +419,6 @@ void TextFieldMultiLineString::StoreCursorCoordX()
     storedCursorCoordX_ = GetXCoordinateFromPosition(cursorCoord.x, cursorCoord.y);
 }
 
-void TextFieldMultiLineString::RestoreCursorCoordX()
-{
-    RestoreCursorCoordX(GetCursorCoordinate().y);
-}
-
 void TextFieldMultiLineString::RestoreCursorCoordX(SizeType lineIndex)
 {
     SetCursorCoordinate(GetXPositionFromCoordinate(storedCursorCoordX_, lineIndex), lineIndex);

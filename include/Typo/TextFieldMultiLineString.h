@@ -227,8 +227,10 @@ class TextFieldMultiLineString : public TextField
         */
         bool IsLowerLineEmpty() const;
 
+        //! Stores the current cursor coordinate X (uses GetXCoordinateFromPosition).
         void StoreCursorCoordX();
-        void RestoreCursorCoordX();
+
+        //! Restores the previous cursor coordinate X (uses GetXPositionFromCoordinate) at the specified Y coordinate.
         void RestoreCursorCoordX(SizeType lineIndex);
 
         /* === Member === */

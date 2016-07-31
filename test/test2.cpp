@@ -622,11 +622,21 @@ void putChar(char c)
     putChar(std::string(1, c));
 }
 
+Tg::TextField& getTextField()
+{
+    Tg::TextField* textField = &mainTextField;
+    if (focusOnTextArea)
+        textField = mainMlText.get();
+    return *textField;
+}
+
 void keyboardCallback(unsigned char key, int x, int y)
 {
     auto modMask = glutGetModifiers();
 
     bool ctrl = ((modMask & GLUT_ACTIVE_CTRL) != 0);
+    
+    auto& textField = getTextField();
 
     switch (key)
     {
@@ -645,27 +655,23 @@ void keyboardCallback(unsigned char key, int x, int y)
 
         /*case 127:
             if (ctrl)
-                mainMlText->RemoveSequenceLeft();
+                textField.RemoveSequenceLeft();
             else
-                mainMlText->Put(char(127));
+                textField.Put(char(127));
             break;*/
 
         default:
             if (key == 1) // CTRL+A
             {
-                if (focusOnTextArea)
+                if (textField.IsAllSelected())
                 {
-                    if (mainMlText->IsAllSelected())
-                        mainMlText->Deselect();
-                    else
-                        mainMlText->SelectAll();
+                    textField.Deselect();
+                    textField.RestoreSelection();
                 }
                 else
                 {
-                    if (mainTextField.IsAllSelected())
-                        mainTextField.Deselect();
-                    else
-                        mainTextField.SelectAll();
+                    textField.StoreSelection();
+                    textField.SelectAll();
                 }
             }
             else
@@ -681,10 +687,9 @@ void specialCallback(int key, int x, int y)
     bool ctrl = ((modMask & GLUT_ACTIVE_CTRL) != 0);
     bool shift = ((modMask & GLUT_ACTIVE_SHIFT) != 0);
 
-    if (focusOnTextArea)
-        mainMlText->selectionEnabled = shift;
-    else
-        mainTextField.selectionEnabled = shift;
+    auto& textField = getTextField();
+
+    textField.selectionEnabled = shift;
 
     switch (key)
     {
@@ -716,37 +721,17 @@ void specialCallback(int key, int x, int y)
 
         case GLUT_KEY_LEFT:
             if (ctrl)
-            {
-                if (focusOnTextArea)
-                    mainMlText->JumpLeft();
-                else
-                    mainTextField.JumpLeft();
-            }
+                textField.JumpLeft();
             else
-            {
-                if (focusOnTextArea)
-                    mainMlText->MoveCursor(-1);
-                else
-                    mainTextField.MoveCursor(-1);
-            }
+                textField.MoveCursor(-1);
             mainTextFieldBlinker.refresh();
             break;
 
         case GLUT_KEY_RIGHT:
             if (ctrl)
-            {
-                if (focusOnTextArea)
-                    mainMlText->JumpRight();
-                else
-                    mainTextField.JumpRight();
-            }
+                textField.JumpRight();
             else
-            {
-                if (focusOnTextArea)
-                    mainMlText->MoveCursor(1);
-                else
-                    mainTextField.MoveCursor(1);
-            }
+                textField.MoveCursor(1);
             mainTextFieldBlinker.refresh();
             break;
 
@@ -773,10 +758,7 @@ void specialCallback(int key, int x, int y)
             break;
 
         case GLUT_KEY_INSERT:
-            if (focusOnTextArea)
-                mainMlText->insertionEnabled = !mainMlText->insertionEnabled;
-            else
-                mainTextField.insertionEnabled = !mainTextField.insertionEnabled;
+            textField.insertionEnabled = !textField.insertionEnabled;
             mainTextFieldBlinker.refresh();
             break;
 
@@ -785,10 +767,7 @@ void specialCallback(int key, int x, int y)
             break;
 
         case GLUT_KEY_F2:
-            if (focusOnTextArea)
-                std::cout << "Selected Text:" << std::endl << mainMlText->GetSelectionText() << std::endl << std::endl;
-            else
-                std::cout << "Selected Text:" << std::endl << mainTextField.GetSelectionText() << std::endl << std::endl;
+            std::cout << "Selected Text:" << std::endl << textField.GetSelectionText() << std::endl << std::endl;
             break;
 
         case GLUT_KEY_F3:

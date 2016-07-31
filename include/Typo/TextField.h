@@ -11,6 +11,8 @@
 
 #include "Char.h"
 
+#include <stack>
+
 
 namespace Tg
 {
@@ -178,9 +180,21 @@ class TextField
         */
         virtual bool IsSeparator(Char chr) const;
 
-#if 0
         /* --- Memento --- */
 
+        /**
+        \brief Stores the current selection state (this is stored in an internal stack).
+        \see RestoreSelection
+        */
+        void StoreSelection();
+        
+        /**
+        \brief Restores the previous selection state (this is restored from an internal stack).
+        \see StoreSelection
+        */
+        void RestoreSelection();
+
+#if 0
         //! Restores the previous state of the text field.
         virtual void Undo() = 0;
 
@@ -209,11 +223,20 @@ class TextField
 
     private:
 
+        struct SelectionState
+        {
+            SizeType cursorPos, selStart;
+        };
+
         //! Returns the specified position, clamped to the range [0, GetText().size()].
         SizeType ClampedPos(SizeType pos) const;
 
-        SizeType cursorPos_ = 0;
-        SizeType selStart_  = 0;
+        /* === Members === */
+
+        SizeType                    cursorPos_ = 0;
+        SizeType                    selStart_  = 0;
+
+        std::stack<SelectionState>  selectionStates_;
 
 };
 
