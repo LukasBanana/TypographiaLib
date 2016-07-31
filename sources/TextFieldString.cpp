@@ -243,12 +243,12 @@ const String& TextFieldString::GetText() const
 
 String::iterator TextFieldString::Iter()
 {
-    return text_.begin() + GetCursorPosition();
+    return (text_.begin() + GetCursorPosition());
 }
 
 String::const_iterator TextFieldString::Iter() const
 {
-    return text_.begin() + GetCursorPosition();
+    return (text_.begin() + GetCursorPosition());
 }
 
 

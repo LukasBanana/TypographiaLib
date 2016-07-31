@@ -192,10 +192,16 @@ class MultiLineString
         //! Appends a new empty text line.
         void AppendLine();
 
-        //! Rebuilds all text lines. (THIS WILL REPLACE "ResetLines")
+        //! Rebuilds all text lines from the main text.
         void RebuildLines();
         
+        /**
+        \brief Appends the next sub-string from the main text to the text lines.
+        \return Index within the main text after appending the new sub-string.
+        */
         SizeType AppendLinesFromSubText(SizeType offset);
+
+        //! Appends a sub-string from the main text to the text lines.
         SizeType AppendLineFromSubText(SizeType start, SizeType end, int subTextWidth);
 
         /* === Member === */
