@@ -43,7 +43,7 @@ class TextFieldString : public TextField
         /* --- Cursor operations --- */
         
         //! Moves the cursor into the specified direction.
-        void MoveCursor(int direction);
+        void MoveCursor(int direction) override;
         
         //! Moves the cursor to the beginning.
         void MoveCursorBegin();

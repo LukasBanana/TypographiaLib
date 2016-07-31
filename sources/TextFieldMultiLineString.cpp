@@ -78,7 +78,7 @@ bool TextFieldMultiLineString::IsCursorBottom() const
     return (GetLines().empty() || GetCursorCoordinate().y + 1 == GetLines().size());
 }
 
-void TextFieldMultiLineString::MoveCursorX(int direction)
+void TextFieldMultiLineString::MoveCursor(int direction)
 {
     /* Get line size and quit if moving the cursor is not possible */
     auto size = GetLineText().size();
@@ -97,7 +97,7 @@ void TextFieldMultiLineString::MoveCursorX(int direction)
     StoreCursorCoordX();
 }
 
-void TextFieldMultiLineString::MoveCursorY(int direction)
+void TextFieldMultiLineString::MoveCursorLine(int direction)
 {
     /* Get number of lines and quit if moving cursor is not possible */
     auto count = GetLines().size();
@@ -138,13 +138,6 @@ void TextFieldMultiLineString::MoveCursorY(int direction)
     RestoreCursorCoordX();
 }
 
-void TextFieldMultiLineString::MoveCursor(int directionX, int directionY)
-{
-    /* First move cursor in Y direction to get the new line, then move cursor in X direction */
-    MoveCursorY(directionY);
-    MoveCursorX(directionX);
-}
-
 //!INCOMPLETE! (due to trunaced spaces at an implicit line break)
 void TextFieldMultiLineString::MoveCursorBegin()
 {
@@ -155,7 +148,7 @@ void TextFieldMultiLineString::MoveCursorBegin()
         {
             SetCursorCoordinate(0, GetCursorCoordinate().y);
             if (!text_.IsNewLine(CharLeft()))
-                MoveCursorX(-1);
+                MoveCursor(-1);
             else
                 break;
         }
@@ -174,7 +167,7 @@ void TextFieldMultiLineString::MoveCursorEnd()
         {
             SetCursorCoordinate(GetLineText().size(), GetCursorCoordinate().y);
             if (!text_.IsNewLine(CharRight()))
-                MoveCursorX(1);
+                MoveCursor(1);
             else
                 break;
         }
@@ -198,36 +191,36 @@ void TextFieldMultiLineString::JumpLeft()
 {
     /* Move left to first non-separator character, then move left to the last non-separator character */
     while (!IsCursorBegin() && IsSeparator(CharLeft()))
-        MoveCursorX(-1);
+        MoveCursor(-1);
     while (!IsCursorBegin() && !IsSeparator(CharLeft()))
-        MoveCursorX(-1);
+        MoveCursor(-1);
 }
 
 void TextFieldMultiLineString::JumpRight()
 {
     /* Move right to first non-separator character, then move right to the last non-separator character */
     while (!IsCursorEnd() && IsSeparator(CharRight()))
-        MoveCursorX(1);
+        MoveCursor(1);
     while (!IsCursorEnd() && !IsSeparator(CharRight()))
-        MoveCursorX(1);
+        MoveCursor(1);
 }
 
 void TextFieldMultiLineString::JumpUp()
 {
     /* Move up to the first non-empty line, then move up to the last non-empty line */
     while (!IsCursorTop() && IsUpperLineEmpty())
-        MoveCursorY(-1);
+        MoveCursorLine(-1);
     while (!IsCursorTop() && !IsUpperLineEmpty())
-        MoveCursorY(-1);
+        MoveCursorLine(-1);
 }
 
 void TextFieldMultiLineString::JumpDown()
 {
     /* Move down to the first non-empty line, then move down to the last non-empty line */
     while (!IsCursorBottom() && IsLowerLineEmpty())
-        MoveCursorY(1);
+        MoveCursorLine(1);
     while (!IsCursorBottom() && !IsLowerLineEmpty())
-        MoveCursorY(1);
+        MoveCursorLine(1);
 }
 
 /* --- Selection operations --- */
@@ -268,7 +261,7 @@ void TextFieldMultiLineString::RemoveLeft()
     else if (!IsCursorBegin())
     {
         /* Move cursor left and then remove character */
-        MoveCursorX(-1);
+        MoveCursor(-1);
         auto cursorCoord = GetCursorCoordinate();
         text_.Remove(cursorCoord.y, cursorCoord.x);
     }
@@ -328,7 +321,7 @@ void TextFieldMultiLineString::Insert(Char chr)
         text_.Insert(GetCursorCoordinate().y, GetCursorCoordinate().x, chr, (insertionEnabled && !isSel));
 
         /* Move cursor position */
-        MoveCursorX(1);
+        MoveCursor(1);
     }
 }
 

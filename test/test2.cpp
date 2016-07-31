@@ -718,7 +718,7 @@ void specialCallback(int key, int x, int y)
             else
             {
                 if (focusOnTextArea)
-                    mainMlText->MoveCursorX(-1);
+                    mainMlText->MoveCursor(-1);
                 else
                     mainTextField.MoveCursor(-1);
             }
@@ -736,7 +736,7 @@ void specialCallback(int key, int x, int y)
             else
             {
                 if (focusOnTextArea)
-                    mainMlText->MoveCursorX(1);
+                    mainMlText->MoveCursor(1);
                 else
                     mainTextField.MoveCursor(1);
             }
@@ -749,7 +749,7 @@ void specialCallback(int key, int x, int y)
                 if (ctrl)
                     mainMlText->JumpUp();
                 else
-                    mainMlText->MoveCursorY(-1);
+                    mainMlText->MoveCursorLine(-1);
                 mainTextFieldBlinker.refresh();
             }
             break;
@@ -760,7 +760,7 @@ void specialCallback(int key, int x, int y)
                 if (ctrl)
                     mainMlText->JumpDown();
                 else
-                    mainMlText->MoveCursorY(1);
+                    mainMlText->MoveCursorLine(1);
                 mainTextFieldBlinker.refresh();
             }
             break;

@@ -44,6 +44,9 @@ class TextField
         //! Returns true if the cursor is at the end.
         bool IsCursorEnd() const;
 
+        //! Moves the cursor into the specified direction.
+        virtual void MoveCursor(int direction) = 0;
+
         //! Jumps to the next left sided space.
         virtual void JumpLeft() = 0;
         

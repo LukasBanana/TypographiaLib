@@ -74,13 +74,10 @@ class TextFieldMultiLineString : public TextField
         bool IsCursorBottom() const;
 
         //! Moves the cursor into the specified X direction.
-        void MoveCursorX(int direction);
+        void MoveCursor(int direction) override;
         
         //! Moves the cursor into the specified Y direction.
-        void MoveCursorY(int direction);
-        
-        //! Moves the cursor into the specified direction.
-        void MoveCursor(int directionX, int directionY);
+        void MoveCursorLine(int direction);
         
         //! Moves the cursor X position to the beginning.
         void MoveCursorBegin();
