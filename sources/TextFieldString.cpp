@@ -253,24 +253,6 @@ void TextFieldString::RemoveRight()
     }
 }
 
-void TextFieldString::RemoveSequenceLeft()
-{
-    /* Remove all characters before the cursor, until the next separator appears */
-    while (!IsCursorBegin() && IsSeparator(CharLeft()))
-        RemoveLeft();
-    while (!IsCursorBegin() && !IsSeparator(CharLeft()))
-        RemoveLeft();
-}
-
-void TextFieldString::RemoveSequenceRight()
-{
-    /* Remove all characters after the cursor, until the next separator appears */
-    while (!IsCursorEnd() && IsSeparator(CharRight()))
-        RemoveRight();
-    while (!IsCursorEnd() && !IsSeparator(CharRight()))
-        RemoveRight();
-}
-
 void TextFieldString::RemoveSelection()
 {
     /* Get selection range */
@@ -286,12 +268,7 @@ void TextFieldString::RemoveSelection()
     SetCursorPosition(start);
 }
 
-bool TextFieldString::IsInsertionActive() const
-{
-    return insertionEnabled && !IsCursorEnd() && !IsSelected();
-}
-
-void TextFieldString::Insert(const Char& chr)
+void TextFieldString::Insert(Char chr)
 {
     if (IsValidChar(chr))
     {
@@ -319,20 +296,9 @@ void TextFieldString::Insert(const Char& chr)
     }
 }
 
-void TextFieldString::Put(const Char& chr)
+bool TextFieldString::IsValidChar(Char chr) const
 {
-    if (chr == Char('\b'))
-        RemoveLeft();
-    else if (chr == Char(127))
-        RemoveRight();
-    else
-        Insert(chr);
-}
-
-void TextFieldString::Put(const String& text)
-{
-    for (const auto& chr : text)
-        Put(chr);
+    return (unsigned(chr) >= 32);
 }
 
 void TextFieldString::SetText(const String& text)
@@ -341,14 +307,9 @@ void TextFieldString::SetText(const String& text)
     UpdateCursorRange();
 }
 
-
-/*
- * ======= Protected: =======
- */
-
-bool TextFieldString::IsValidChar(const Char& chr) const
+const String& TextFieldString::GetText() const
 {
-    return unsigned(chr) >= 32;
+    return text_;
 }
 
 

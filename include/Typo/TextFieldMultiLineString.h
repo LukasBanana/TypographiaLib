@@ -63,10 +63,10 @@ class TextFieldMultiLineString : public TextField
         Point GetCursorCoordinate() const;
 
         //! Returns true if the cursor is at the beginning.
-        bool IsCursorBegin() const;
+        bool IsCursorBegin() const override;
         
         //! Returns true if the cursor is at the end.
-        bool IsCursorEnd() const;
+        bool IsCursorEnd() const override;
 
         //! Returns true if the cursor Y position is at the top.
         bool IsCursorTop() const;
@@ -96,10 +96,10 @@ class TextFieldMultiLineString : public TextField
         void MoveCursorBottom();
 
         //! Jumps to the next left sided space.
-        void JumpLeft();
+        void JumpLeft() override;
         
         //! Jumps to the next right sided space.
-        void JumpRight();
+        void JumpRight() override;
 
         //! Jumps to the previous text passage (separated by empty lines).
         void JumpUp();
@@ -129,28 +129,28 @@ class TextFieldMultiLineString : public TextField
         \brief Selects the entire string content.
         \see IsAllSelected
         */
-        void SelectAll();
+        void SelectAll() override;
 
         /**
         \brief Deselects the current selection.
         \remarks This also disables selection state (see selectionEnabled).
         \see selectionEnabled
         */
-        void Deselect();
+        void Deselect() override;
 
         /**
         \brief Returns true if any string part is currently being selected.
         \see GetSelection
         \see IsAllSelected
         */
-        bool IsSelected() const;
+        bool IsSelected() const override;
 
         /**
         \brief Returns true if the entire string part is currently being selected.
         \see SelectAll
         \see IsSelected
         */
-        bool IsAllSelected() const;
+        bool IsAllSelected() const override;
 
         /**
         \brief Returns the selected text.
@@ -158,7 +158,7 @@ class TextFieldMultiLineString : public TextField
         Each line break contains the new line character '\n' at the end,
         even if the line break only appears due to the restricted string area.
         */
-        String GetSelectionText() const;
+        String GetSelectionText() const override;
 
         /* --- String content --- */
 
@@ -166,59 +166,35 @@ class TextFieldMultiLineString : public TextField
         Returns the current character which stands immediately before the cursor X position.
         If the cursor is at the very beginning of the text field, the return value is '\0'.
         */
-        Char CharLeft() const;
+        Char CharLeft() const override;
         
         /**
         Returns the current character which stands immediately after the cursor X position.
         If the cursor is at the very end of the text field, the return value is '\0'.
         */
-        Char CharRight() const;
+        Char CharRight() const override;
 
         //! Removes the character on the left of the current cursor position.
-        void RemoveLeft();
+        void RemoveLeft() override;
 
         //! Removes the character on the right of the current cursor position.
-        void RemoveRight();
-
-        //! Removes the character sequence on the left of the current cursor position until the next separator appears.
-        void RemoveSequenceLeft();
-
-        //! Removes the character sequence on the right of the current cursor position until the next separator appears.
-        void RemoveSequenceRight();
+        void RemoveRight() override;
 
         /**
         \brief Removes the characters which are currently being selected.
         \see SetSelection
         */
-        void RemoveSelection();
-
-        /**
-        \brief Returns true if insertion mode is active.
-        \return True if 'insertionEnabled' is true, the cursor is not at the end, and nothing is selected.
-        \see insertionEnabled
-        \see IsCursorEnd
-        \see IsSelected
-        */
-        bool IsInsertionActive() const;
+        void RemoveSelection() override;
 
         /**
         \brief Inserts the specified character at the current cursor position or replaces the current selection.
         \see insertionEnabled
         \see RemoveSelection
         */
-        void Insert(Char chr);
+        void Insert(Char chr) override;
 
-        /**
-        \brief Inserts the specified character with some exceptions.
-        \param[in] chr Specifies the new character. Special characters are:
-        - '\b' which will remove the character before the cursor.
-        - char(127) which will remove all characters before the cursor until the next separator appears.
-        \see Insert
-        */
-        virtual void Put(Char chr);
-        
-        //! Inserts the specified text.
-        virtual void Put(const String& text);
+        //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
+        bool IsValidChar(Char chr) const override;
 
         //! \see MultiLineString::SetGlyphSet
         inline void SetGlyphSet(const FontGlyphSet& glyphSet)
@@ -248,13 +224,10 @@ class TextFieldMultiLineString : public TextField
         }
 
         //! Sets the content of the text field and clamps the cursor position.
-        void SetText(const String& text);
+        void SetText(const String& text) override;
 
         //! \see MultiLineString::GetText
-        inline const String& GetText() const
-        {
-            return text_.GetText();
-        }
+        const String& GetText() const override;
 
         //! \see MultiLineString::GetLines
         inline const std::vector<MultiLineString::TextLine>& GetLines() const
@@ -270,19 +243,11 @@ class TextFieldMultiLineString : public TextField
 
         /* === Members === */
 
-        //! Specifies whether the insertion modd is enabled or not. By default false.
-        bool insertionEnabled   = false;
-
         //! Specifies whether selection is enabled or disabled. By default false.
         bool selectionEnabled   = false;
 
         //! Specifies whether cursor movement wraps around complete lines. By default false.
         bool wrapLines          = false;
-
-    protected:
-        
-        //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
-        virtual bool IsValidChar(Char chr) const;
 
     private:
         

@@ -27,9 +27,22 @@ class TextField
 
         virtual ~TextField();
 
+        /* --- Cursor operations --- */
+        
+        //! Returns true if the cursor is at the beginning.
+        virtual bool IsCursorBegin() const = 0;
+        
+        //! Returns true if the cursor is at the end.
+        virtual bool IsCursorEnd() const = 0;
+
+        //! Jumps to the next left sided space.
+        virtual void JumpLeft() = 0;
+        
+        //! Jumps to the next right sided space.
+        virtual void JumpRight() = 0;
+
         /* --- Selection --- */
 
-#if 0
         /**
         \brief Selects the entire string content.
         \see IsAllSelected
@@ -81,10 +94,10 @@ class TextField
         virtual void RemoveRight() = 0;
 
         //! Removes the character sequence on the left of the current cursor position until the next separator appears.
-        virtual void RemoveSequenceLeft() = 0;
+        virtual void RemoveSequenceLeft();
 
         //! Removes the character sequence on the right of the current cursor position until the next separator appears.
-        virtual void RemoveSequenceRight() = 0;
+        virtual void RemoveSequenceRight();
 
         /**
         \brief Removes the characters which are currently being selected.
@@ -99,14 +112,14 @@ class TextField
         \see IsCursorEnd
         \see IsSelected
         */
-        virtual bool IsInsertionActive() const = 0;
+        virtual bool IsInsertionActive() const;
 
         /**
         \brief Inserts the specified character at the current cursor position or replaces the current selection.
         \see insertionEnabled
         \see RemoveSelection
         */
-        virtual void Insert(const Char& chr) = 0;
+        virtual void Insert(Char chr) = 0;
 
         /**
         \brief Inserts the specified character with some exceptions.
@@ -115,10 +128,10 @@ class TextField
         - char(127) which will remove all characters before the cursor until the next separator appears.
         \see Insert
         */
-        virtual void Put(const Char& chr) = 0;
+        virtual void Put(Char chr);
         
         //! Inserts the specified text.
-        virtual void Put(const String& text) = 0;
+        virtual void Put(const String& text);
 
         //! Sets the content of the text field and clamps the cursor position.
         virtual void SetText(const String& text) = 0;
@@ -127,13 +140,13 @@ class TextField
         virtual const String& GetText() const = 0;
 
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
-        virtual bool IsValidChar(const Char& chr) const = 0;
-#endif
+        virtual bool IsValidChar(Char chr) const = 0;
+
         /**
         \brief Returns true if the specified character is a separator.
         \see GetSeparators
         */
-        virtual bool IsSeparator(const Char& chr) const;
+        virtual bool IsSeparator(Char chr) const;
 
 #if 0
         /* --- Memento --- */
@@ -150,6 +163,11 @@ class TextField
         //! Returns true if "Redo" can be used. Otherwise the internal memento state is at the end.
         virtual bool CanRedo() const = 0;
 #endif
+
+        /* === Members === */
+
+        //! Specifies whether the insertion modd is enabled or not. By default false.
+        bool insertionEnabled = false;
 
 };
 

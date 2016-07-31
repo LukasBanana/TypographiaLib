@@ -359,24 +359,6 @@ void TextFieldMultiLineString::RemoveRight()
     }
 }
 
-void TextFieldMultiLineString::RemoveSequenceLeft()
-{
-    /* Remove all characters before the cursor, until the next separator appears */
-    while (!IsCursorBegin() && IsSeparator(CharLeft()))
-        RemoveLeft();
-    while (!IsCursorBegin() && !IsSeparator(CharLeft()))
-        RemoveLeft();
-}
-
-void TextFieldMultiLineString::RemoveSequenceRight()
-{
-    /* Remove all characters after the cursor, until the next separator appears */
-    while (!IsCursorEnd() && IsSeparator(CharRight()))
-        RemoveRight();
-    while (!IsCursorEnd() && !IsSeparator(CharRight()))
-        RemoveRight();
-}
-
 void TextFieldMultiLineString::RemoveSelection()
 {
     /* Remove characters from the start position */
@@ -397,11 +379,6 @@ void TextFieldMultiLineString::RemoveSelection()
         for (; startPos < endPos; ++startPos)
             text_.Remove(start.y, start.x);
     }
-}
-
-bool TextFieldMultiLineString::IsInsertionActive() const
-{
-    return insertionEnabled && !IsCursorEnd() && !IsSelected();
 }
 
 void TextFieldMultiLineString::Insert(Char chr)
@@ -425,26 +402,20 @@ void TextFieldMultiLineString::Insert(Char chr)
     }
 }
 
-void TextFieldMultiLineString::Put(Char chr)
+bool TextFieldMultiLineString::IsValidChar(Char chr) const
 {
-    if (chr == Char('\b'))
-        RemoveLeft();
-    else if (chr == Char(127))
-        RemoveRight();
-    else
-        Insert(chr);
-}
-
-void TextFieldMultiLineString::Put(const String& text)
-{
-    for (const auto& chr : text)
-        Put(chr);
+    return (unsigned(chr) >= 32 || chr == '\r' || chr == '\n');
 }
 
 void TextFieldMultiLineString::SetText(const String& text)
 {
     text_.SetText(text);
     UpdateCursorRange();
+}
+
+const String& TextFieldMultiLineString::GetText() const
+{
+    return text_.GetText();
 }
 
 void TextFieldMultiLineString::SetMaxWidth(int maxWidth)
@@ -467,16 +438,6 @@ const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
     if (lineIndex < GetLines().size())
         return GetLines()[lineIndex].text;
     return dummyString;
-}
-
-
-/*
- * ======= Protected: =======
- */
-
-bool TextFieldMultiLineString::IsValidChar(Char chr) const
-{
-    return (unsigned(chr) >= 32 || chr == '\r' || chr == '\n');
 }
 
 
