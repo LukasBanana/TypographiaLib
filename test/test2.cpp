@@ -207,6 +207,7 @@ bool initScene()
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
         fontLarge = loadFont("Arial", 20);
+        //fontLarge = fontSmall;
         fontTerm = loadFont("Courier New", 20);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
@@ -548,8 +549,13 @@ void drawScene()
 
     // draw text
     #ifdef SHOW_ROW_COL
-    auto coord = mainMlText->GetCursorCoordinate();
-    mainTextField.SetText("Ln " + std::to_string(coord.y) + "    Col " + std::to_string(coord.x));
+    if (focusOnTextArea)
+    {
+        auto coord = mainMlText->GetCursorCoordinate();
+        mainTextField.SetText(
+            "Ln " + std::string(coord.y < 10 ? " " : "") + std::to_string(coord.y) +
+            "    Col " + std::string(coord.x < 10 ? " " : "") + std::to_string(coord.x));
+    }
     #endif
 
     drawTextField(*fontSmall, 15, 15, mainTextField, COLOR_LIGHT_BLUE);
