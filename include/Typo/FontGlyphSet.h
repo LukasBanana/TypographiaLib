@@ -113,7 +113,7 @@ class FontGlyphSet
             int width = 0;
 
             for (auto c : text)
-                width += (*this)[c].width;
+                width += (*this)[c].advance;
 
             return width;
         }
@@ -125,19 +125,18 @@ class FontGlyphSet
             typename std::basic_string<T>::size_type position,
             typename std::basic_string<T>::size_type count = typename std::basic_string<T>::npos) const
         {
-            if (!text.empty() && position < text.size())
+            int width = 0;
+
+            if (!text.empty() && position < text.size() && count > 0)
             {
                 if (count + position > text.size())
                     count = text.size() - position;
 
-                int width = 0;
-
                 for (auto end = position + count; position < end; ++position)
-                    width += (*this)[text[position]].width;
-
-                return width;
+                    width += (*this)[text[position]].advance;
             }
-            return 0;
+
+            return width;
         }
 
         //! Specifies whether this glyph set has a vertical or a horizontal text layout. By default false.

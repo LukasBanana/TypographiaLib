@@ -40,6 +40,8 @@
 #define COLOR_YELLOW        0xffff00ff
 #define COLOR_LIGHT_BLUE    0x8080ffff
 
+#define SHOW_ROW_COL
+
 
 // ----- CLASSES -----
 
@@ -545,6 +547,11 @@ void drawScene()
     glLoadIdentity();
 
     // draw text
+    #ifdef SHOW_ROW_COL
+    auto coord = mainMlText->GetCursorCoordinate();
+    mainTextField.SetText("Ln " + std::to_string(coord.y) + "    Col " + std::to_string(coord.x));
+    #endif
+
     drawTextField(*fontSmall, 15, 15, mainTextField, COLOR_LIGHT_BLUE);
 
     static const int border = 15;

@@ -229,6 +229,7 @@ class TextFieldMultiLineString : public TextField
 
         void StoreCursorCoordX();
         void RestoreCursorCoordX();
+        void RestoreCursorCoordX(SizeType lineIndex);
 
         /* === Member === */
 

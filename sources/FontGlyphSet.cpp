@@ -44,7 +44,7 @@ FontGlyph& FontGlyphSet::operator [] (char chr)
 FontGlyph& FontGlyphSet::operator [] (wchar_t chr)
 {
     static FontGlyph dummy;
-    return (chr < glyphRange_.first || chr > glyphRange_.last) ? dummy : glyphs_[chr - glyphRange_.first];
+    return ((chr < glyphRange_.first || chr > glyphRange_.last) ? dummy : glyphs_[chr - glyphRange_.first]);
 }
 
 

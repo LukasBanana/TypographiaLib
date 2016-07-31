@@ -56,18 +56,36 @@ TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetXPositionFromCoo
     if (lineIndex < GetLines().size())
     {
         /* Iterate over line text to find suitable X coordinate by the text width */
-        const auto& line = GetLine(lineIndex);
+        const auto& text = GetLineText(lineIndex);
 
-        auto l = GetGlyphSet().TextWidth(std::string("foo bar"));
+        SizeType pos = 0;
 
+        for (auto width = static_cast<long long>(coordinateX); pos < text.size(); ++pos)
+        {
+            /* Reduce width to zero, to find the suitable */
+            auto prevWidth = width;
+            width -= GetGlyphSet()[text[pos]].advance;
 
+            if (width <= 0)
+            {
+                if (prevWidth > -width)
+                    ++pos;
+                break;
+            }
+        }
+
+        return pos;
     }
     return 0;
 }
 
 TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetXCoordinateFromPosition(SizeType positionX, std::size_t lineIndex) const
 {
-
+    if (lineIndex < GetLines().size())
+    {
+        /* Return text width of the specified line to the X position */
+        return GetGlyphSet().TextWidth(GetLineText(lineIndex), 0, positionX);
+    }
     return 0;
 }
 
@@ -123,7 +141,7 @@ void TextFieldMultiLineString::MoveCursorLine(int direction)
 {
     /* Get number of lines and quit if moving cursor is not possible */
     auto count = GetLines().size();
-    if (count <= 2)
+    if (count < 2)
         return;
 
     if (direction < 0)
@@ -132,8 +150,8 @@ void TextFieldMultiLineString::MoveCursorLine(int direction)
 
         if (GetCursorCoordinate().y >= dir)
         {
-            /* Move cursor left */
-            SetCursorCoordinate(GetCursorCoordinate().x, GetCursorCoordinate().y - dir);
+            /* Move cursor up */
+            RestoreCursorCoordX(GetCursorCoordinate().y - dir);
         }
         else
         {
@@ -147,8 +165,8 @@ void TextFieldMultiLineString::MoveCursorLine(int direction)
 
         if (GetCursorCoordinate().y + dir <= count)
         {
-            /* Move cursor right */
-            SetCursorCoordinate(GetCursorCoordinate().x, GetCursorCoordinate().y + dir);
+            /* Move cursor down */
+            RestoreCursorCoordX(GetCursorCoordinate().y + dir);
         }
         else
         {
@@ -156,8 +174,6 @@ void TextFieldMultiLineString::MoveCursorLine(int direction)
             MoveCursorBottom();
         }
     }
-
-    RestoreCursorCoordX();
 }
 
 //!INCOMPLETE! (due to trunaced spaces at an implicit line break)
@@ -177,6 +193,8 @@ void TextFieldMultiLineString::MoveCursorBegin()
     }
     else
         SetCursorCoordinate(0, GetCursorCoordinate().y);
+
+    StoreCursorCoordX();
 }
 
 //!INCOMPLETE! (due to trunaced spaces at an implicit line break)
@@ -196,17 +214,19 @@ void TextFieldMultiLineString::MoveCursorEnd()
     }
     else
         SetCursorCoordinate(GetLineText().size(), GetCursorCoordinate().y);
+
+    StoreCursorCoordX();
 }
 
 void TextFieldMultiLineString::MoveCursorTop()
 {
-    SetCursorCoordinate(GetCursorCoordinate().x, 0);
+    RestoreCursorCoordX(0);
 }
 
 void TextFieldMultiLineString::MoveCursorBottom()
 {
     if (!GetLines().empty())
-        SetCursorCoordinate(GetCursorCoordinate().x, GetLines().size() - 1);
+        RestoreCursorCoordX(GetLines().size() - 1);
 }
 
 void TextFieldMultiLineString::JumpUp()
@@ -395,12 +415,18 @@ bool TextFieldMultiLineString::IsLowerLineEmpty() const
 
 void TextFieldMultiLineString::StoreCursorCoordX()
 {
-    storedCursorCoordX_ = GetCursorCoordinate().x;
+    auto cursorCoord = GetCursorCoordinate();
+    storedCursorCoordX_ = GetXCoordinateFromPosition(cursorCoord.x, cursorCoord.y);
 }
 
 void TextFieldMultiLineString::RestoreCursorCoordX()
 {
-    SetCursorCoordinate(storedCursorCoordX_, GetCursorCoordinate().y);
+    RestoreCursorCoordX(GetCursorCoordinate().y);
+}
+
+void TextFieldMultiLineString::RestoreCursorCoordX(SizeType lineIndex)
+{
+    SetCursorCoordinate(GetXPositionFromCoordinate(storedCursorCoordX_, lineIndex), lineIndex);
 }
 
 
