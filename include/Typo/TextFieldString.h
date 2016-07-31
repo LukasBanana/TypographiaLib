@@ -51,12 +51,6 @@ class TextFieldString : public TextField
         //! Moves the cursor to the end.
         void MoveCursorEnd();
 
-        //! Jumps to the next left sided space.
-        void JumpLeft() override;
-        
-        //! Jumps to the next right sided space.
-        void JumpRight() override;
-
         /* --- String content --- */
 
         /**

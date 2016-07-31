@@ -39,6 +39,24 @@ bool TextField::IsCursorEnd() const
     return (GetCursorPosition() == GetText().size());
 }
 
+void TextField::JumpLeft()
+{
+    /* Move left to first non-separator character, then move left to the last non-separator character */
+    while (!IsCursorBegin() && IsSeparator(CharLeft()))
+        MoveCursor(-1);
+    while (!IsCursorBegin() && !IsSeparator(CharLeft()))
+        MoveCursor(-1);
+}
+
+void TextField::JumpRight()
+{
+    /* Move right to first non-separator character, then move right to the last non-separator character */
+    while (!IsCursorEnd() && IsSeparator(CharRight()))
+        MoveCursor(1);
+    while (!IsCursorEnd() && !IsSeparator(CharRight()))
+        MoveCursor(1);
+}
+
 /* --- Selection --- */
 
 void TextField::SetSelection(SizeType start, SizeType end)

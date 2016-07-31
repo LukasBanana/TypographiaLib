@@ -187,24 +187,6 @@ void TextFieldMultiLineString::MoveCursorBottom()
         SetCursorCoordinate(GetCursorCoordinate().x, GetLines().size() - 1);
 }
 
-void TextFieldMultiLineString::JumpLeft()
-{
-    /* Move left to first non-separator character, then move left to the last non-separator character */
-    while (!IsCursorBegin() && IsSeparator(CharLeft()))
-        MoveCursor(-1);
-    while (!IsCursorBegin() && !IsSeparator(CharLeft()))
-        MoveCursor(-1);
-}
-
-void TextFieldMultiLineString::JumpRight()
-{
-    /* Move right to first non-separator character, then move right to the last non-separator character */
-    while (!IsCursorEnd() && IsSeparator(CharRight()))
-        MoveCursor(1);
-    while (!IsCursorEnd() && !IsSeparator(CharRight()))
-        MoveCursor(1);
-}
-
 void TextFieldMultiLineString::JumpUp()
 {
     /* Move up to the first non-empty line, then move up to the last non-empty line */

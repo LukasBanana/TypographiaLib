@@ -91,12 +91,6 @@ class TextFieldMultiLineString : public TextField
         //! Moves the cursor Y position to the bottom.
         void MoveCursorBottom();
 
-        //! Jumps to the next left sided space.
-        void JumpLeft() override;
-        
-        //! Jumps to the next right sided space.
-        void JumpRight() override;
-
         //! Jumps to the previous text passage (separated by empty lines).
         void JumpUp();
 

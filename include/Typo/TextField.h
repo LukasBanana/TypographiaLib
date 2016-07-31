@@ -48,10 +48,10 @@ class TextField
         virtual void MoveCursor(int direction) = 0;
 
         //! Jumps to the next left sided space.
-        virtual void JumpLeft() = 0;
+        void JumpLeft();
         
         //! Jumps to the next right sided space.
-        virtual void JumpRight() = 0;
+        void JumpRight();
 
         /* --- Selection --- */
 
@@ -172,7 +172,9 @@ class TextField
 
         /**
         \brief Returns true if the specified character is a separator.
-        \see GetSeparators
+        \remarks Separators are used to determine where to stop when the cursor jumps left or right.
+        \see JumpLeft
+        \see JumpRight
         */
         virtual bool IsSeparator(Char chr) const;
 
