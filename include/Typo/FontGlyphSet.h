@@ -123,7 +123,7 @@ class FontGlyphSet
         int TextWidth(
             const typename std::basic_string<T>& text,
             typename std::basic_string<T>::size_type position,
-            typename std::basic_string<T>::size_type count = typename std::basic_string<T>::npos) const
+            typename std::basic_string<T>::size_type count = std::basic_string<T>::npos) const
         {
             int width = 0;
 
