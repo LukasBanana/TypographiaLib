@@ -206,8 +206,8 @@ bool initScene()
         //fontSmall = loadFont("Times New Roman", 32);
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
-        fontLarge = loadFont("Arial", 20);
-        //fontLarge = fontSmall;
+        //fontLarge = loadFont("Arial", 20);
+        fontLarge = fontSmall;
         fontTerm = loadFont("Courier New", 20);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);
@@ -249,6 +249,7 @@ bool initScene()
 
     mainMlText = std::unique_ptr<Tg::TextFieldMultiLineString>(new Tg::TextFieldMultiLineString(fontLarge->GetGlyphSet(), resX, str));
     mainMlText->wrapLines = true;
+    mainMlText->StoreMemento();
 
     terminal = std::unique_ptr<Tg::Terminal>(new Tg::Terminal(fontTerm->GetGlyphSet(), resX));
 
@@ -554,7 +555,10 @@ void drawScene()
         auto coord = mainMlText->GetCursorCoordinate();
         mainTextField.SetText(
             "Ln " + std::string(coord.y < 10 ? " " : "") + std::to_string(coord.y) +
-            "    Col " + std::string(coord.x < 10 ? " " : "") + std::to_string(coord.x));
+            "    Col " + std::string(coord.x < 10 ? " " : "") + std::to_string(coord.x) +
+            "    " + std::string(mainMlText->CanUndo() ? "Undo" : "    ") +
+            "    " + std::string(mainMlText->CanRedo() ? "Redo" : "    ")
+        );
     }
     #endif
 
@@ -680,6 +684,10 @@ void keyboardCallback(unsigned char key, int x, int y)
                     textField.SelectAll();
                 }
             }
+            else if (key == 26) // CTRL+Z
+                textField.Undo();
+            else if (key == 25) // CTRL+Y
+                textField.Redo();
             else
                 putChar(char(key));
             break;

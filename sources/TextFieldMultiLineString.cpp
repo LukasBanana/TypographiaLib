@@ -328,28 +328,6 @@ void TextFieldMultiLineString::RemoveSelection()
     }
 }
 
-void TextFieldMultiLineString::Insert(Char chr)
-{
-    if (IsValidChar(chr))
-    {
-        /* Replace selection by character */
-        auto isSel = IsSelected();
-        if (isSel)
-            RemoveSelection();
-
-        /* Replace '\r' by '\n' */
-        if (chr == '\r')
-            chr = '\n';
-
-        /* Insert the new character (only use insertion if selection was not replaced) */
-        auto coord = GetCursorCoordinate();
-        text_.Insert(coord.y, coord.x, chr, (insertionEnabled && !isSel));
-
-        /* Move cursor position */
-        MoveCursor(1);
-    }
-}
-
 bool TextFieldMultiLineString::IsValidChar(Char chr) const
 {
     return (unsigned(chr) >= 32 || chr == '\r' || chr == '\n');
@@ -402,6 +380,17 @@ const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
 /*
  * ======= Private: =======
  */
+
+void TextFieldMultiLineString::InsertChar(Char chr, bool wasSelected)
+{
+    /* Replace '\r' by '\n' */
+    if (chr == '\r')
+        chr = '\n';
+
+    /* Insert the new character (only use insertion if selection was not replaced) */
+    auto coord = GetCursorCoordinate();
+    text_.Insert(coord.y, coord.x, chr, (insertionEnabled && !wasSelected));
+}
 
 bool TextFieldMultiLineString::IsUpperLineEmpty() const
 {

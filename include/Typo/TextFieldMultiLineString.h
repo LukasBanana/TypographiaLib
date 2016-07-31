@@ -147,13 +147,6 @@ class TextFieldMultiLineString : public TextField
         */
         void RemoveSelection() override;
 
-        /**
-        \brief Inserts the specified character at the current cursor position or replaces the current selection.
-        \see insertionEnabled
-        \see RemoveSelection
-        */
-        void Insert(Char chr) override;
-
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
         bool IsValidChar(Char chr) const override;
 
@@ -214,6 +207,8 @@ class TextFieldMultiLineString : public TextField
         bool wrapLines = false;
 
     private:
+
+        void InsertChar(Char chr, bool wasSelected) override;
         
         /**
         \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).

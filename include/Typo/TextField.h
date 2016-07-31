@@ -12,6 +12,8 @@
 #include "Char.h"
 
 #include <stack>
+#include <string>
+#include <list>
 
 
 namespace Tg
@@ -149,7 +151,7 @@ class TextField
         \see insertionEnabled
         \see RemoveSelection
         */
-        virtual void Insert(Char chr) = 0;
+        virtual void Insert(Char chr);
 
         /**
         \brief Inserts the specified character with some exceptions.
@@ -194,32 +196,58 @@ class TextField
         */
         void RestoreSelection();
 
-#if 0
+        /**
+        \brief Specifies how large the memento history can be. By default 10 memento states can be stored.
+        \see StoreMemento
+        */
+        void SetMementoSize(std::size_t size);
+
+        //! Returns the size of the memento history.
+        inline std::size_t GetMementoSize() const
+        {
+            return mementoSize_;
+        }
+
+        /**
+        \brief Stores the current text and cursor position state in the memento history.
+        \remarks The field 'mementoSize' can be used to specify how many memento states can be stored.
+        \see Undo
+        \see Redo
+        \see SetMementoSize
+        */
+        virtual void StoreMemento();
+
         //! Restores the previous state of the text field.
-        virtual void Undo() = 0;
+        virtual void Undo();
 
         //! Restores the next state (if "Undo" was called previously).
-        virtual void Redo() = 0;
+        virtual void Redo();
 
         //! Returns true if "Undo" can be used. Otherwise nothing has been stored in the internal memento.
-        virtual bool CanUndo() const = 0;
+        virtual bool CanUndo() const;
 
         //! Returns true if "Redo" can be used. Otherwise the internal memento state is at the end.
-        virtual bool CanRedo() const = 0;
-#endif
+        virtual bool CanRedo() const;
 
         /* === Members === */
 
         //! Specifies whether the insertion modd is enabled or not. By default false.
-        bool insertionEnabled = false;
+        bool        insertionEnabled    = false;
 
         //! Specifies whether selection is enabled or disabled. By default false.
-        bool selectionEnabled = false;
+        bool        selectionEnabled    = false;
 
     protected:
 
         //! Updates the cursor- and selection start position to the range [0, GetText().size()].
         void UpdateCursorRange();
+
+        /**
+        \brief Inserts the specified character at the current cursor position.
+        \remarks This is called by the "TextField::Insert" function.
+        \see Insert
+        */
+        virtual void InsertChar(Char chr, bool wasSelected) = 0;
 
     private:
 
@@ -228,15 +256,37 @@ class TextField
             SizeType cursorPos, selStart;
         };
 
+        struct MementoState
+        {
+            SizeType    cursorPos;
+            std::string text;
+        };
+
+        using MementoStateList = std::list<MementoState>;
+
         //! Returns the specified position, clamped to the range [0, GetText().size()].
         SizeType ClampedPos(SizeType pos) const;
 
+        //! Restores the specified memento state.
+        void RestoreMemento(std::size_t index);
+
+        MementoStateList::const_iterator GetMementoStateIter(std::size_t index) const;
+
+        void StoreMementoForChar(Char chr);
+
         /* === Members === */
 
-        SizeType                    cursorPos_ = 0;
-        SizeType                    selStart_  = 0;
+        SizeType                    cursorPos_          = 0;
+        SizeType                    selStart_           = 0;
 
         std::stack<SelectionState>  selectionStates_;
+
+        std::size_t                 mementoSize_        = 10;
+        MementoStateList            mementoStates_;
+        std::size_t                 mementoStatesIndex_ = 0;
+        bool                        mementoExpired_     = false;
+
+        Char                        prevPutChar_        = 0;
 
 };
 

@@ -174,34 +174,6 @@ void TextFieldString::RemoveSelection()
     SetCursorPosition(start);
 }
 
-void TextFieldString::Insert(Char chr)
-{
-    if (IsValidChar(chr))
-    {
-        /* Replace selection by character */
-        auto isSel = IsSelected();
-        if (isSel)
-            RemoveSelection();
-
-        if (IsCursorEnd())
-        {
-            /* Push back the new character */
-            text_ += chr;
-        }
-        else
-        {
-            /* Insert the new character (only use insertion if selection was not replaced) */
-            if (insertionEnabled && !isSel)
-                text_[GetCursorPosition()] = chr;
-            else
-                text_.insert(Iter(), chr);
-        }
-
-        /* Move cursor position */
-        MoveCursor(1);
-    }
-}
-
 bool TextFieldString::IsValidChar(Char chr) const
 {
     return (unsigned(chr) >= 32);
@@ -222,6 +194,23 @@ const String& TextFieldString::GetText() const
 /*
  * ======= Private: =======
  */
+
+void TextFieldString::InsertChar(Char chr, bool wasSelected)
+{
+    if (IsCursorEnd())
+    {
+        /* Push back the new character */
+        text_ += chr;
+    }
+    else
+    {
+        /* Insert the new character (only use insertion if selection was not replaced) */
+        if (insertionEnabled && !wasSelected)
+            text_[GetCursorPosition()] = chr;
+        else
+            text_.insert(Iter(), chr);
+    }
+}
 
 String::iterator TextFieldString::Iter()
 {

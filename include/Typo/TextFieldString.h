@@ -77,13 +77,6 @@ class TextFieldString : public TextField
         */
         void RemoveSelection() override;
 
-        /**
-        \brief Inserts the specified character at the current cursor position or replaces the current selection.
-        \see insertionEnabled
-        \see RemoveSelection
-        */
-        void Insert(Char chr) override;
-
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
         bool IsValidChar(Char chr) const override;
 
@@ -99,6 +92,8 @@ class TextFieldString : public TextField
         bool cursorLoopEnabled  = false;
 
     private:
+
+        void InsertChar(Char chr, bool wasSelected) override;
         
         //! Returns the iterator to the string at the specified cursor position.
         String::iterator Iter();

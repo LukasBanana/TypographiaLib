@@ -7,6 +7,7 @@
 
 #include <Typo/TextField.h>
 #include <algorithm>
+#include <iterator>
 
 
 namespace Tg
@@ -138,6 +139,26 @@ bool TextField::IsInsertionActive() const
     return insertionEnabled && !IsCursorEnd() && !IsSelected();
 }
 
+void TextField::Insert(Char chr)
+{
+    if (IsValidChar(chr))
+    {
+        /* Replace selection by character */
+        auto wasSelected = IsSelected();
+        if (wasSelected)
+            RemoveSelection();
+
+        /* Insert actual character */
+        InsertChar(chr, wasSelected);
+
+        /* Move cursor position */
+        MoveCursor(1);
+
+        /* Store memento state */
+        StoreMementoForChar(chr);
+    }
+}
+
 void TextField::Put(Char chr)
 {
     if (chr == Char('\b'))
@@ -176,6 +197,77 @@ void TextField::RestoreSelection()
     }
 }
 
+void TextField::SetMementoSize(std::size_t size)
+{
+    if (mementoSize_ != size)
+    {
+        mementoSize_ = size;
+        while (mementoStates_.size() > size)
+        {
+            --mementoStatesIndex_;
+            mementoStates_.pop_front();
+        }
+    }
+}
+
+void TextField::StoreMemento()
+{
+    if (mementoSize_ > 0)
+    {
+        /* Remove all memento states after the current state index  */
+        if (CanRedo())
+            mementoStates_.erase(GetMementoStateIter(mementoStatesIndex_), mementoStates_.end());
+
+        /* Remove older states */
+        if (mementoStates_.size() == mementoSize_)
+            mementoStates_.pop_front();
+
+        /* Store new memento state */
+        mementoStates_.push_back({ GetCursorPosition(), GetText() });
+
+        /* Set new memento state index to the last element, and reset expired flag */
+        mementoStatesIndex_ = mementoStates_.size() - 1;
+        mementoExpired_     = false;
+    }
+}
+
+void TextField::Undo()
+{
+    if (CanUndo())
+    {
+        if (mementoExpired_)
+            StoreMemento();
+        RestoreMemento(mementoStatesIndex_ - 1);
+    }
+}
+
+void TextField::Redo()
+{
+    if (CanRedo())
+        RestoreMemento(mementoStatesIndex_ + 1);
+}
+
+bool TextField::CanUndo() const
+{
+    return (mementoStatesIndex_ > 0);
+}
+
+bool TextField::CanRedo() const
+{
+    return (mementoStatesIndex_ + 1 < mementoStates_.size());
+}
+
+
+/*
+ * ======= Protected: =======
+ */
+
+void TextField::UpdateCursorRange()
+{
+    cursorPos_ = ClampedPos(cursorPos_);
+    selStart_ = ClampedPos(selStart_);
+}
+
 
 /*
  * ======= Private: =======
@@ -186,10 +278,34 @@ TextField::SizeType TextField::ClampedPos(SizeType pos) const
     return std::min(pos, GetText().size());
 }
 
-void TextField::UpdateCursorRange()
+void TextField::RestoreMemento(std::size_t index)
 {
-    cursorPos_ = ClampedPos(cursorPos_);
-    selStart_ = ClampedPos(selStart_);
+    if (index < mementoStates_.size())
+    {
+        auto it = GetMementoStateIter(index);
+
+        SetText(it->text);
+        SetCursorPosition(it->cursorPos);
+
+        mementoStatesIndex_ = index;
+    }
+}
+
+TextField::MementoStateList::const_iterator TextField::GetMementoStateIter(std::size_t index) const
+{
+    auto it = mementoStates_.begin();
+    std::advance(it, index);
+    return it;
+}
+
+void TextField::StoreMementoForChar(Char chr)
+{
+    /* Store memento state if a new separator is added after a non-separator */
+    if (IsSeparator(chr) && !IsSeparator(prevPutChar_))
+        StoreMemento();
+    else
+        mementoExpired_ = true;
+    prevPutChar_ = chr;
 }
 
 
