@@ -6,6 +6,7 @@
  */
 
 #include <Typo/TextField.h>
+#include <algorithm>
 
 
 namespace Tg
@@ -14,6 +15,84 @@ namespace Tg
 
 TextField::~TextField()
 {
+}
+
+/* --- Cursor operations --- */
+
+void TextField::SetCursorPosition(SizeType position)
+{
+    /* Clamp position to the range [0, GetText().size()] */
+    cursorPos_ = ClampedPos(position);
+
+    /* If selection is disabled, also set selection start */
+    if (!selectionEnabled)
+        selStart_ = cursorPos_;
+}
+
+bool TextField::IsCursorBegin() const
+{
+    return (GetCursorPosition() == 0);
+}
+
+bool TextField::IsCursorEnd() const
+{
+    return (GetCursorPosition() == GetText().size());
+}
+
+/* --- Selection --- */
+
+void TextField::SetSelection(SizeType start, SizeType end)
+{
+    /* Store (and later reset) current selection state */
+    auto selEnabled = selectionEnabled;
+    {
+        /* Set selection start */
+        selectionEnabled = false;
+        SetCursorPosition(start);
+
+        /* Set selection end */
+        selectionEnabled = true;
+        SetCursorPosition(end);
+    }
+    selectionEnabled = selEnabled;
+}
+
+void TextField::GetSelection(SizeType& start, SizeType& end) const
+{
+    start = GetCursorPosition();
+    end = selStart_;
+    if (start > end)
+        std::swap(start, end);
+}
+
+void TextField::SelectAll()
+{
+    SetSelection(0, GetText().size());
+}
+
+void TextField::Deselect()
+{
+    selectionEnabled = false;
+    SetCursorPosition(GetCursorPosition());
+}
+
+bool TextField::IsSelected() const
+{
+    return (GetCursorPosition() != selStart_);
+}
+
+bool TextField::IsAllSelected() const
+{
+    SizeType start, end;
+    GetSelection(start, end);
+    return (start == 0 && end == GetText().size());
+}
+
+String TextField::GetSelectionText() const
+{
+    SizeType start, end;
+    GetSelection(start, end);
+    return (start < end ? GetText().substr(start, end - start) : String());
 }
 
 /* --- String content --- */
@@ -60,6 +139,22 @@ void TextField::Put(const String& text)
 bool TextField::IsSeparator(Char chr) const
 {
     return !((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z'));
+}
+
+
+/*
+ * ======= Private: =======
+ */
+
+TextField::SizeType TextField::ClampedPos(SizeType pos) const
+{
+    return std::min(pos, GetText().size());
+}
+
+void TextField::UpdateCursorRange()
+{
+    cursorPos_ = ClampedPos(cursorPos_);
+    selStart_ = ClampedPos(selStart_);
 }
 
 

@@ -37,6 +37,18 @@ TextFieldMultiLineString& TextFieldMultiLineString::operator += (Char chr)
     return *this;
 }
 
+TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetTextIndex(const Point& position) const
+{
+    return text_.GetTextIndex(position.y, position.x);
+}
+
+Point TextFieldMultiLineString::GetTextPosition(SizeType index) const
+{
+    SizeType lineIndex = 0, positionInLine = 0;
+    text_.GetTextPosition(index, lineIndex, positionInLine);
+    return Point(positionInLine, lineIndex);
+}
+
 /* --- Cursor operations --- */
 
 void TextFieldMultiLineString::SetCursorCoordinate(Point position)
@@ -45,37 +57,15 @@ void TextFieldMultiLineString::SetCursorCoordinate(Point position)
     {
         position.y = std::min(position.y, GetLines().size() - 1);
         position.x = std::min(position.x, GetLineText(position.y).size());
-        SetCursorPosition(text_.GetTextIndex(position.y, position.x));
+        SetCursorPosition(GetTextIndex(position));
     }
     else
         SetCursorPosition(0);
 }
 
-void TextFieldMultiLineString::SetCursorPosition(SizeType position)
-{
-    /* Clmap position to the rnage [0, GetText().size()] */
-    cursorPos_ = ClampedPos(position);
-
-    /* If selection is disabled, also set selection start */
-    if (!selectionEnabled)
-        selStart_ = cursorPos_;
-}
-
 Point TextFieldMultiLineString::GetCursorCoordinate() const
 {
-    Point pos;
-    text_.GetTextPosition(GetCursorPosition(), pos.y, pos.x);
-    return pos;
-}
-
-bool TextFieldMultiLineString::IsCursorBegin() const
-{
-    return (GetCursorPosition() == 0);
-}
-
-bool TextFieldMultiLineString::IsCursorEnd() const
-{
-    return (GetCursorPosition() == GetText().size());
+    return GetTextPosition(GetCursorPosition());
 }
 
 bool TextFieldMultiLineString::IsCursorTop() const
@@ -242,78 +232,18 @@ void TextFieldMultiLineString::JumpDown()
 
 /* --- Selection operations --- */
 
-void TextFieldMultiLineString::SetSelection(const Point& start, const Point& end)
+void TextFieldMultiLineString::SetSelectionCoordinate(const Point& start, const Point& end)
 {
-    /* Store (and later reset) current selection state */
-    auto selEnabled = selectionEnabled;
-    {
-        /* Set selection start */
-        selectionEnabled = false;
-        SetCursorCoordinate(start);
-
-        /* Set selection end */
-        selectionEnabled = true;
-        SetCursorCoordinate(end);
-    }
-    selectionEnabled = selEnabled;
+    SetSelection(GetTextIndex(start), GetTextIndex(end));
 }
 
-void TextFieldMultiLineString::GetSelection(Point& start, Point& end) const
+void TextFieldMultiLineString::GetSelectionCoordinate(Point& start, Point& end) const
 {
-    start = GetCursorCoordinate();
-    text_.GetTextPosition(selStart_, end.y, end.x);
+    SizeType startPos = 0, endPos = 0;
+    GetSelection(startPos, endPos);
 
-    if (GetCursorPosition() > selStart_)
-        std::swap(start, end);
-}
-
-void TextFieldMultiLineString::SelectAll()
-{
-    if (!GetLines().empty())
-    {
-        SetSelection(
-            Point(0, 0),
-            Point(GetLines().back().text.size(), GetLines().size() - 1)
-        );
-    }
-}
-
-void TextFieldMultiLineString::Deselect()
-{
-    selectionEnabled = false;
-    SetCursorPosition(GetCursorPosition());
-}
-
-bool TextFieldMultiLineString::IsSelected() const
-{
-    return (GetCursorPosition() != selStart_);
-}
-
-bool TextFieldMultiLineString::IsAllSelected() const
-{
-    auto start = GetCursorPosition();
-    auto end = selStart_;
-    if (start > end)
-        std::swap(start, end);
-    return (start == 0 && end == GetText().size());
-}
-
-String TextFieldMultiLineString::GetSelectionText() const
-{
-    String text;
-
-    if (IsSelected())
-    {
-        Point start, end;
-        GetSelection(start, end);
-
-        auto startPos = text_.GetTextIndex(start.y, start.x);
-        auto endPos = text_.GetTextIndex(end.y, end.x);
-
-        text = GetText().substr(startPos, endPos - startPos);
-    }
-
-    return text;
+    start = GetTextPosition(startPos);
+    end = GetTextPosition(endPos);
 }
 
 /* --- String content --- */
@@ -365,19 +295,19 @@ void TextFieldMultiLineString::RemoveSelection()
     if (IsSelected())
     {
         /* Get selection range */
-        Point start, end;
+        SizeType start, end;
         GetSelection(start, end);
 
         /* Locate cursor to the selection start */
         selectionEnabled = false;
-        SetCursorCoordinate(start);
+        SetCursorPosition(start);
 
         /* Remove the selected amount of characters from the start position */
-        auto startPos = text_.GetTextIndex(start.y, start.x);
-        auto endPos = text_.GetTextIndex(end.y, end.x);
+        auto startPos = GetTextPosition(start);
+        auto endPos = GetTextPosition(end);
 
-        for (; startPos < endPos; ++startPos)
-            text_.Remove(start.y, start.x);
+        for (; start < end; ++start)
+            text_.Remove(startPos.y, startPos.x);
     }
 }
 
@@ -444,17 +374,6 @@ const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
 /*
  * ======= Private: =======
  */
-
-TextFieldMultiLineString::SizeType TextFieldMultiLineString::ClampedPos(SizeType pos) const
-{
-    return std::min(pos, GetText().size());
-}
-
-void TextFieldMultiLineString::UpdateCursorRange()
-{
-    cursorPos_ = ClampedPos(cursorPos_);
-    selStart_ = ClampedPos(selStart_);
-}
 
 bool TextFieldMultiLineString::IsUpperLineEmpty() const
 {

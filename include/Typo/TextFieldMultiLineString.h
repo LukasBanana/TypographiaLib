@@ -40,17 +40,22 @@ class TextFieldMultiLineString : public TextField
             return text_;
         }
 
+        /**
+        \brief Returns the index (beginning with 0) of the specified position within this text field.
+        \remarks This can be used in conjunction with function like "SetSelection".
+        \see GetTextPosition
+        */
+        SizeType GetTextIndex(const Point& position) const;
+
+        /**
+        \brief Returns the position of the specified index (beginning with 0) within this text field.
+        \remarks This can be used in conjunction with function like "SetSelectionCoordinate".
+        \see GetTextIndex
+        */
+        Point GetTextPosition(SizeType index) const;
+
         /* --- Cursor operations --- */
         
-        //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
-        void SetCursorPosition(SizeType position);
-
-        //! Returns the current cursor position. This is always in the range [0, GetText().size()].
-        inline SizeType GetCursorPosition() const
-        {
-            return cursorPos_;
-        }
-
         //! Sets the new cursor XY coordinate. This will be clamped to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void SetCursorCoordinate(Point position);
 
@@ -61,12 +66,6 @@ class TextFieldMultiLineString : public TextField
 
         //! Returns the current cursor XY coordinate. This is always in the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         Point GetCursorCoordinate() const;
-
-        //! Returns true if the cursor is at the beginning.
-        bool IsCursorBegin() const override;
-        
-        //! Returns true if the cursor is at the end.
-        bool IsCursorEnd() const override;
 
         //! Returns true if the cursor Y position is at the top.
         bool IsCursorTop() const;
@@ -109,56 +108,11 @@ class TextFieldMultiLineString : public TextField
 
         /* --- Selection operations --- */
 
-        /**
-        \brief Sets the new selection area.
-        \param[in] start Specifies the selection start. This may also be larger than 'end'.
-        \param[in] end Specifies the selection end (or rather the new cursor position).
-        \remarks This also modifies the cursor position.
-        \see SetCursorCoordinate
-        \see selectionEnabled
-        */
-        void SetSelection(const Point& start, const Point& end);
+        //! \see SetSelection
+        void SetSelectionCoordinate(const Point&  start, const Point& end);
 
-        /**
-        \brief Retrieves the selection range, so that 'start' is always less than or equal to 'end'.
-        \see selectionEnabled
-        */
-        void GetSelection(Point& start, Point& end) const;
-
-        /**
-        \brief Selects the entire string content.
-        \see IsAllSelected
-        */
-        void SelectAll() override;
-
-        /**
-        \brief Deselects the current selection.
-        \remarks This also disables selection state (see selectionEnabled).
-        \see selectionEnabled
-        */
-        void Deselect() override;
-
-        /**
-        \brief Returns true if any string part is currently being selected.
-        \see GetSelection
-        \see IsAllSelected
-        */
-        bool IsSelected() const override;
-
-        /**
-        \brief Returns true if the entire string part is currently being selected.
-        \see SelectAll
-        \see IsSelected
-        */
-        bool IsAllSelected() const override;
-
-        /**
-        \brief Returns the selected text.
-        \remarks This is different to TextFieldString::GetSelectionText due to multiple lines:
-        Each line break contains the new line character '\n' at the end,
-        even if the line break only appears due to the restricted string area.
-        */
-        String GetSelectionText() const override;
+        //! \see GetSelection
+        void GetSelectionCoordinate(Point& start, Point& end) const;
 
         /* --- String content --- */
 
@@ -243,20 +197,11 @@ class TextFieldMultiLineString : public TextField
 
         /* === Members === */
 
-        //! Specifies whether selection is enabled or disabled. By default false.
-        bool selectionEnabled   = false;
-
         //! Specifies whether cursor movement wraps around complete lines. By default false.
-        bool wrapLines          = false;
+        bool wrapLines = false;
 
     private:
         
-        //! Returns the specified X position, clamped to the range { [0, GetText().size()], [0, GetLines().size()) }.
-        SizeType ClampedPos(SizeType pos) const;
-
-        //! Updates the cursor- and selection start position to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
-        void UpdateCursorRange();
-
         /**
         \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).
         \remarks This function must not be called, if the cursor is at the top!
@@ -275,9 +220,6 @@ class TextFieldMultiLineString : public TextField
         /* === Member === */
 
         MultiLineString text_;
-
-        SizeType        cursorPos_          = 0;
-        SizeType        selStart_           = 0;
 
         SizeType        storedCursorCoordX_ = 0;
         

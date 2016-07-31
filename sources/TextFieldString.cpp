@@ -39,26 +39,6 @@ TextFieldString& TextFieldString::operator += (const Char& chr)
 
 /* --- Cursor operations --- */
 
-void TextFieldString::SetCursorPosition(SizeType position)
-{
-    /* Clamp position to the range [0, GetText().size()] */
-    cursorPos_ = ClampedPos(position);
-
-    /* If selection is disabled, also set selection start */
-    if (!selectionEnabled)
-        selStart_ = cursorPos_;
-}
-
-bool TextFieldString::IsCursorBegin() const
-{
-    return (GetCursorPosition() == 0);
-}
-
-bool TextFieldString::IsCursorEnd() const
-{
-    return (GetCursorPosition() == text_.size());
-}
-
 void TextFieldString::MoveCursor(int direction)
 {
     /* Get line size and quit if moving the cursor is not possible */
@@ -148,62 +128,6 @@ void TextFieldString::JumpRight()
         MoveCursor(1);
     while (!IsCursorEnd() && !IsSeparator(CharRight()))
         MoveCursor(1);
-}
-
-/* --- Selection operations --- */
-
-void TextFieldString::SetSelection(SizeType start, SizeType end)
-{
-    /* Store (and later reset) current selection state */
-    auto selEnabled = selectionEnabled;
-    {
-        /* Set selection start */
-        selectionEnabled = false;
-        SetCursorPosition(start);
-
-        /* Set selection end */
-        selectionEnabled = true;
-        SetCursorPosition(end);
-    }
-    selectionEnabled = selEnabled;
-}
-
-void TextFieldString::GetSelection(SizeType& start, SizeType& end) const
-{
-    start = GetCursorPosition();
-    end = selStart_;
-    if (start > end)
-        std::swap(start, end);
-}
-
-void TextFieldString::SelectAll()
-{
-    SetSelection(0, GetText().size());
-}
-
-void TextFieldString::Deselect()
-{
-    selectionEnabled = false;
-    SetCursorPosition(GetCursorPosition());
-}
-
-bool TextFieldString::IsSelected() const
-{
-    return (GetCursorPosition() != selStart_);
-}
-
-bool TextFieldString::IsAllSelected() const
-{
-    SizeType start, end;
-    GetSelection(start, end);
-    return (start == 0 && end == GetText().size());
-}
-
-String TextFieldString::GetSelectionText() const
-{
-    SizeType start, end;
-    GetSelection(start, end);
-    return (start < end) ? text_.substr(start, end - start) : String();
 }
 
 /* --- String content --- */
@@ -325,17 +249,6 @@ String::iterator TextFieldString::Iter()
 String::const_iterator TextFieldString::Iter() const
 {
     return text_.begin() + GetCursorPosition();
-}
-
-TextFieldString::SizeType TextFieldString::ClampedPos(SizeType pos) const
-{
-    return std::min(pos, GetText().size());
-}
-
-void TextFieldString::UpdateCursorRange()
-{
-    cursorPos_ = ClampedPos(cursorPos_);
-    selStart_ = ClampedPos(selStart_);
 }
 
 

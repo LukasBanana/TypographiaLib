@@ -425,7 +425,7 @@ void drawMultiLineText(
         setColor(COLOR_LIGHT_BLUE);
 
         Tg::Point start, end;
-        textArea.GetSelection(start, end);
+        textArea.GetSelectionCoordinate(start, end);
 
         if (start.y == end.y)
         {

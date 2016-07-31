@@ -42,21 +42,6 @@ class TextFieldString : public TextField
 
         /* --- Cursor operations --- */
         
-        //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
-        void SetCursorPosition(SizeType position);
-
-        //! Returns the current cursor position. This is always in the range [0, GetText().size()].
-        inline SizeType GetCursorPosition() const
-        {
-            return cursorPos_;
-        }
-
-        //! Returns true if the cursor is at the beginning.
-        bool IsCursorBegin() const override;
-        
-        //! Returns true if the cursor is at the end.
-        bool IsCursorEnd() const override;
-
         //! Moves the cursor into the specified direction.
         void MoveCursor(int direction);
         
@@ -71,54 +56,6 @@ class TextFieldString : public TextField
         
         //! Jumps to the next right sided space.
         void JumpRight() override;
-
-        /* --- Selection operations --- */
-
-        /**
-        \brief Sets the new selection area.
-        \param[in] start Specifies the selection start. This may also be larger than 'end'.
-        \param[in] end Specifies the selection end (or rather the new cursor psoition).
-        \remarks This also modifies the cursor position.
-        \see SetCursorPosition
-        \see selectionEnabled
-        */
-        void SetSelection(SizeType start, SizeType end);
-
-        /**
-        \brief Retrieves the selection range, so that 'start' is always less than or equal to 'end'.
-        \see selectionEnabled
-        */
-        void GetSelection(SizeType& start, SizeType& end) const;
-
-        /**
-        \brief Selects the entire string content.
-        \see IsAllSelected
-        */
-        void SelectAll() override;
-
-        /**
-        \brief Deselects the current selection.
-        \remarks This also disables selection state (see selectionEnabled).
-        \see selectionEnabled
-        */
-        void Deselect() override;
-
-        /**
-        \brief Returns true if any string part is currently being selected.
-        \see GetSelection
-        \see IsAllSelected
-        */
-        bool IsSelected() const override;
-
-        /**
-        \brief Returns true if the entire string part is currently being selected.
-        \see SelectAll
-        \see IsSelected
-        */
-        bool IsAllSelected() const override;
-
-        //! Returns the selected text.
-        String GetSelectionText() const override;
 
         /* --- String content --- */
 
@@ -164,9 +101,6 @@ class TextFieldString : public TextField
 
         /* === Members === */
 
-        //! Specifies whether selection is enabled or disabled. By default false.
-        bool selectionEnabled   = false;
-
         //! Specifies whether the cursor can be moved in a loop or not. By default false.
         bool cursorLoopEnabled  = false;
 
@@ -178,17 +112,9 @@ class TextFieldString : public TextField
         //! Returns the constant iterator to the string at the specified cursor position.
         String::const_iterator Iter() const;
 
-        //! Returns the specified position, clamped to the range [0, GetText().size()].
-        SizeType ClampedPos(SizeType pos) const;
-
-        //! Updates the cursor- and selection start position to the range [0, GetText().size()].
-        void UpdateCursorRange();
-
         /* === Member === */
 
-        String      text_;
-        SizeType    cursorPos_  = 0;
-        SizeType    selStart_   = 0;
+        String text_;
         
 };
 
