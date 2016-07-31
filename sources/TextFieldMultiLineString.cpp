@@ -37,6 +37,8 @@ TextFieldMultiLineString& TextFieldMultiLineString::operator += (Char chr)
     return *this;
 }
 
+/* --- Text position conversion --- */
+
 TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetTextIndex(const Point& position) const
 {
     return text_.GetTextIndex(position.y, position.x);
@@ -47,6 +49,26 @@ Point TextFieldMultiLineString::GetTextPosition(SizeType index) const
     SizeType lineIndex = 0, positionInLine = 0;
     text_.GetTextPosition(index, lineIndex, positionInLine);
     return Point(positionInLine, lineIndex);
+}
+
+TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetXPositionFromCoordinate(SizeType coordinateX, std::size_t lineIndex) const
+{
+    if (lineIndex < GetLines().size())
+    {
+        /* Iterate over line text to find suitable X coordinate by the text width */
+        const auto& line = GetLine(lineIndex);
+
+        auto l = GetGlyphSet().TextWidth(std::string("foo bar"));
+
+
+    }
+    return 0;
+}
+
+TextFieldMultiLineString::SizeType TextFieldMultiLineString::GetXCoordinateFromPosition(SizeType positionX, std::size_t lineIndex) const
+{
+
+    return 0;
 }
 
 /* --- Cursor operations --- */
@@ -300,7 +322,8 @@ void TextFieldMultiLineString::Insert(Char chr)
             chr = '\n';
 
         /* Insert the new character (only use insertion if selection was not replaced) */
-        text_.Insert(GetCursorCoordinate().y, GetCursorCoordinate().x, chr, (insertionEnabled && !isSel));
+        auto coord = GetCursorCoordinate();
+        text_.Insert(coord.y, coord.x, chr, (insertionEnabled && !isSel));
 
         /* Move cursor position */
         MoveCursor(1);
@@ -332,17 +355,27 @@ void TextFieldMultiLineString::SetMaxWidth(int maxWidth)
     }
 }
 
+const MultiLineString::TextLine& TextFieldMultiLineString::GetLine() const
+{
+    return GetLine(GetCursorCoordinate().y);
+}
+
+const MultiLineString::TextLine& TextFieldMultiLineString::GetLine(std::size_t lineIndex) const
+{
+    static const MultiLineString::TextLine dummyLine;
+    if (lineIndex < GetLines().size())
+        return GetLines()[lineIndex];
+    return dummyLine;
+}
+
 const String& TextFieldMultiLineString::GetLineText() const
 {
-    return GetLineText(GetCursorCoordinate().y);
+    return GetLine().text;
 }
 
 const String& TextFieldMultiLineString::GetLineText(std::size_t lineIndex) const
 {
-    static const String dummyString;
-    if (lineIndex < GetLines().size())
-        return GetLines()[lineIndex].text;
-    return dummyString;
+    return GetLine(lineIndex).text;
 }
 
 

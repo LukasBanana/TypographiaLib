@@ -204,7 +204,7 @@ bool initScene()
         //fontSmall = loadFont("Times New Roman", 32);
         fontSmall = loadFont("Consolas", 20);
         //fontLarge = loadFont("Edwardian Script", 80);
-        fontLarge = fontSmall;//loadFont("Consolas", 30);
+        fontLarge = loadFont("Arial", 20);
         fontTerm = loadFont("Courier New", 20);
         #elif defined(__APPLE__)
         fontSmall = loadFont("Courier New", 32);

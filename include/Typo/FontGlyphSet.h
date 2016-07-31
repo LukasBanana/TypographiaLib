@@ -20,6 +20,7 @@ namespace Tg
 {
 
 
+//! Font glyph range structure.
 struct FontGlyphRange
 {
     FontGlyphRange() = default;
@@ -29,7 +30,7 @@ struct FontGlyphRange
     {
     }
 
-    std::size_t GetSize() const
+    inline std::size_t GetSize() const
     {
         return std::size_t(last >= first ? (last - first + 1) : 0u);
     }
@@ -40,16 +41,14 @@ struct FontGlyphRange
 //! Font glyph data structure.
 struct FontGlyph
 {
-    FontGlyph()
-    {
-    }
+    FontGlyph() = default;
     
-    Rect    rect;
-    int     xOffset = 0;
-    int     yOffset = 0;
-    int     width   = 0;
-    int     height  = 0;
-    int     advance = 0;
+    Rect    rect;           //!< Rectangular area of this font glyph within the font atlas.
+    int     xOffset = 0;    //!< X coordinate offset of this font glyph to draw the glyph.
+    int     yOffset = 0;    //!< Y coordinate offset of this font glyph to draw the glyph.
+    int     width   = 0;    //!< Entire width of this font glyph.
+    int     height  = 0;    //!< Entire height of this font glyph.
+    int     advance = 0;    //!< Offset to draw the next font glyph (can be in X or Y direction).
 };
 
 //! Font glyph basic vertex structure.
@@ -71,6 +70,7 @@ struct FontGlyphGeometry
 };
 
 
+//! Font glyph set class.
 class FontGlyphSet
 {
     
@@ -81,23 +81,64 @@ class FontGlyphSet
 
         FontGlyphSet(FontGlyphSet&& rhs);
 
+        //! Resizes the font glyph range.
         void SetGlyphRange(const FontGlyphRange& glyphRange);
 
-        const FontGlyphRange& GetGlyphRange() const
+        //! Returns the range of font glyphs.
+        inline const FontGlyphRange& GetGlyphRange() const
         {
             return glyphRange_;
         }
 
-        const std::vector<FontGlyph>& GetGlyphs() const
+        //! Returns the list of all font glyphs.
+        inline const std::vector<FontGlyph>& GetGlyphs() const
         {
             return glyphs_;
         }
 
+        //! Returns the font glyph for the specified UTF-8 character. If this character is not part of this glyph set, a dummy font glyph is returend.
         const FontGlyph& operator [] (char chr) const;
+        //! Returns the font glyph for the specified UTF-16 character. If this character is not part of this glyph set, a dummy font glyph is returend.
         const FontGlyph& operator [] (wchar_t chr) const;
 
+        //! Returns the font glyph for the specified UTF-8 character. If this character is not part of this glyph set, a dummy font glyph is returend.
         FontGlyph& operator [] (char chr);
+        //! Returns the font glyph for the specified UTF-16 character. If this character is not part of this glyph set, a dummy font glyph is returend.
         FontGlyph& operator [] (wchar_t chr);
+
+        //! Returns the width of the specified text.
+        template <typename T>
+        int TextWidth(const typename std::basic_string<T>& text) const
+        {
+            int width = 0;
+
+            for (auto c : text)
+                width += (*this)[c].width;
+
+            return width;
+        }
+
+        //! Returns the width of the specified sub text.
+        template <typename T>
+        int TextWidth(
+            const typename std::basic_string<T>& text,
+            typename std::basic_string<T>::size_type position,
+            typename std::basic_string<T>::size_type count = typename std::basic_string<T>::npos) const
+        {
+            if (!text.empty() && position < text.size())
+            {
+                if (count + position > text.size())
+                    count = text.size() - position;
+
+                int width = 0;
+
+                for (auto end = position + count; position < end; ++position)
+                    width += (*this)[text[position]].width;
+
+                return width;
+            }
+            return 0;
+        }
 
         //! Specifies whether this glyph set has a vertical or a horizontal text layout. By default false.
         bool            isVertical  = false;

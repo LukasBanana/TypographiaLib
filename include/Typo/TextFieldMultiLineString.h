@@ -40,6 +40,8 @@ class TextFieldMultiLineString : public TextField
             return text_;
         }
 
+        /* --- Text position conversion --- */
+
         /**
         \brief Returns the index (beginning with 0) of the specified position within this text field.
         \remarks This can be used in conjunction with function like "SetSelection".
@@ -53,6 +55,20 @@ class TextFieldMultiLineString : public TextField
         \see GetTextIndex
         */
         Point GetTextPosition(SizeType index) const;
+
+        /**
+        \brief Converts the specified X coordinate into a text position index.
+        \param[in] coordinateX Specifies the X coordinate which is to be converted.
+        This will be clamped to the range [0, GetTextLine()].
+        \remarks This can be used for fonts with non-uniform glyph sizes.
+        */
+        SizeType GetXPositionFromCoordinate(SizeType coordinateX, std::size_t lineIndex) const;
+
+        /**
+        \brief Converts the specified text position index into an X coordinate.
+        \remarks This can be used for fonts with non-uniform glyph sizes.
+        */
+        SizeType GetXCoordinateFromPosition(SizeType positionX, std::size_t lineIndex) const;
 
         /* --- Cursor operations --- */
         
@@ -179,6 +195,12 @@ class TextFieldMultiLineString : public TextField
         {
             return text_.GetLines();
         }
+
+        //! Returns the current line (where the cursor is located.
+        const MultiLineString::TextLine& GetLine() const;
+
+        //! Returns the specified line.
+        const MultiLineString::TextLine& GetLine(std::size_t lineIndex) const;
 
         //! Returns the content of the current line (where the cursor is located).
         const String& GetLineText() const;

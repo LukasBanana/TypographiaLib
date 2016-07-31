@@ -33,8 +33,15 @@ class MultiLineString
 
         struct TextLine
         {
+            TextLine() = default;
+            TextLine(const String& text, int width) :
+                text    ( text  ),
+                width   ( width )
+            {
+            }
+
             String  text;
-            int     width;
+            int     width = 0;
         };
         
         MultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);

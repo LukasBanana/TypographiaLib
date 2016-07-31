@@ -33,7 +33,7 @@ const FontGlyph& FontGlyphSet::operator [] (char chr) const
 const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
 {
     static const FontGlyph dummy;
-    return (chr < glyphRange_.first || chr > glyphRange_.last) ? dummy : glyphs_[chr - glyphRange_.first];
+    return ((chr < glyphRange_.first || chr > glyphRange_.last) ? dummy : glyphs_[chr - glyphRange_.first]);
 }
 
 FontGlyph& FontGlyphSet::operator [] (char chr)
