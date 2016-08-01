@@ -33,7 +33,10 @@ class MultiLineString
 
         struct TextLine
         {
-            TextLine() = default;
+            TextLine()
+            {
+                // dummy (can not be defaulted for clang compiler!)
+            }
             TextLine(const String& text, int width) :
                 text    ( text  ),
                 width   ( width )

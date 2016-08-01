@@ -41,7 +41,10 @@ struct FontGlyphRange
 //! Font glyph data structure.
 struct FontGlyph
 {
-    FontGlyph() = default;
+    FontGlyph()
+    {
+        // dummy (can not be defaulted for clang compiler!)
+    }
     
     Rect    rect;           //!< Rectangular area of this font glyph within the font atlas.
     int     xOffset = 0;    //!< X coordinate offset of this font glyph to draw the glyph.
