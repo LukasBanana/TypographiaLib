@@ -120,9 +120,6 @@ bool TextFieldMultiLineString::IsCursorBottom() const
 
 void TextFieldMultiLineString::MoveCursor(int direction)
 {
-    /* Get line size and quit if moving the cursor is not possible */
-    auto size = GetLineText().size();
-
     if (direction < 0)
     {
         auto dir = static_cast<SizeType>(-direction);
@@ -320,11 +317,10 @@ void TextFieldMultiLineString::RemoveSelection()
         SetCursorPosition(start);
 
         /* Remove the selected amount of characters from the start position */
-        auto startPos = GetTextPosition(start);
-        auto endPos = GetTextPosition(end);
+        auto erasePos = GetTextPosition(start);
 
         for (; start < end; ++start)
-            text_.Remove(startPos.y, startPos.x);
+            text_.Remove(erasePos.y, erasePos.x);
     }
 }
 
