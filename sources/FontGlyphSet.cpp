@@ -19,6 +19,14 @@ FontGlyphSet::FontGlyphSet(FontGlyphSet&& rhs) :
 {
 }
 
+FontGlyphSet& FontGlyphSet::operator = (FontGlyphSet&& rhs)
+{
+    isVertical  = rhs.isVertical;
+    glyphRange_ = rhs.glyphRange_;
+    glyphs_     = std::move(rhs.glyphs_);
+    return *this;
+}
+
 void FontGlyphSet::SetGlyphRange(const FontGlyphRange& glyphRange)
 {
     glyphRange_ = glyphRange;

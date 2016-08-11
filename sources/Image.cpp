@@ -24,6 +24,12 @@ Image::Image(Image&& rhs)
     rhs.MoveImageBuffer(size_, imageBuffer_);
 }
 
+Image& Image::operator = (Image&& rhs)
+{
+    rhs.MoveImageBuffer(size_, imageBuffer_);
+    return *this;
+}
+
 void Image::SetSize(const Size& size)
 {
     size_ = size;

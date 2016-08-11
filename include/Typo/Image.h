@@ -32,6 +32,8 @@ class Image
 
         Image(Image&& rhs);
 
+        Image& operator = (Image&& rhs);
+
         void SetSize(const Size& size);
 
         //! Moves this image buffer into the destination 'imageBuffer'. This also sets the image size to (0, 0).

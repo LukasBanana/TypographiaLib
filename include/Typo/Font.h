@@ -39,6 +39,9 @@ struct FontFlags
 struct FontDescription
 {
     FontDescription() = default;
+    FontDescription(const FontDescription&) = default;
+    FontDescription& operator = (const FontDescription&) = default;
+
     FontDescription(const std::string& name, int size, int flags = 0) :
         name    ( name  ),
         height  ( size  ),
@@ -57,11 +60,19 @@ struct FontModel
 {
     FontModel() = default;
     FontModel(const FontModel&) = default;
+    FontModel& operator = (const FontModel&) = default;
     
     FontModel(FontModel&& rhs) :
         image   ( std::move(rhs.image)    ),
         glyphSet( std::move(rhs.glyphSet) )
     {
+    }
+    
+    FontModel& operator = (FontModel&& rhs)
+    {
+        image    = std::move(rhs.image);
+        glyphSet = std::move(rhs.glyphSet);
+        return *this;
     }
     
     Image           image;      //!< Font atlas image.

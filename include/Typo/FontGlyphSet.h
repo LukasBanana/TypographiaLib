@@ -84,6 +84,8 @@ class FontGlyphSet
 
         FontGlyphSet(FontGlyphSet&& rhs);
 
+        FontGlyphSet& operator = (FontGlyphSet&& rhs);
+
         //! Resizes the font glyph range.
         void SetGlyphRange(const FontGlyphRange& glyphRange);
 
