@@ -161,12 +161,18 @@ void TextField::Insert(Char chr)
 
 void TextField::Put(Char chr)
 {
-    if (chr == Char('\b'))
-        RemoveLeft();
-    else if (chr == Char(127))
-        RemoveRight();
-    else
-        Insert(chr);
+    /* Disable selection for adding more characters */
+    const auto prevSel = selectionEnabled;
+    selectionEnabled = false;
+    {
+        if (chr == Char('\b'))
+            RemoveLeft();
+        else if (chr == Char(127))
+            RemoveRight();
+        else
+            Insert(chr);
+    }
+    selectionEnabled = prevSel;
 }
 
 void TextField::Put(const String& text)
