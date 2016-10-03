@@ -200,7 +200,7 @@ class Timer
 
         double elapsed() const
         {
-            return std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - startTime_).count();
+            return static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(Clock::now() - startTime_).count());
         }
 
     private:
@@ -291,7 +291,7 @@ std::unique_ptr<TexturedFont> loadFont(const std::string& fontFilename, int size
 void movePen(int x, int y)
 {
     // move GL transformation
-    glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
+    glTranslatef(static_cast<float>(x), static_cast<float>(y), 0.0f);
 }
 
 void emitVertex2i(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
@@ -543,7 +543,7 @@ int main(int argc, char* argv[])
     const auto desktopResX = glutGet(GLUT_SCREEN_WIDTH);
     const auto desktopResY = glutGet(GLUT_SCREEN_HEIGHT);
 
-    srand(time(nullptr));
+    srand((unsigned)time(nullptr));
 
     std::cout << "Matrix Digital Rain (" << VERSION_STR << ")" << std::endl;
     std::cout << "Copyright (c) 2016 by Lukas Hermanns" << std::endl;
@@ -666,7 +666,7 @@ void CodeBuffer::draw()
             blendFlash_ = false;
         }
         else
-            blendScale_ = options.maxBlendScale + std::sin(blendAlpha_*M_PI/180.0f)*options.maxBlendScale;
+            blendScale_ = options.maxBlendScale + std::sin(blendAlpha_*float(M_PI)/180.0f)*options.maxBlendScale;
     }
 
     // Update code boxes

@@ -63,13 +63,13 @@ struct FontGlyphVertex
     float ty    = 0.0f; //!< Y texture coordinate.
 };
 
-//! Font glyph geometry structure. Contains four vertices for a single font glyph (within a left-top origin system).
+//! Font glyph geometry structure. Contains four vertices for a single font glyph with triangle strip topology.
 struct FontGlyphGeometry
 {
     FontGlyphVertex lt; //!< Left-top vertex.
     FontGlyphVertex rt; //!< Right-top vertex.
-    FontGlyphVertex rb; //!< Right-bottom vertex.
     FontGlyphVertex lb; //!< Left-bottom vertex.
+    FontGlyphVertex rb; //!< Right-bottom vertex.
 };
 
 

@@ -324,17 +324,17 @@ std::vector<FontGlyphGeometry> BuildFontGeometrySet(const FontModel& fontModel)
         geom.rt.tx  = invTexWidth * glyph.rect.right;
         geom.rt.ty  = invTexHeight * glyph.rect.top;
 
-        /* Setup right-bottom vertex */
-        geom.rb.x   = static_cast<float>(glyph.width);
-        geom.rb.y   = static_cast<float>(glyph.height);
-        geom.rb.tx  = invTexWidth * glyph.rect.right;
-        geom.rb.ty  = invTexHeight * glyph.rect.bottom;
-
         /* Setup left-bottom vertex */
         geom.lb.x   = 0.0f;
         geom.lb.y   = static_cast<float>(glyph.height);
         geom.lb.tx  = invTexWidth * glyph.rect.left;
         geom.lb.ty  = invTexHeight * glyph.rect.bottom;
+
+        /* Setup right-bottom vertex */
+        geom.rb.x   = static_cast<float>(glyph.width);
+        geom.rb.y   = static_cast<float>(glyph.height);
+        geom.rb.tx  = invTexWidth * glyph.rect.right;
+        geom.rb.ty  = invTexHeight * glyph.rect.bottom;
 
         geometries.push_back(geom);
     }

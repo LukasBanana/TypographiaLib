@@ -264,7 +264,7 @@ bool initScene()
 void movePen(int x, int y)
 {
     // move GL transformation
-    glTranslatef(static_cast<int>(x), static_cast<int>(y), 0.0f);
+    glTranslatef(static_cast<float>(x), static_cast<float>(y), 0.0f);
 }
 
 void emitVertex(int x, int y, int tx, int ty, float invTexWidth, float invTexHeight)
