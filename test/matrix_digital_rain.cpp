@@ -5,8 +5,11 @@
  * See "LICENSE.txt" for license information.
  */
 
-#define NOMINMAX
-#define _USE_MATH_DEFINES
+#ifdef _WIN32
+#   define NOMINMAX
+#   define _USE_MATH_DEFINES
+#endif
+
 #include <cmath>
 
 #include <Typo/Typo.h>
