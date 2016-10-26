@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_SIZE_H__
-#define __TG_SIZE_H__
+#ifndef TG_SIZE_H
+#define TG_SIZE_H
 
 
 namespace Tg

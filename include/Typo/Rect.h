@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_RECT_H__
-#define __TG_RECT_H__
+#ifndef TG_RECT_H
+#define TG_RECT_H
 
 
 #include "Size.h"

@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_POINT_H__
-#define __TG_POINT_H__
+#ifndef TG_POINT_H
+#define TG_POINT_H
 
 
 namespace Tg

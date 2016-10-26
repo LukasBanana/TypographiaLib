@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_CHAR_H__
-#define __TG_CHAR_H__
+#ifndef TG_CHAR_H
+#define TG_CHAR_H
 
 
 #include "Config.h"

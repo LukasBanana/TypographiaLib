@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_IMAEG_H__
-#define __TG_IMAEG_H__
+#ifndef TG_IMAEG_H
+#define TG_IMAEG_H
 
 
 #include "Size.h"

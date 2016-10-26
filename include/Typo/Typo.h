@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_TYPO_H__
-#define __TG_TYPO_H__
+#ifndef TG_TYPO_H
+#define TG_TYPO_H
 
 
 #include "Font.h"

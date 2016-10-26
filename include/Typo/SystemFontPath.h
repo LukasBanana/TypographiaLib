@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_SYSTEM_FONT_PATH_H__
-#define __TG_SYSTEM_FONT_PATH_H__
+#ifndef TG_SYSTEM_FONT_PATH_H
+#define TG_SYSTEM_FONT_PATH_H
 
 
 #include <string>

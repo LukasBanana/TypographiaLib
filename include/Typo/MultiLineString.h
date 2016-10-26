@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_MULTI_LINE_STRING_H__
-#define __TG_MULTI_LINE_STRING_H__
+#ifndef TG_MULTI_LINE_STRING_H
+#define TG_MULTI_LINE_STRING_H
 
 
 #include "Char.h"

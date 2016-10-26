@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_TERMINAL_H__
-#define __TG_TERMINAL_H__
+#ifndef TG_TERMINAL_H
+#define TG_TERMINAL_H
 
 
 #include "TextFieldMultiLineString.h"

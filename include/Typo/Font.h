@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_FONT_H__
-#define __TG_FONT_H__
+#ifndef TG_FONT_H
+#define TG_FONT_H
 
 
 #include "Rect.h"

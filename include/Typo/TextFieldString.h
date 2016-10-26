@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_TEXT_FIELD_STRING_H__
-#define __TG_TEXT_FIELD_STRING_H__
+#ifndef TG_TEXT_FIELD_STRING_H
+#define TG_TEXT_FIELD_STRING_H
 
 
 #include "TextField.h"

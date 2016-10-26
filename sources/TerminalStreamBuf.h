@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_TERMINAL_STREAM_BUF_H__
-#define __TG_TERMINAL_STREAM_BUF_H__
+#ifndef TG_TERMINAL_STREAM_BUF_H
+#define TG_TERMINAL_STREAM_BUF_H
 
 
 #include <Typo/TextFieldMultiLineString.h>

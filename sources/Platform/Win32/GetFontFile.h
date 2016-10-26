@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_GET_FONT_FILE_H__
-#define __TG_GET_FONT_FILE_H__
+#ifndef TG_GET_FONT_FILE_H
+#define TG_GET_FONT_FILE_H
 
 
 #include <string>

@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_CONFIG_H__
-#define __TG_CONFIG_H__
+#ifndef TG_CONFIG_H
+#define TG_CONFIG_H
 
 
 /**

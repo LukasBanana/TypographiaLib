@@ -5,8 +5,8 @@
  * See "LICENSE.txt" for license information.
  */
 
-#ifndef __TG_GLYPH_TREE_H__
-#define __TG_GLYPH_TREE_H__
+#ifndef TG_GLYPH_TREE_H
+#define TG_GLYPH_TREE_H
 
 
 #include <Typo/Font.h>
