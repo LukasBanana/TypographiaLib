@@ -27,7 +27,7 @@ class TerminalStreamBuf : public std::streambuf
 
         /* --- Base class overloading --- */
 
-	    int_type overflow(int_type c) override;
+        int_type overflow(int_type c) override;
 
     private:
         
