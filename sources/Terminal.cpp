@@ -14,10 +14,10 @@ namespace Tg
 
 
 Terminal::Terminal(const FontGlyphSet& glyphSet, int maxWidth) :
-    textField_  ( glyphSet, maxWidth, ""            ),
-    streamBuf_  ( new TerminalStreamBuf(textField_) ),
-    in          ( streamBuf_.get()                  ),
-    out         ( streamBuf_.get()                  )
+    textField   ( glyphSet, maxWidth, ""           ),
+    streamBuf_  ( new TerminalStreamBuf(textField) ),
+    in          ( streamBuf_.get()                 ),
+    out         ( streamBuf_.get()                 )
 {
 }
 

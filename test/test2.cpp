@@ -568,8 +568,8 @@ void drawScene()
 
     if (showTerminal && terminal)
     {
-        terminal->SetMaxWidth(resX - border*2);
-        drawMultiLineText(*fontTerm, border, border + 100, terminal->GetTextField());
+        terminal->textField.SetMaxWidth(resX - border*2);
+        drawMultiLineText(*fontTerm, border, border + 100, terminal->textField);
     }
     else if (mainMlText)
     {

@@ -24,23 +24,14 @@ class Terminal
     
     private:
 
-        TextFieldMultiLineString        textField_;
         std::unique_ptr<std::streambuf> streamBuf_;
 
     public:
         
         Terminal(const FontGlyphSet& glyphSet, int maxWidth);
 
-        inline const TextFieldMultiLineString& GetTextField() const
-        {
-            return textField_;
-        }
-
-        //! Sets the new maximal width.
-        inline void SetMaxWidth(int maxWidth)
-        {
-            textField_.SetMaxWidth(maxWidth);
-        }
+        //! Text field multi line string.
+        TextFieldMultiLineString textField;
 
         //! Terminal input stream.
         std::istream in;
