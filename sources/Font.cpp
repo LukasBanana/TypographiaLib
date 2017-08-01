@@ -28,14 +28,14 @@ static void Failed(FT_Error err, const std::string& msg)
 }
 
 Font::Font(const FontDescription& desc, const FontGlyphSet& glyphSet) :
-    desc_       ( desc     ),
-    glyphSet_   ( glyphSet )
+    desc_     { desc     },
+    glyphSet_ { glyphSet }
 {
 }
 
 Font::Font(const FontDescription& desc, FontGlyphSet&& glyphSet) :
-    desc_       ( desc                ),
-    glyphSet_   ( std::move(glyphSet) )
+    desc_     { desc                },
+    glyphSet_ { std::move(glyphSet) }
 {
 }
 

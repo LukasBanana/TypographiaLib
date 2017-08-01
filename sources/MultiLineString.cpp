@@ -14,10 +14,10 @@ namespace Tg
 
 
 MultiLineString::MultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text) :
-    glyphSet_   ( &glyphSet ),
-    maxWidth_   ( maxWidth  ),
-    width_      ( 0         ),
-    text_       ( text      )
+    glyphSet_ { &glyphSet },
+    maxWidth_ { maxWidth  },
+    width_    { 0         },
+    text_     { text      }
 {
     RebuildLines();
 }

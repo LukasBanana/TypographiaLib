@@ -13,12 +13,12 @@ namespace Tg
 
 
 GlyphTree::GlyphTree(const Size& size) :
-    rect_( 0, 0, size.width, size.height )
+    rect_ { 0, 0, size.width, size.height }
 {
 }
 
 GlyphTree::GlyphTree(const Rect& rect) :
-    rect_( rect )
+    rect_ { rect }
 {
 }
 

@@ -43,9 +43,9 @@ struct FontDescription
     FontDescription& operator = (const FontDescription&) = default;
 
     FontDescription(const std::string& name, int size, int flags = 0) :
-        name    ( name  ),
-        height  ( size  ),
-        flags   ( flags )
+        name   { name  },
+        height { size  },
+        flags  { flags }
     {
     }
 
@@ -63,8 +63,8 @@ struct FontModel
     FontModel& operator = (const FontModel&) = default;
     
     FontModel(FontModel&& rhs) :
-        image   ( std::move(rhs.image)    ),
-        glyphSet( std::move(rhs.glyphSet) )
+        image    { std::move(rhs.image)    },
+        glyphSet { std::move(rhs.glyphSet) }
     {
     }
     

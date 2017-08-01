@@ -25,8 +25,8 @@ struct FontGlyphRange
 {
     FontGlyphRange() = default;
     FontGlyphRange(wchar_t first, wchar_t last) :
-        first   ( first ),
-        last    ( last  )
+        first { first },
+        last  { last  }
     {
     }
 

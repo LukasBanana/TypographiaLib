@@ -14,7 +14,7 @@ namespace Tg
 
 
 TextFieldMultiLineString::TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text) :
-    text_( glyphSet, maxWidth, text )
+    text_ { glyphSet, maxWidth, text }
 {
 }
 

@@ -19,8 +19,8 @@ struct Point
     Point() = default;
 
     inline Point(std::size_t x, std::size_t y) :
-        x( x ),
-        y( y )
+        x { x },
+        y { y }
     {
     }
 

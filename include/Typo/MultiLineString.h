@@ -38,8 +38,8 @@ class MultiLineString
                 // dummy (can not be defaulted for clang compiler!)
             }
             TextLine(const String& text, int width) :
-                text    ( text  ),
-                width   ( width )
+                text  { text  },
+                width { width }
             {
             }
 

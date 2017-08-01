@@ -21,10 +21,10 @@ struct Rect
 {
     Rect() = default;
     Rect(unsigned int left, unsigned int top, unsigned int right, unsigned int bottom) :
-        left    ( left   ),
-        top     ( top    ),
-        right   ( right  ),
-        bottom  ( bottom )
+        left   { left   },
+        top    { top    },
+        right  { right  },
+        bottom { bottom }
     {
     }
 

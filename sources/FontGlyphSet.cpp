@@ -13,9 +13,9 @@ namespace Tg
 
 
 FontGlyphSet::FontGlyphSet(FontGlyphSet&& rhs) :
-    isVertical  ( rhs.isVertical         ),
-    glyphRange_ ( rhs.glyphRange_        ),
-    glyphs_     ( std::move(rhs.glyphs_) )
+    isVertical  { rhs.isVertical         },
+    glyphRange_ { rhs.glyphRange_        },
+    glyphs_     { std::move(rhs.glyphs_) }
 {
 }
 

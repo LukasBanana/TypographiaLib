@@ -14,7 +14,7 @@ namespace Tg
 
 
 TextFieldString::TextFieldString(const String& str) :
-    text_( str )
+    text_ { str }
 {
 }
 

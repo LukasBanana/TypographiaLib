@@ -13,7 +13,7 @@ namespace Tg
 
 
 TerminalStreamBuf::TerminalStreamBuf(TextFieldMultiLineString& textField) :
-    textField_( textField )
+    textField_ { textField }
 {
     textField_.insertionEnabled = true;
 }
