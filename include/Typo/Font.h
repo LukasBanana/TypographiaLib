@@ -49,10 +49,20 @@ struct FontDescription
     {
     }
 
+    FontDescription(const char* buffer, std::size_t bufferSize, int fontSize, int flags = 0) :
+        buffer     { buffer     },
+        bufferSize { bufferSize },
+        height     { fontSize   },
+        flags      { flags      }
+    {
+    }
+
     std::string name;
-    int         width   = 0;
-    int         height  = 0;
-    int         flags   = 0; //!< This can be a bitwise OR combination of the values of the 'FontFlags' enumeration.
+    const char* buffer      = nullptr;  //!< Pointer to a byte buffer if the font has already been loaded into memory. If null, 'name' is used to load the font from file.
+    std::size_t bufferSize  = 0;        //!< Size of the byte buffer (if set).
+    int         width       = 0;
+    int         height      = 0;
+    int         flags       = 0;        //!< This can be a bitwise OR combination of the values of the 'FontFlags' enumeration.
 };
 
 //! Font model data structure.

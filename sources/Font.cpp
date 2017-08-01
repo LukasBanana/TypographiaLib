@@ -169,7 +169,11 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     Failed(err, "failed to initialize FreeType library");
 
     /* Load font */
-    err = FT_New_Face(ftLib, desc.name.c_str(), 0, &face);
+    if (desc.buffer)
+        err = FT_New_Memory_Face(ftLib, reinterpret_cast<const FT_Byte*>(desc.buffer), static_cast<FT_Long>(desc.bufferSize), 0, &face);
+    else
+        err = FT_New_Face(ftLib, desc.name.c_str(), 0, &face);
+
     if (err == FT_Err_Unknown_File_Format)
         Failed(err, "unknown font file format");
     else
