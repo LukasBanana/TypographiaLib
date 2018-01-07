@@ -181,6 +181,11 @@ void TextField::Put(const String& text)
         Put(chr);
 }
 
+void TextField::Clear()
+{
+    SetText("");
+}
+
 bool TextField::IsSeparator(Char chr) const
 {
     return !((chr >= 'a' && chr <= 'z') || (chr >= 'A' && chr <= 'Z'));

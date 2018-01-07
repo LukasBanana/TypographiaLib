@@ -171,6 +171,16 @@ class TextField
         //! Returns the content of the text field.
         virtual const String& GetText() const = 0;
 
+        /**
+        \brief Clears this text field
+        \remarks The default implementation is equivalent to:
+        \code
+        SetText("");
+        \endcode
+        \see SetText
+        */
+        virtual void Clear();
+
         //! Returns true if the specified character is valid. By default 'chr' must be in the range [32, +inf).
         virtual bool IsValidChar(Char chr) const = 0;
 
