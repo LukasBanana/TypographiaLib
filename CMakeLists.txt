@@ -14,6 +14,11 @@ set(PROJECT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include")
 set(PROJECT_TEST_DIR "${PROJECT_SOURCE_DIR}/test")
 
 
+# === Options ===
+
+option(TYPOLIB_BUILD_AS_STATIC_LIB "Builds the TypographiaLib as static library" ON)
+
+
 # === Global files ===
 
 file(GLOB Headers "${PROJECT_SOURCE_DIR}/include/Typo/*.*")
@@ -44,7 +49,12 @@ source_group("Sources\\Platform" FILES ${SourcesPlatform})
 
 # === Binaries ===
 
-add_library(typolib STATIC ${FilesAll})
+if(TYPOLIB_BUILD_AS_STATIC_LIB)
+	add_library(typolib STATIC ${FilesAll})
+else()
+	add_library(typolib SHARED ${FilesAll})
+endif()
+
 set_target_properties(typolib PROPERTIES LINKER_LANGUAGE CXX DEBUG_POSTFIX "D")
 target_compile_features(typolib PRIVATE cxx_range_for)
 
