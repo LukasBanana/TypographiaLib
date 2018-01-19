@@ -57,13 +57,13 @@ class TextFieldString : public TextField
         Returns the current character which stands immediately before the cursor position.
         If the cursor is at the very beginning of the text field, the return value is '\0'.
         */
-        Char CharLeft() const;
+        Char CharLeft() const override;
         
         /**
         Returns the current character which stands immediately after the cursor position.
         If the cursor is at the very end of the text field, the return value is '\0'.
         */
-        Char CharRight() const;
+        Char CharRight() const override;
 
         //! Removes the character on the left of the current cursor position.
         void RemoveLeft() override;
