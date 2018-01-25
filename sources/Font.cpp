@@ -141,30 +141,28 @@ static Size ApproximateFontAtlasSize(unsigned int visualArea)
 
 FontModel BuildFont(const FontDescription& desc, unsigned int border)
 {
-    return BuildFont(desc, FontGlyphRange(32, 255), border);
+    return BuildFont(desc, FontGlyphRange { 32, 255 }, border);
 }
 
-/*
-This is the main function to build a font atlas image.
-This function makes use of the FreeType library to render the font glyphs.
-The function works is several phases:
- (1) Load font 'face' with FreeType 'ftLib'.
- (2) Render each font glyph and store its image in 'glyphImages'.
- (3) Approximate the font atlas size by 'sqrt(visualArea)'.
- (4) Build glyph tree to tightly pack the glyphs into a single image.
- (5) If a glyph does not fit into the glyph tree, double the smallest size (width or height) and go to phase 4.
- (6) Plot all glyph sub images into the final font atlas image.
-*/
-FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)
+UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, unsigned int border)
 {
-    static const FT_Pos metricSize = 64;
+    return BuildUnpackedFont(desc, FontGlyphRange { 32, 255 }, border);
+}
 
-    FontModel font;
+static const FT_Pos g_metricSize = 64;
 
+UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)
+{
+    UnpackedFontModel font;
+
+    /* Store glyph set */
+    font.glyphSet.SetGlyphRange(glyphRange);
+    font.glyphSet.border = border;
+
+    /* Initialize free type library */
     FT_Library ftLib;
     FT_Face face;
 
-    /* Initialize free type library */
     auto err = FT_Init_FreeType(&ftLib);
     Failed(err, "failed to initialize FreeType library");
 
@@ -182,8 +180,6 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     /* Store flags */
     auto isVertical = (FT_HAS_VERTICAL(face) != 0);
 
-    font.glyphSet.border = border;
-
     /* Setup pixel size */
     //err = FT_Set_Char_Size(face, 0, 15*64, 50, 50);
     //Failed(err, "failed to set character size");
@@ -192,12 +188,7 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     Failed(err, "failed to set pixel sizes");
     
     /* Reserve glyph container */
-    font.glyphSet.SetGlyphRange(glyphRange);
-    
-    std::vector<Image> glyphImages;
-    glyphImages.reserve(glyphRange.GetSize());
-
-    unsigned int visualArea = 0;
+    font.glyphImages.reserve(glyphRange.GetSize());
 
     for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
     {
@@ -215,20 +206,20 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
         const auto& metrics = face->glyph->metrics;
         auto& glyph = font.glyphSet[chr];
 
-        glyph.width = metrics.width / metricSize;
-        glyph.height = metrics.height / metricSize;
+        glyph.width = metrics.width / g_metricSize;
+        glyph.height = metrics.height / g_metricSize;
 
         if (isVertical)
         {
-            glyph.xOffset = metrics.vertBearingX / metricSize;
-            glyph.yOffset = metrics.vertBearingY / metricSize;
-            glyph.advance = metrics.vertAdvance / metricSize;
+            glyph.xOffset = metrics.vertBearingX / g_metricSize;
+            glyph.yOffset = metrics.vertBearingY / g_metricSize;
+            glyph.advance = metrics.vertAdvance / g_metricSize;
         }
         else
         {
-            glyph.xOffset = metrics.horiBearingX / metricSize;
-            glyph.yOffset = metrics.horiBearingY / metricSize;
-            glyph.advance = metrics.horiAdvance / metricSize;
+            glyph.xOffset = metrics.horiBearingX / g_metricSize;
+            glyph.yOffset = metrics.horiBearingY / g_metricSize;
+            glyph.advance = metrics.horiAdvance / g_metricSize;
         }
 
         /* Store glyph size */
@@ -237,13 +228,44 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
 
         /* Store glyph image */
         const auto& bitmap = face->glyph->bitmap;
-        Image image(Size(bitmap.width, bitmap.rows));
+        Image image { Size { bitmap.width, bitmap.rows } };
         {
             std::copy(bitmap.buffer, bitmap.buffer + (bitmap.width*bitmap.rows), image.ImageBufferBegin());
         }
-        glyphImages.emplace_back(std::move(image));
+        font.glyphImages.emplace_back(std::move(image));
+    }
 
+    /* Release free type objects */
+    FT_Done_Face(face);
+    FT_Done_FreeType(ftLib);
+
+    return font;
+}
+
+/*
+This is the main function to build a font atlas image.
+This function makes use of the FreeType library to render the font glyphs.
+The function works is several phases:
+ (1) Load font 'face' with FreeType 'ftLib'.
+ (2) Render each font glyph and store its image in 'glyphImages'.
+ (3) Approximate the font atlas size by 'sqrt(visualArea)'.
+ (4) Build glyph tree to tightly pack the glyphs into a single image.
+ (5) If a glyph does not fit into the glyph tree, double the smallest size (width or height) and go to phase 4.
+ (6) Plot all glyph sub images into the final font atlas image.
+*/
+FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border)
+{
+    auto fontUnpacked = BuildUnpackedFont(desc, glyphRange, border);
+
+    FontModel font;
+    font.glyphSet = std::move(fontUnpacked.glyphSet);
+
+    unsigned int visualArea = 0;
+
+    for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
+    {
         /* Accumulate visual area to approximate glyph image size */
+        const auto& glyph = font.glyphSet[chr];
         visualArea += Size(glyph.rect.right, glyph.rect.bottom).Area();
     }
 
@@ -285,7 +307,7 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
     for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
     {
         const auto& glyph = font.glyphSet[chr];
-        const auto& image = glyphImages[chr - glyphRange.first];
+        const auto& image = fontUnpacked.glyphImages[chr - glyphRange.first];
 
         font.image.PlotImage(
             glyph.rect.left + border,
@@ -293,10 +315,6 @@ FontModel BuildFont(const FontDescription& desc, const FontGlyphRange& glyphRang
             image
         );
     }
-
-    /* Release free type objects */
-    FT_Done_Face(face);
-    FT_Done_FreeType(ftLib);
 
     return font;
 }

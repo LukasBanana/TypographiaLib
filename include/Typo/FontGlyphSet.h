@@ -24,11 +24,14 @@ namespace Tg
 struct FontGlyphRange
 {
     FontGlyphRange() = default;
-    FontGlyphRange(wchar_t first, wchar_t last) :
+    FontGlyphRange(const FontGlyphRange&) = default;
+    inline FontGlyphRange(wchar_t first, wchar_t last) :
         first { first },
         last  { last  }
     {
     }
+
+    FontGlyphRange& operator = (const FontGlyphRange&) = default;
 
     inline std::size_t GetSize() const
     {
@@ -84,6 +87,7 @@ class FontGlyphSet
 
         FontGlyphSet(FontGlyphSet&& rhs);
 
+        FontGlyphSet& operator = (const FontGlyphSet&) = default;
         FontGlyphSet& operator = (FontGlyphSet&& rhs);
 
         //! Resizes the font glyph range.

@@ -72,13 +72,13 @@ struct FontModel
     FontModel(const FontModel&) = default;
     FontModel& operator = (const FontModel&) = default;
     
-    FontModel(FontModel&& rhs) :
+    inline FontModel(FontModel&& rhs) :
         image    { std::move(rhs.image)    },
         glyphSet { std::move(rhs.glyphSet) }
     {
     }
     
-    FontModel& operator = (FontModel&& rhs)
+    inline FontModel& operator = (FontModel&& rhs)
     {
         image    = std::move(rhs.image);
         glyphSet = std::move(rhs.glyphSet);
@@ -87,6 +87,30 @@ struct FontModel
     
     Image           image;      //!< Font atlas image.
     FontGlyphSet    glyphSet;   //!< Font glyph set.
+};
+
+//! Font model data structure.
+struct UnpackedFontModel
+{
+    UnpackedFontModel() = default;
+    UnpackedFontModel(const UnpackedFontModel&) = default;
+    UnpackedFontModel& operator = (const UnpackedFontModel&) = default;
+    
+    inline UnpackedFontModel(UnpackedFontModel&& rhs) :
+        glyphImages { std::move(rhs.glyphImages) },
+        glyphSet    { std::move(rhs.glyphSet)    }
+    {
+    }
+    
+    inline UnpackedFontModel& operator = (UnpackedFontModel&& rhs)
+    {
+        glyphImages = std::move(rhs.glyphImages);
+        glyphSet    = std::move(rhs.glyphSet);
+        return *this;
+    }
+    
+    std::vector<Image>  glyphImages;    //!< Font glyph image list.
+    FontGlyphSet        glyphSet;       //!< Font glyph set.
 };
 
 
@@ -133,6 +157,21 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel);
 
 
 /* --- Global Functions --- */
+
+/**
+\brief Builds an unpacked font model (i.e. one image object for each font glyph) with the specified description and the glyph range [32, 255].
+\param[in] desc Specifies the font description.
+\param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
+*/
+UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, unsigned int border = 1);
+
+/**
+\brief Builds an unpacked font model (i.e. one image object for each font glyph) with the specified description and glyph range.
+\param[in] desc Specifies the font description.
+\param[in] glyphRange Specifies the range of glyphs which are to be contained in the resulting font.
+\param[in] border Specifies the border (in pixels) for each glyph in the final glyph image.
+*/
+UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, const FontGlyphRange& glyphRange, unsigned int border = 1);
 
 /**
 \brief Builds a font model with the specified description and the glyph range [32, 255].
