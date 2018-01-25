@@ -10,8 +10,8 @@
 
 
 #include "Size.h"
-
 #include <vector>
+#include <cstdint>
 
 
 namespace Tg
@@ -23,7 +23,7 @@ class Image
     
     public:
         
-        using ImageBuffer = std::vector<unsigned char>;
+        using ImageBuffer = std::vector<std::uint8_t>;
 
         Image() = default;
         Image(const Image&) = default;
