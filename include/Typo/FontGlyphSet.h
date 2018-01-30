@@ -138,7 +138,7 @@ class FontGlyphSet
 
             if (!text.empty() && position < text.size() && count > 0)
             {
-                if (count + position > text.size())
+                if (count == std::basic_string<T>::npos || count + position > text.size())
                     count = text.size() - position;
 
                 for (auto end = position + count; position < end; ++position)

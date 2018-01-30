@@ -35,7 +35,7 @@ void FontGlyphSet::SetGlyphRange(const FontGlyphRange& glyphRange)
 
 const FontGlyph& FontGlyphSet::operator [] (char chr) const
 {
-    return (*this)[static_cast<wchar_t>(static_cast<unsigned char>(chr))];
+    return (*this)[static_cast<wchar_t>(static_cast<std::uint8_t>(chr))];
 }
 
 const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
@@ -46,7 +46,7 @@ const FontGlyph& FontGlyphSet::operator [] (wchar_t chr) const
 
 FontGlyph& FontGlyphSet::operator [] (char chr)
 {
-    return (*this)[static_cast<wchar_t>(static_cast<unsigned char>(chr))];
+    return (*this)[static_cast<wchar_t>(static_cast<std::uint8_t>(chr))];
 }
 
 FontGlyph& FontGlyphSet::operator [] (wchar_t chr)
