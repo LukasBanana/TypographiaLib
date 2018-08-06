@@ -22,32 +22,32 @@ namespace Tg
 */
 class TextFieldString : public TextField
 {
-    
+
     public:
-        
+
         TextFieldString() = default;
 
         TextFieldString(const String& str);
 
         TextFieldString& operator = (const String& str);
-        
+
         TextFieldString& operator += (const String& str);
-        
+
         TextFieldString& operator += (const Char& chr);
-        
+
         inline operator const String& () const
         {
             return text_;
         }
 
         /* --- Cursor operations --- */
-        
+
         //! Moves the cursor into the specified direction.
         void MoveCursor(int direction) override;
-        
+
         //! Moves the cursor to the beginning.
         void MoveCursorBegin();
-        
+
         //! Moves the cursor to the end.
         void MoveCursorEnd();
 
@@ -58,7 +58,7 @@ class TextFieldString : public TextField
         If the cursor is at the very beginning of the text field, the return value is '\0'.
         */
         Char CharLeft() const override;
-        
+
         /**
         Returns the current character which stands immediately after the cursor position.
         If the cursor is at the very end of the text field, the return value is '\0'.
@@ -94,7 +94,7 @@ class TextFieldString : public TextField
     private:
 
         void InsertChar(Char chr, bool wasSelected) override;
-        
+
         //! Returns the iterator to the string at the specified cursor position.
         String::iterator Iter();
 
@@ -104,7 +104,7 @@ class TextFieldString : public TextField
         /* === Member === */
 
         String text_;
-        
+
 };
 
 

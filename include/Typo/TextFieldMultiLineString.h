@@ -24,17 +24,17 @@ namespace Tg
 */
 class TextFieldMultiLineString : public TextField
 {
-    
+
     public:
-        
+
         TextFieldMultiLineString(const FontGlyphSet& glyphSet, int maxWidth, const String& text);
 
         TextFieldMultiLineString& operator = (const String& str);
-        
+
         TextFieldMultiLineString& operator += (const String& str);
-        
+
         TextFieldMultiLineString& operator += (Char chr);
-        
+
         inline operator const String& () const
         {
             return text_;
@@ -71,7 +71,7 @@ class TextFieldMultiLineString : public TextField
         SizeType GetXCoordinateFromPosition(SizeType positionX, std::size_t lineIndex) const;
 
         /* --- Cursor operations --- */
-        
+
         //! Sets the new cursor XY coordinate. This will be clamped to the range [0, GetText().size()] for X and [0, GetLines().size()) for Y.
         void SetCursorCoordinate(Point position);
 
@@ -91,13 +91,13 @@ class TextFieldMultiLineString : public TextField
 
         //! Moves the cursor into the specified X direction.
         void MoveCursor(int direction) override;
-        
+
         //! Moves the cursor into the specified Y direction.
         void MoveCursorLine(int direction);
-        
+
         //! Moves the cursor X position to the beginning.
         void MoveCursorBegin();
-        
+
         //! Moves the cursor X position to the end.
         void MoveCursorEnd();
 
@@ -128,7 +128,7 @@ class TextFieldMultiLineString : public TextField
         If the cursor is at the very beginning of the text field, the return value is '\0'.
         */
         Char CharLeft() const override;
-        
+
         /**
         Returns the current character which stands immediately after the cursor X position.
         If the cursor is at the very end of the text field, the return value is '\0'.
@@ -155,7 +155,7 @@ class TextFieldMultiLineString : public TextField
         {
             text_.SetGlyphSet(glyphSet);
         }
-        
+
         //! \see MultiLineString::GetGlyphSet
         inline const FontGlyphSet& GetGlyphSet() const
         {
@@ -209,7 +209,7 @@ class TextFieldMultiLineString : public TextField
     private:
 
         void InsertChar(Char chr, bool wasSelected) override;
-        
+
         /**
         \brief Returns true if the line above the cursor is empty (also true if the cursor is at the top).
         \remarks This function must not be called, if the cursor is at the top!
@@ -233,7 +233,7 @@ class TextFieldMultiLineString : public TextField
         MultiLineString text_;
 
         SizeType        storedCursorCoordX_ = 0;
-        
+
 };
 
 

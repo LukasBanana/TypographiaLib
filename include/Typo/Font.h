@@ -71,20 +71,20 @@ struct FontModel
     FontModel() = default;
     FontModel(const FontModel&) = default;
     FontModel& operator = (const FontModel&) = default;
-    
+
     inline FontModel(FontModel&& rhs) :
         image    { std::move(rhs.image)    },
         glyphSet { std::move(rhs.glyphSet) }
     {
     }
-    
+
     inline FontModel& operator = (FontModel&& rhs)
     {
         image    = std::move(rhs.image);
         glyphSet = std::move(rhs.glyphSet);
         return *this;
     }
-    
+
     Image           image;      //!< Font atlas image.
     FontGlyphSet    glyphSet;   //!< Font glyph set.
 };
@@ -95,20 +95,20 @@ struct UnpackedFontModel
     UnpackedFontModel() = default;
     UnpackedFontModel(const UnpackedFontModel&) = default;
     UnpackedFontModel& operator = (const UnpackedFontModel&) = default;
-    
+
     inline UnpackedFontModel(UnpackedFontModel&& rhs) :
         glyphImages { std::move(rhs.glyphImages) },
         glyphSet    { std::move(rhs.glyphSet)    }
     {
     }
-    
+
     inline UnpackedFontModel& operator = (UnpackedFontModel&& rhs)
     {
         glyphImages = std::move(rhs.glyphImages);
         glyphSet    = std::move(rhs.glyphSet);
         return *this;
     }
-    
+
     std::vector<Image>  glyphImages;    //!< Font glyph image list.
     FontGlyphSet        glyphSet;       //!< Font glyph set.
 };
@@ -117,36 +117,37 @@ struct UnpackedFontModel
 //! Font base class.
 class Font
 {
-    
+
     public:
-        
+
         Font(const FontDescription& desc, const FontGlyphSet& glyphSet);
         Font(const FontDescription& desc, FontGlyphSet&& glyphSet);
         virtual ~Font();
-        
+
         int TextWidth(const std::string& text, std::size_t offset = 0, std::size_t len = std::string::npos) const;
         int TextWidth(const std::wstring& text, std::size_t offset = 0, std::size_t len = std::string::npos) const;
-        
+
         const FontDescription& GetDesc() const
         {
             return desc_;
         }
-        
+
         const FontGlyphSet& GetGlyphSet() const
         {
             return glyphSet_;
         }
 
     private:
-        
+
         FontDescription desc_;
         FontGlyphSet    glyphSet_;
-        
+
 };
 
 
 /* --- Global Operators --- */
 
+#if 0
 std::ostream& operator << (std::ostream& stream, const Image& image);
 std::ostream& operator << (std::ostream& stream, const FontGlyphSet& glyphSet);
 std::ostream& operator << (std::ostream& stream, const FontModel& fontModel);
@@ -154,6 +155,7 @@ std::ostream& operator << (std::ostream& stream, const FontModel& fontModel);
 std::istream& operator >> (std::istream& stream, Image& image);
 std::istream& operator >> (std::istream& stream, FontGlyphSet& glyphSet);
 std::istream& operator >> (std::istream& stream, FontModel& fontModel);
+#endif
 
 
 /* --- Global Functions --- */

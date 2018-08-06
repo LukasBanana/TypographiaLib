@@ -20,9 +20,9 @@ namespace Tg
 
 class Image
 {
-    
+
     public:
-        
+
         using ImageBuffer = std::vector<std::uint8_t>;
 
         Image() = default;
@@ -44,11 +44,14 @@ class Image
 
         //! Plots parts of the specified sub image 'image' into this image at the specified offset position.
         void PlotImage(
-            unsigned int xOffset, unsigned int yOffset,
-            const Image& image,
-            unsigned int x, unsigned int y,
-            unsigned int width, unsigned int height,
-            bool accumulate = false
+            unsigned int    xOffset,
+            unsigned int    yOffset,
+            const Image&    image,
+            unsigned int    x,
+            unsigned int    y,
+            unsigned int    width,
+            unsigned int    height,
+            bool            accumulate = false
         );
 
         const Size& GetSize() const
@@ -72,7 +75,7 @@ class Image
         }
 
     private:
-        
+
         unsigned char* PointerOffset(unsigned int x, unsigned int y);
         const unsigned char* PointerOffset(unsigned int x, unsigned int y) const;
 

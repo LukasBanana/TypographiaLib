@@ -35,15 +35,21 @@ static bool GetNextFontName(HKEY key, std::string& name, std::string& value, DWO
 {
     char valueName[MAX_PATH];
     DWORD valueNameSize = (sizeof(valueName) - 1);
-    
+
     BYTE valueData[MAX_PATH];
     DWORD valueDataSize = (sizeof(valueData) - 1);
 
     DWORD type = 0;
 
     LONG retval = RegEnumValue(
-        key, index, valueName, &valueNameSize, NULL, 
-        &type, valueData, &valueDataSize
+        key,
+        index,
+        valueName,
+        &valueNameSize,
+        NULL,
+        &type,
+        valueData,
+        &valueDataSize
     );
 
     if (retval == ERROR_SUCCESS) 
@@ -52,7 +58,7 @@ static bool GetNextFontName(HKEY key, std::string& name, std::string& value, DWO
         value = std::string(reinterpret_cast<const char*>(valueData));
         return true;
     }
-    
+
     return false;
 }
 
@@ -66,7 +72,7 @@ bool GetFontFile(std::string fontName, std::string& fontFilename)
 
     /* Convert input font name to lower case */
     std::transform(fontName.begin(), fontName.end(), fontName.begin(), ::tolower);
-    
+
     const std::string regKeyName = "Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
     std::string name, value;
 

@@ -21,13 +21,13 @@ namespace Tg
 //! Terminal class, representing the 'model' within the model-view-controller pattern.
 class Terminal
 {
-    
+
     private:
 
         std::unique_ptr<std::streambuf> streamBuf_;
 
     public:
-        
+
         Terminal(const FontGlyphSet& glyphSet, int maxWidth);
 
         //! Text field multi line string.

@@ -20,9 +20,9 @@ namespace Tg
 
 class TerminalStreamBuf : public std::streambuf
 {
-    
+
     public:
-        
+
         TerminalStreamBuf(TextFieldMultiLineString& textField);
 
         /* --- Base class overloading --- */
@@ -30,9 +30,9 @@ class TerminalStreamBuf : public std::streambuf
         int_type overflow(int_type c) override;
 
     private:
-        
+
         TextFieldMultiLineString& textField_;
-        
+
 };
 
 

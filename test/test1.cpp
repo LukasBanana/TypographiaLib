@@ -57,7 +57,7 @@ int main()
     glyphRange.first   = 32;
     glyphRange.last    = 255;
     #endif
-    
+
     fontDesc.height = 60;//32;
     fontDesc.name = (
         //"C:/Windows/Fonts/times.ttf"

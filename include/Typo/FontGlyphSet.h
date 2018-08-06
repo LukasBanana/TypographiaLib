@@ -48,7 +48,7 @@ struct FontGlyph
     {
         // dummy (can not be defaulted for clang compiler!)
     }
-    
+
     Rect    rect;           //!< Rectangular area of this font glyph within the font atlas.
     int     xOffset = 0;    //!< X coordinate offset of this font glyph to draw the glyph.
     int     yOffset = 0;    //!< Y coordinate offset of this font glyph to draw the glyph.
@@ -79,7 +79,7 @@ struct FontGlyphGeometry
 //! Font glyph set class.
 class FontGlyphSet
 {
-    
+
     public:
 
         FontGlyphSet() = default;
@@ -130,9 +130,9 @@ class FontGlyphSet
         //! Returns the width of the specified sub text.
         template <typename T>
         int TextWidth(
-            const typename std::basic_string<T>& text,
-            typename std::basic_string<T>::size_type position,
-            typename std::basic_string<T>::size_type count = std::basic_string<T>::npos) const
+            const typename std::basic_string<T>&        text,
+            typename std::basic_string<T>::size_type    position,
+            typename std::basic_string<T>::size_type    count       = std::basic_string<T>::npos) const
         {
             int width = 0;
 

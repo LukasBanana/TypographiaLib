@@ -13,6 +13,7 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include FT_STROKER_H
 
 #include "GlyphTree.h"
 
@@ -74,6 +75,7 @@ int Font::TextWidth(const std::wstring& text, std::size_t offset, std::size_t le
 
 /* --- Global Operators --- */
 
+#if 0
 std::ostream& operator << (std::ostream& stream, const Image& image)
 {
     //...
@@ -109,6 +111,7 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel)
     //...
     return stream;
 }
+#endif
 
 
 /* --- Global Functions --- */
@@ -116,13 +119,13 @@ std::istream& operator >> (std::istream& stream, FontModel& fontModel)
 static unsigned int RoundPow2(unsigned int size)
 {
     unsigned int result = 1;
-    
+
     while (result < size)
         result <<= 1;
-    
+
     if (result - size <= size - result/2)
         return result;
-    
+
     return result/2;
 }
 
@@ -186,9 +189,20 @@ UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, const FontGlyph
 
     err = FT_Set_Pixel_Sizes(face, desc.width, desc.height);
     Failed(err, "failed to set pixel sizes");
-    
+
     /* Reserve glyph container */
     font.glyphImages.reserve(glyphRange.GetSize());
+
+    //#define TEST_STROKER
+    #ifdef TEST_STROKER
+
+    FT_Stroker stroker;
+    err = FT_Stroker_New(ftLib, &stroker);
+    Failed(err, "failed to create new stroker");
+
+    FT_Stroker_Set(stroker, 64, FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+
+    #endif
 
     for (auto chr = glyphRange.first; chr <= glyphRange.last; ++chr)
     {
@@ -198,9 +212,31 @@ UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, const FontGlyph
         err = FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
         Failed(err, "failed to load glyph");
 
+        #ifdef TEST_STROKER
+
+        FT_Glyph ftglyph;
+        err = FT_Get_Glyph(face->glyph, &ftglyph);
+        Failed(err, "failed to get glyph");
+
+        err = FT_Glyph_StrokeBorder(&ftglyph, stroker, 0, 1);
+        Failed(err, "failed to set glyph stroker border");
+
+        err = FT_Glyph_Stroke(&ftglyph, stroker, 1);
+        Failed(err, "failed to stroke glyph");
+
+        /* Draw current glyph */
+        err = FT_Glyph_To_Bitmap(&ftglyph, FT_RENDER_MODE_NORMAL, nullptr, 1);
+        Failed(err, "failed to render glyph");
+
+        //FT_Done_Glyph(ftglyph);
+
+        #else
+
         /* Draw current glyph */
         err = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
         Failed(err, "failed to render glyph");
+
+        #endif
 
         /* Store glyph */
         const auto& metrics = face->glyph->metrics;
@@ -227,7 +263,13 @@ UnpackedFontModel BuildUnpackedFont(const FontDescription& desc, const FontGlyph
         glyph.rect.bottom = glyph.height + border*2;
 
         /* Store glyph image */
+        #ifdef TEST_STROKER
+        const auto& bitmap = reinterpret_cast<FT_BitmapGlyph>(ftglyph)->bitmap;
+        glyph.rect.right = bitmap.width + border*2;
+        glyph.rect.bottom = bitmap.rows + border*2;
+        #else
         const auto& bitmap = face->glyph->bitmap;
+        #endif
         Image image { Size { bitmap.width, bitmap.rows } };
         {
             std::copy(bitmap.buffer, bitmap.buffer + (bitmap.width*bitmap.rows), image.ImageBufferBegin());
@@ -379,18 +421,18 @@ Image PlotTextImage(const FontModel& fontModel, const String& text)
     auto width = static_cast<unsigned int>(xPos);
 
     int top = 0, bottom = 0, yOffsetMax = 0;
-    
+
     for (auto chr : text)
     {
         const auto& glyph = fontModel.glyphSet[chr];
-        
+
         width += glyph.advance;
         top = std::max(top, glyph.yOffset);
         bottom = std::max(bottom, glyph.height - glyph.yOffset);
 
         yOffsetMax = std::max(yOffsetMax, glyph.yOffset);
     }
-    
+
     /* Plot each glyph into the image */
     Image image(Size(width + staticGlpyhBorder, top + bottom + staticGlpyhBorder));
 
@@ -428,7 +470,7 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const String& text, uns
 
     int top = 0, bottom = 0, yOffsetMax = 0, xPos = 0;
     unsigned int width = 0, yPos = 0;
-    
+
     for (const auto& line : mtText.GetLines())
     {
         if (line.text.empty())
@@ -440,7 +482,7 @@ Image PlotMultiLineTextImage(const FontModel& fontModel, const String& text, uns
         for (auto chr : line.text)
         {
             const auto& glyph = fontModel.glyphSet[chr];
-        
+
             width += glyph.advance;
             top = std::max(top, glyph.yOffset);
             bottom = std::max(bottom, glyph.height - glyph.yOffset);

@@ -23,16 +23,16 @@ namespace Tg
 //! Base class for all text fields.
 class TextField
 {
-    
+
     public:
-        
+
         //! String size type alias.
         using SizeType = String::size_type;
 
         virtual ~TextField();
 
         /* --- Cursor operations --- */
-        
+
         //! Sets the new cursor position. This will be clamped to the range [0, GetText().size()].
         void SetCursorPosition(SizeType position);
 
@@ -44,7 +44,7 @@ class TextField
 
         //! Returns true if the cursor is at the beginning.
         bool IsCursorBegin() const;
-        
+
         //! Returns true if the cursor is at the end.
         bool IsCursorEnd() const;
 
@@ -53,7 +53,7 @@ class TextField
 
         //! Jumps to the next left sided space.
         void JumpLeft();
-        
+
         //! Jumps to the next right sided space.
         void JumpRight();
 
@@ -112,7 +112,7 @@ class TextField
         If the cursor is at the very beginning of the text field, the return value is '\0'.
         */
         virtual Char CharLeft() const = 0;
-        
+
         /**
         Returns the current character which stands immediately after the cursor position.
         If the cursor is at the very end of the text field, the return value is '\0'.
@@ -161,7 +161,7 @@ class TextField
         \see Insert
         */
         virtual void Put(Char chr);
-        
+
         //! Inserts the specified text.
         virtual void Put(const String& text);
 
@@ -199,7 +199,7 @@ class TextField
         \see RestoreSelection
         */
         void StoreSelection();
-        
+
         /**
         \brief Restores the previous selection state (this is restored from an internal stack).
         \see StoreSelection

@@ -26,7 +26,7 @@ class GlyphTree
 {
 
     public:
-        
+
         GlyphTree() = default;
         GlyphTree(const Size& size);
         GlyphTree(const Rect& rect);
@@ -62,7 +62,7 @@ class GlyphTree
         FontGlyph* GetGlyph() const;
 
     private:
-        
+
         void CreateChild(GlyphTreePtr& child, const Rect& rect);
         void CreateChildA(const Rect& rect);
         void CreateChildB(const Rect& rect);

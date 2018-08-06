@@ -581,6 +581,7 @@ void drawScene()
 void displayCallback()
 {
     // draw frame
+    glClearColor(0.2f, 0.2f, 0.4f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     {
         drawScene();
@@ -645,7 +646,7 @@ void keyboardCallback(unsigned char key, int x, int y)
     auto modMask = glutGetModifiers();
 
     bool ctrl = ((modMask & GLUT_ACTIVE_CTRL) != 0);
-    
+
     auto& textField = getTextField();
 
     switch (key)

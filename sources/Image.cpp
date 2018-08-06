@@ -55,7 +55,7 @@ void Image::PlotImage(unsigned int xOffset, unsigned int yOffset, const Image& i
     /* Plot each scan line */
     for (unsigned int i = 0; i < sz.height; ++i)
     {
-        memcpy(
+        ::memcpy(
             PointerOffset(xOffset, yOffset + i),
             image.PointerOffset(0, i),
             sizeof(unsigned char)*sz.width
@@ -64,10 +64,14 @@ void Image::PlotImage(unsigned int xOffset, unsigned int yOffset, const Image& i
 }
 
 void Image::PlotImage(
-    unsigned int xOffset, unsigned int yOffset,
-    const Image& image, unsigned int x, unsigned int y,
-    unsigned int width, unsigned int height,
-    bool accumulate)
+    unsigned int    xOffset,
+    unsigned int    yOffset,
+    const Image&    image,
+    unsigned int    x,
+    unsigned int    y,
+    unsigned int    width,
+    unsigned int    height,
+    bool            accumulate)
 {
     /* Check if sub image is placed inside this image */
     auto sz = image.GetSize();
