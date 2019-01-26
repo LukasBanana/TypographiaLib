@@ -20,7 +20,7 @@ Screenshots
 <p align="center">Example with <b>TextFieldString</b>, and <b>MultiLineString</b>:</p>
 <p align="center"><img src="media/typolib_example03.png" alt="media/typolib_example03.png"/></p>
 
-<p align="center">Screenshot of the <b>Matrix Digital Rain</b> example (see it on <a href="https://www.youtube.com/watch?v=CAV1fQeAozo">YouTube</a>):</p>
+<p align="center">Screenshot of the <b>Matrix Digital Rain</b> example (see it on <a href="https://www.youtube.com/watch?v=-9zpK-vsy1E">YouTube</a>):</p>
 <p align="center"><img src="media/typolib_example02.png" alt="media/typolib_example02.png"/></p>
 
 
